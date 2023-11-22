@@ -38,7 +38,7 @@ async def on_message(message):
                                    "3. Emoji ID\n"
                                    "4. UTC Start Time\n"
                                    "5. UTC End Time\n"
-                                   "Example: `!addcontributor Sarahtonein 123456789012345678 <:sarah:1176399164154851368> 1 5`")
+                                   "Example: `Sarahtonein 123456789012345678 <:sarah:1176399164154851368> 1 5`")
 
         def check(msg):
             return msg.author == message.author and msg.channel == message.channel
