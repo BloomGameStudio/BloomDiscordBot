@@ -1,9 +1,4 @@
 ##If a contributors emoji is detected in chat, react and ping that user every 4 hrs
-
-#ToDO:
-##Only ping during waking hours
-##Documentation
-
 ##Static assignment for initial run
 ##Functions exist to add, or remove contributors.
 import asyncio

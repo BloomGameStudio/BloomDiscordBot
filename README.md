@@ -60,7 +60,9 @@ Example:Sarahtonein 123456789012345678 <:sarah:1176399164154851368> 1 5
 
 **Response:**
 
+```
 Contributor Sarahtonein added successfully!
+```
 
 **List Contributors:**
 
