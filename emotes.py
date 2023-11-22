@@ -7,8 +7,6 @@
 ##Note:
 ##Statically defining contributors is not ideal and there should be functionality
 ##to add and remove contributors as required based off uid for example
-import asyncio
-import discord
 
 class Contributor:
     def __init__(self, name, uid, utc_start_time, utc_end_time):
