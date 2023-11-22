@@ -3,7 +3,7 @@ import asyncio
 from discord.ext import commands
 import os
 from dotenv import load_dotenv
-from emotes import emoji_id_mapping, Contributor
+from emotes import contributors, emoji_id_mapping, Contributor
 from datetime import datetime
 from pytz import timezone
 
@@ -29,27 +29,68 @@ async def on_message(message):
             await message.add_reaction(emoji_id)
 
             if not contributor.actioned:
-                print(f'Annoying the user, {contributor.uid}')
+                print(f'Messaging the user, {contributor.uid}')
                 message_link = message.jump_url  # Get the jump URL of the message
                 await send_dm_periodically(contributor, message_link)
 
-@bot.event
-async def on_ready():
-    print(f'Logged in as {bot.user.name} ({bot.user.id})')
-    await bot.change_presence(activity=discord.Game(name="Monitoring messages"))
+    # Process add_contributor command
+    if message.content.startswith("!addcontributor"):
+        await message.channel.send("To add a contributor, please provide the following information:\n"
+                                   "1. Name\n"
+                                   "2. User ID (UID)\n"
+                                   "3. Emoji ID\n"
+                                   "4. UTC Start Time\n"
+                                   "5. UTC End Time\n"
+                                   "Example: `!addcontributor Sarahtonein 123456789012345678 <:sarah:1176399164154851368> 1 5`")
 
-async def send_dm_periodically(contributor, message_link):
-    user = await bot.fetch_user(int(contributor.uid))
-    if user:
-        if is_valid_time(contributor):  # Pass the contributor object
-            dm_message = f"Hello {user.name}! You have been pinged! Reacted to a message: {message_link}\nReminder: Please respond with !actioned to stop the message"
-            await user.send(dm_message)
-            while not contributor.actioned:
-                await asyncio.sleep(60 * 60 * 4)  # Wait for 4 hours before sending the next reminder
+        def check(msg):
+            return msg.author == message.author and msg.channel == message.channel
 
+        try:
+            response = await bot.wait_for('message', check=check, timeout=60)
+            inputs = response.content.split()
+            if len(inputs) == 5:
+                name, uid, emoji_id, start_time, end_time = inputs
+                new_contributor = Contributor(name, uid, int(start_time), int(end_time))
+                contributors.append(new_contributor)
+                
+                # Create a new mapping with the provided Emoji ID
+                emoji_id_mapping[emoji_id] = new_contributor
+                
+                await message.channel.send(f"Contributor {name} added successfully!")
+            else:
+                await message.channel.send("Invalid input. Please provide all required information.")
+        except asyncio.TimeoutError:
+            await message.channel.send("Timeout. Please run the command again.")
+
+    # Process contributors command
+    if message.content.startswith("!contributors"):
+        contributors_list = "\n".join([f"{contributor.name} - UID: {contributor.uid}" for contributor in contributors])
+        await message.channel.send("List of Contributors:\n" + contributors_list)
+
+    # Process removecontributor command
+    if message.content.startswith("!removecontributor"):
+        uid_to_remove = message.content.split()[1] if len(message.content.split()) > 1 else None
+        if uid_to_remove:
+            removed_contributor = remove_contributor(uid_to_remove)
+            if removed_contributor:
+                await message.channel.send(f"Contributor {removed_contributor.name} removed successfully!")
+            else:
+                await message.channel.send("Contributor not found.")
+        else:
+            await message.channel.send("Please provide the UID of the contributor to remove.")
+
+def remove_contributor(uid):
+    for contributor in contributors:
+        if contributor.uid == uid:
+            emoji_id_to_remove = next((emoji_id for emoji_id, c in emoji_id_mapping.items() if c == contributor), None)
+            if emoji_id_to_remove:
+                del emoji_id_mapping[emoji_id_to_remove]
+            contributors.remove(contributor)
+            return contributor
+    return None
 
 def is_valid_time(contributor):
-    #DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
     now = datetime.utcnow()
     current_hour = now.hour
 
@@ -60,6 +101,20 @@ def get_contributor_by_uid(uid):
         if contributor.uid == uid:
             return contributor
     return None
+
+@bot.event
+async def on_ready():
+    print(f'Logged in as {bot.user.name} ({bot.user.id})')
+    await bot.change_presence(activity=discord.Game(name="Monitoring messages"))
+
+async def send_dm_periodically(contributor, message_link):
+    user = await bot.fetch_user(int(contributor.uid))
+    if user:
+        if is_valid_time(contributor):  # Pass the contributor object
+            dm_message = f"Hello {user.name}! You have been mentioned in this message! {message_link}\nReminder: Please respond with !actioned to stop the message"
+            await user.send(dm_message)
+            while not contributor.actioned:
+                await asyncio.sleep(60 * 60 * 4)  # Wait for 4 hours before sending the next reminder
 
 bot_token = os.getenv('TOKEN')
 bot.run(bot_token)
