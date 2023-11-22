@@ -1,11 +1,8 @@
 import discord
-import asyncio
-from discord.ext import commands
 import os
+from discord.ext import commands
 from dotenv import load_dotenv
-from emotes import contributors, emoji_id_mapping, Contributor
-from datetime import datetime
-from pytz import timezone
+from emotes import contributors, emoji_id_mapping, Contributor, send_dm_periodically, is_valid_time, remove_contributor, get_contributor_by_uid, asyncio
 
 load_dotenv()
 
@@ -31,7 +28,7 @@ async def on_message(message):
             if not contributor.actioned:
                 print(f'Messaging the user, {contributor.uid}')
                 message_link = message.jump_url  # Get the jump URL of the message
-                await send_dm_periodically(contributor, message_link)
+                await send_dm_periodically(bot, contributor, message_link)
 
     # Process add_contributor command
     if message.content.startswith("!addcontributor"):
@@ -80,41 +77,10 @@ async def on_message(message):
         else:
             await message.channel.send("Please provide the UID of the contributor to remove.")
 
-def remove_contributor(uid):
-    for contributor in contributors:
-        if contributor.uid == uid:
-            emoji_id_to_remove = next((emoji_id for emoji_id, c in emoji_id_mapping.items() if c == contributor), None)
-            if emoji_id_to_remove:
-                del emoji_id_mapping[emoji_id_to_remove]
-            contributors.remove(contributor)
-            return contributor
-    return None
-
-def is_valid_time(contributor):
-    now = datetime.utcnow()
-    current_hour = now.hour
-
-    return contributor.utc_start_time <= current_hour <= contributor.utc_end_time
-
-def get_contributor_by_uid(uid):
-    for contributor in emoji_id_mapping.values():
-        if contributor.uid == uid:
-            return contributor
-    return None
-
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user.name} ({bot.user.id})')
     await bot.change_presence(activity=discord.Game(name="Monitoring messages"))
-
-async def send_dm_periodically(contributor, message_link):
-    user = await bot.fetch_user(int(contributor.uid))
-    if user:
-        if is_valid_time(contributor):  # Pass the contributor object
-            dm_message = f"Hello {user.name}! You have been mentioned in this message! {message_link}\nReminder: Please respond with !actioned to stop the message"
-            await user.send(dm_message)
-            while not contributor.actioned:
-                await asyncio.sleep(60 * 60 * 4)  # Wait for 4 hours before sending the next reminder
 
 bot_token = os.getenv('TOKEN')
 bot.run(bot_token)
