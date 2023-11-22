@@ -53,7 +53,7 @@ async def on_message(message):
                 
                 # Create a new mapping with the provided Emoji ID
                 emoji_id_mapping[emoji_id] = new_contributor
-                
+                print(f'New contributor added', {name}, {uid})
                 await message.channel.send(f"Contributor {name} added successfully!")
             else:
                 await message.channel.send("Invalid input. Please provide all required information.")
@@ -71,6 +71,7 @@ async def on_message(message):
         if uid_to_remove:
             removed_contributor = remove_contributor(uid_to_remove)
             if removed_contributor:
+                print(f'Removed contributor', {removed_contributor.name}, {removed_contributor.uid})
                 await message.channel.send(f"Contributor {removed_contributor.name} removed successfully!")
             else:
                 await message.channel.send("Contributor not found.")
