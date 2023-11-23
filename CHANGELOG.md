@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Functionality to detect contributors emojis in chat, react, and ping the respective
+  Users every 4 hours
+- Functions to add or remove contributors
+- DM are not sent to contributor outside UTC working hours
+
 - This CHANGELOG file.
 
 
