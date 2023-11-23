@@ -2,7 +2,7 @@ import discord
 import os
 from discord.ext import commands
 from dotenv import load_dotenv
-from emotes import *
+from emojis import *
 
 load_dotenv()
 
