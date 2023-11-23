@@ -13,15 +13,18 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 
 @bot.event
 async def on_message(message):
-    for emoji_id, contributor in emoji_id_mapping.items():
+    for emoji_id, contributor_uid in emoji_id_mapping.items():
+        contributor = next((c for c in contributors if c["uid"].lower() == contributor_uid.lower()), None)
+
         if emoji_id in message.content:
             print(f'Emoji Found!', emoji_id)
             await message.add_reaction(emoji_id)
 
-            print(f'Messaging the user, {contributor["uid"]}')
-            message_link = message.jump_url  # Get the jump URL of the message
-            await send_dm_once(bot, contributor, message_link)
-            
+            if contributor:
+                print(f'Messaging the user, {contributor["uid"]}')
+                message_link = message.jump_url
+                await send_dm_once(bot, contributor, message_link)
+
     # Process add_contributor command
     if message.content.startswith("!addcontributor"):
         await message.channel.send("To add a contributor, please provide the following information:\n"
@@ -38,9 +41,18 @@ async def on_message(message):
             inputs = response.content.split()
             if len(inputs) == 3:
                 name, uid, emoji_id, = inputs
-                add_contributor(name, uid, emoji_id)
-                print(f'New contributor added', {name}, {uid})
-                await message.channel.send(f"Contributor {name} added successfully!")                
+
+                # Check if the UID already exists in contributors
+                existing_contributor = next((c for c in contributors if c["uid"].lower() == uid.lower()), None)
+
+                if existing_contributor:
+                    print(f'Contributor {existing_contributor["name"]} already exists')
+                    await message.channel.send(f"Contributor {existing_contributor['name']} already exists")
+                else:
+                    # UID doesn't exist, call add_contributor
+                    new_contributor = add_contributor(name, uid, emoji_id)
+                    print(f'New contributor added', {name}, {uid})
+                    await message.channel.send(f"Contributor {new_contributor['name']} added successfully!")
             else:
                 await message.channel.send("Invalid input. Please provide all required information.")
         except asyncio.TimeoutError:
