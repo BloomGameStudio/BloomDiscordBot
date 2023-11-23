@@ -51,6 +51,12 @@ async def send_dm_periodically(bot, contributor, message_link):
             while not contributor.actioned and is_valid_time(contributor):  # Check waking hours before sending the next reminder
                 await asyncio.sleep(60 * 60 * 4)  # Wait for 4 hours before sending the next reminder
 
+def add_contributor(name, uid, emoji_id, start_time, end_time):
+    new_contributor = Contributor(name, uid, int(start_time), int(end_time))
+    contributors.append(new_contributor)
+    emoji_id_mapping[emoji_id] = new_contributor
+    return new_contributor
+
 def remove_contributor(uid):
     for contributor in contributors:
         if contributor.uid == uid:
@@ -77,3 +83,15 @@ def get_contributor_by_uid(uid):
         if contributor.uid == uid:
             return contributor
     return None
+
+def process_remove_contributor_command(message_content):
+    uid_to_remove = message_content.split()[1] if len(message_content.split()) > 1 else None
+    if uid_to_remove:
+        removed_contributor = remove_contributor(uid_to_remove)
+        if removed_contributor:
+            print(f'Removed contributor', {removed_contributor.name}, {removed_contributor.uid})
+            return f"Contributor {removed_contributor.name} removed successfully!"
+        else:
+            return "Contributor not found."
+    else:
+        return "Please provide the UID of the contributor to remove."

@@ -2,7 +2,7 @@ import discord
 import os
 from discord.ext import commands
 from dotenv import load_dotenv
-from emotes import contributors, emoji_id_mapping, Contributor, send_dm_periodically, is_valid_time, remove_contributor, get_contributor_by_uid, asyncio
+from emotes import *
 
 load_dotenv()
 
@@ -48,13 +48,9 @@ async def on_message(message):
             inputs = response.content.split()
             if len(inputs) == 5:
                 name, uid, emoji_id, start_time, end_time = inputs
-                new_contributor = Contributor(name, uid, int(start_time), int(end_time))
-                contributors.append(new_contributor)
-                
-                # Create a new mapping with the provided Emoji ID
-                emoji_id_mapping[emoji_id] = new_contributor
+                add_contributor(name, uid, emoji_id, int(start_time), int(end_time))
                 print(f'New contributor added', {name}, {uid})
-                await message.channel.send(f"Contributor {name} added successfully!")
+                await message.channel.send(f"Contributor {name} added successfully!")                
             else:
                 await message.channel.send("Invalid input. Please provide all required information.")
         except asyncio.TimeoutError:
@@ -67,16 +63,9 @@ async def on_message(message):
 
     # Process removecontributor command
     if message.content.startswith("!removecontributor"):
-        uid_to_remove = message.content.split()[1] if len(message.content.split()) > 1 else None
-        if uid_to_remove:
-            removed_contributor = remove_contributor(uid_to_remove)
-            if removed_contributor:
-                print(f'Removed contributor', {removed_contributor.name}, {removed_contributor.uid})
-                await message.channel.send(f"Contributor {removed_contributor.name} removed successfully!")
-            else:
-                await message.channel.send("Contributor not found.")
-        else:
-            await message.channel.send("Please provide the UID of the contributor to remove.")
+        result_message = process_remove_contributor_command(message.content)
+        await message.channel.send(result_message)
+
 
 @bot.event
 async def on_ready():
