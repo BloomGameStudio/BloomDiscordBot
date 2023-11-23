@@ -10,10 +10,10 @@ with open('contributors.json', 'r') as json_file:
 
 emoji_id_mapping = {emoji: contributor for emoji, contributor in data["emojiIdMapping"].items()}
 
-def add_contributor(name, uid, emoji_id):
+def add_contributor(name, uid, emoji_id):    
     new_contributor = {"name": name, "uid": uid}
     contributors.append(new_contributor)
-    emoji_id_mapping[emoji_id] = new_contributor
+    emoji_id_mapping[emoji_id] = uid  # Use the UID directly as the value in emoji_id_mapping
     update_json_file()
     return new_contributor
 
@@ -32,8 +32,8 @@ def process_remove_contributor_command(message_content):
     if uid_to_remove:
         removed_contributor = remove_contributor(uid_to_remove)
         if removed_contributor:
-            print(f'Removed contributor', removed_contributor['name'], removed_contributor['uid'])
-            return f"Contributor", removed_contributor['name'], "removed successfully!"
+            print(f"Contributor {removed_contributor['name']} removed successfully!")
+            return f"Contributor {removed_contributor['name']} removed successfully!"
         else:
             return "Contributor not found."
     else:
@@ -47,4 +47,4 @@ async def send_dm_once(bot, contributor, message_link):
 
 def update_json_file():
     with open('contributors.json', 'w') as json_file:
-        json.dump({"contributors": contributors, "emojiIdMapping": {emoji: contributor["uid"] for emoji, contributor in emoji_id_mapping.items()}}, json_file)
+        json.dump({"contributors": contributors or [], "emojiIdMapping": emoji_id_mapping or {}}, json_file)
