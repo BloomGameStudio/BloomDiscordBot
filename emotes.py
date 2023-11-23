@@ -27,12 +27,6 @@ def remove_contributor(uid):
             update_json_file()
             return contributor
 
-def get_contributor_by_uid(uid):
-    for contributor in emoji_id_mapping.values():
-        if contributor.uid == uid:
-            return contributor
-    return None
-
 def process_remove_contributor_command(message_content):
     uid_to_remove = message_content.split()[1] if len(message_content.split()) > 1 else None
     if uid_to_remove:
