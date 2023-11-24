@@ -46,9 +46,7 @@ To add a contributor, please provide the following information:
 Name
 User ID (UID)
 Emoji ID
-UTC Start Time
-UTC End Time
-Example:Sarahtonein 123456789012345678 <:sarah:1176399164154851368> 1 5
+Example:Sarahtonein 123456789012345678 <:sarah:1176399164154851368>
 
 ```
 
