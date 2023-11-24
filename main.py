@@ -65,7 +65,7 @@ async def on_message(message):
 
     # Process removecontributor command
     if message.content.startswith("!removecontributor"):
-        result_message = process_remove_contributor_command(message.content)
+        result_message = remove_contributor(message.content)
         await message.channel.send(result_message)
 
 
