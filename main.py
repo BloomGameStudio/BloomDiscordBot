@@ -27,11 +27,12 @@ async def on_message(message):
 
     # Process add_contributor command
     if message.content.startswith("!addcontributor"):
-        await message.channel.send("To add a contributor, please provide the following information:\n"
-                                   "1. Name\n"
-                                   "2. User ID (UID)\n"
-                                   "3. Emoji ID\n"
-                                   "Example: `Sarahtonein 123456789012345678 <:sarah:123456789>`")
+        await message.channel.send("**To add a contributor provide the following information:**\n"
+                                   "\n"
+                                   "**1. Name**\n"
+                                   "**2. User ID (UID)**\n"
+                                   "**3. Emoji ID**\n"
+                                   "**Example:** `Sarahtonein 123456789012345678 <:sarah:123456789>`")
 
         def check(msg):
             return msg.author == message.author and msg.channel == message.channel
@@ -61,7 +62,7 @@ async def on_message(message):
     # Process contributors command
     if message.content.startswith("!contributors"):
         contributors_list = "\n".join([f"{contributor['name']} - UID: {contributor['uid']}" for contributor in contributors])
-        await message.channel.send("List of Contributors:\n" + contributors_list)
+        await message.channel.send("**List of Contributors:**\n" + contributors_list)
 
     # Process removecontributor command
     if message.content.startswith("!removecontributor"):
