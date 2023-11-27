@@ -62,7 +62,7 @@ async def on_message(message):
     # Process contributors command
     if message.content.startswith("!contributors"):
         contributors_list = "\n".join([f"{contributor['name']} - UID: {contributor['uid']}" for contributor in contributors])
-        await message.channel.send("**List of Contributors:**\n" + contributors_list)
+        await message.channel.send("<:artifacts:1113725319011110943> **List of Contributors** <:artifacts:1113725319011110943>\n" + contributors_list)
 
     # Process removecontributor command
     if message.content.startswith("!removecontributor"):
