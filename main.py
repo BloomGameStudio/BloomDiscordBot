@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 import os
+import asyncio
 from updates import *
 
 intents = discord.Intents.all()
@@ -38,15 +39,6 @@ async def list_events(ctx):
 async def on_ready():
     print(f'Logged in as {bot.user.name}')
     await load_and_post_events(bot)
-
-async def load_and_post_events(bot):
-    await bot.wait_until_ready()  # Wait until the bot is fully connected and ready
-
-    # Load scheduled events before starting the bot
-    scheduled_events = load_scheduled_events()
-    await post_event_details(bot)  # Pass the bot instance to the function
-
-
 
 # Start the bot
 bot.run(os.getenv('TOKEN'))
