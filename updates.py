@@ -20,7 +20,10 @@ async def notify_new_event(bot, event):
     guild = bot.get_guild(guild_id)
 
     if guild:
-        # Fetch the event again to get the updated user_count
+        # Wait for 60 mins before sending the notification
+        await asyncio.sleep(3600)
+
+        # Fetch the event again to get the updated details
         event = await guild.fetch_scheduled_event(event.id)
         formatted_event = format_event(event)
 
@@ -28,16 +31,13 @@ async def notify_new_event(bot, event):
         channel = guild.get_channel(channel_id)
 
         if channel:
-            # Wait for 5 mins before sending the notification
-            await asyncio.sleep(300)
-
             # Send the notification
             await channel.send(f"**Newly Created Event**:\n{formatted_event}")
         else:
             print(f"Event channel not found")
     else:
         print(f"Guild not found")
-        
+
 def get_all_events(guild):
     return guild.scheduled_events
 
