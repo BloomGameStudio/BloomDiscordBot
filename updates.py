@@ -6,6 +6,7 @@ import asyncio
 #TODO:
 #Delete events? Edit events?
 #Emotes/emojis
+#Discord time FMT
 #Interested users: 
 
 load_dotenv()
