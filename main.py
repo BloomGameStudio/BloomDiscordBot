@@ -2,8 +2,7 @@ import discord
 from discord.ext import commands, tasks
 from dotenv import load_dotenv
 import os
-from datetime import datetime, timedelta
-from updates import check_upcoming_events, format_event
+from updates import check_upcoming_events, format_event, notify_new_event
 
 intents = discord.Intents.all()
 
@@ -24,7 +23,7 @@ async def on_ready():
     else:
         print(f"Guild not found")
 
-#This may have its own issues such as if the bot is restarted.
+#This may have its own issues if the bot is restarted
 @tasks.loop(hours=24)
 async def daily_check_events():
     guild_id = int(os.getenv("GUILD_ID"))
@@ -44,6 +43,11 @@ async def daily_check_events():
             print(f"Event channel not found")
     else:
         print(f"Guild not found")
+
+@bot.event
+async def on_scheduled_event_create(event):
+    print(f"New scheduled event created: {event.name}")
+    await notify_new_event(bot, event)
 
 @bot.command(name='listevents')
 async def listevents(ctx):

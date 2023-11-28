@@ -3,18 +3,37 @@ from dotenv import load_dotenv
 import os
 import asyncio
 
+#TODO:
+#Delete events? Edit events?
+#Emotes/emojis
+#Interested users: 
+
 load_dotenv()
 
-#May not be necessary
-class ScheduledEvent:
-    def __init__(self, name, description, start_time, user_count):
-        self.name = name
-        self.description = description
-        self.start_time = start_time
-        self.user_count = user_count
-
 def format_event(event):
-    return f"**Event Name:** {event.name}\n**Event ID:** {event.id}\n**Event Start Time:** {event.start_time}\n**Event Description:** {event.description}"
+    formatted_event = f"**Event Name:** {event.name}\n**Event ID:** {event.id}\n**Event Start Time:** {event.start_time}\n**Event Description:** {event.description}"
+    return formatted_event
+
+async def notify_new_event(bot, event):
+    guild_id = int(os.getenv("GUILD_ID"))
+    guild = bot.get_guild(guild_id)
+
+    if guild:
+        channel_id = int(os.getenv("CHANNEL_ID"))
+        channel = guild.get_channel(channel_id)
+
+        if channel:
+            # Wait for 5 mins before sending the notification
+            await asyncio.sleep(300)
+            
+            formatted_event = format_event(event)
+            
+            # Send the notification
+            await channel.send(f"**Newly Created Event**:\n{formatted_event}")
+        else:
+            print(f"Event channel not found")
+    else:
+        print(f"Guild not found")
 
 def get_all_events(guild):
     return guild.scheduled_events
@@ -23,6 +42,7 @@ def check_upcoming_events(guild, time_range=None):
     current_time = datetime.now().astimezone(timezone.utc)
     events = get_all_events(guild)
     upcoming_events = []
+    
     #Check if the events start time is <= the current time
     #And >= the specified time range
     for event in events:
