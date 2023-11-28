@@ -169,3 +169,6 @@ async def on_reaction_add(reaction, user):
 
         await channel.send(textwrap.dedent(msg))
 
+
+
+client.run(os.environ["DISCORD_BOT_TOKEN"])
