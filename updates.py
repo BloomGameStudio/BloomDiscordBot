@@ -1,37 +1,36 @@
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from dotenv import load_dotenv
 import os
 import asyncio
 
 load_dotenv()
 
+#May not be necessary
 class ScheduledEvent:
-    def __init__(self, name, description, start_time):
+    def __init__(self, name, description, start_time, user_count):
         self.name = name
         self.description = description
         self.start_time = start_time
-        self.interested_users = []  # Attribute to store interested users
+        self.user_count = user_count
 
-    # Other methods and attributes for the class
+def format_event(event):
+    return f"**Event Name:** {event.name}\n**Event ID:** {event.id}\n**Event Start Time:** {event.start_time}\n**Event Description:** {event.description}"
 
-def check_upcoming_events(guild):
+def get_all_events(guild):
+    return guild.scheduled_events
+
+def check_upcoming_events(guild, time_range=None):
     current_time = datetime.now().astimezone(timezone.utc)
-    events = guild.scheduled_events
+    events = get_all_events(guild)
     upcoming_events = []
-
+    #Check if the events start time is <= the current time
+    #And >= the specified time range
     for event in events:
-        event_name = event.name
-        event_description = event.description
-        event_time = event.start_time
-        event_user_count = event.user_count
-
-        time_difference = event_time - current_time
-        if time_difference.total_seconds() <= 24 * 3600:
-            # Event is 24 hours or less away
+        if time_range:
+            time_difference = event.start_time - current_time
+            if 0 <= time_difference.total_seconds() <= time_range:
+                upcoming_events.append(event)
+        else:
             upcoming_events.append(event)
-            print(f"Event Name: {event_name}")
-            print(f"Event Description: {event_description}")
-            print(f"Event Start Time: {event_time}")
-            print(f"Interested Users: {(event_user_count)}")
 
     return upcoming_events
