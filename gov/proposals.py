@@ -30,3 +30,142 @@ async def on_message(message):
             await message.channel.send(f"📝 {proposal['name']}")
 
         await message.channel.send(f"{new_proposal_emoji} New")
+
+
+@client.event
+async def on_reaction_add(reaction, user):
+    # The channel in which to operate in
+    channel = reaction.message.channel
+
+    def check(m):
+        # message author == user who added the reaction
+        return m.author == user
+
+    if reaction.emoji == "📝":
+        # Find/Get proposal that the user wants to edit or None
+        edit_proposal = next(
+            (
+                item
+                for item in proposals
+                if (
+                    reaction.message.content.strip().endswith(item["name"].strip())
+                )  # In case of conflicts use == comparison after removing emoji and whitespace
+            ),
+            None,
+        )
+
+        await reaction.message.channel.send(f"You are editing: {edit_proposal['name']}")
+        await reaction.message.channel.send("What would you like to change?")
+        await reaction.message.channel.send("Title Type Abstract Background")
+
+        change_selection = await client.wait_for("message", check=check)
+        change_selection = change_selection.content.lower()
+
+        while True:
+            if change_selection == "title":
+                await channel.send("What is be the new title?")
+                change_answer = await client.wait_for("message", check=check)
+                edit_proposal["name"] = change_answer.content
+
+            if change_selection == "type":
+                await channel.send("What is be the new type?")
+                change_answer = await client.wait_for("message", check=check)
+                edit_proposal["type"] = change_answer.content
+
+            if change_selection == "abstract":
+                await channel.send("What is be the new abstract?")
+                change_answer = await client.wait_for("message", check=check)
+
+                edit_proposal["abstract"] = change_answer.content
+
+            if change_selection == "background":
+                await channel.send("What is be the new background?")
+                change_answer = await client.wait_for("message", check=check)
+                edit_proposal["background"] = change_answer.content
+
+            await channel.send(
+                "You can edit further by repeating the previous step. If you are finished type 'save' without the single quotes"
+            )
+
+            change_selection = await client.wait_for("message", check=check)
+            change_selection = change_selection.content.lower()
+
+            if change_selection.lower() == "save":
+                await channel.send("Changes have been saved")
+
+                if edit_proposal["type"].lower() == "budget":
+                    title = f"**Bloom Budget Proposal (BBP) #{get_budget_id()} {edit_proposal['name']}**"
+
+                else:
+                    title = (
+                        f"**Topic/Vote {get_governance_id()}: {edit_proposal['name']}**"
+                    )
+
+                msg = f"""
+                {title}
+
+                __**Abstract**__
+                {edit_proposal["abstract"]}
+
+                **__Background__**
+                {edit_proposal["background"]}
+
+                ** :thumbsup: Yes**
+                ** <:bulby_sore:1127463114481356882> Reassess**
+                ** <:pepe_angel:1161835636857241733> Abstain**
+
+                Vote will conclude in 48h from now.
+                """
+
+                await channel.send(textwrap.dedent(msg))
+
+                break
+
+    if reaction.emoji == new_proposal_emoji:
+        await reaction.message.channel.send("What is the title of this draft?")
+
+        proposal = {}
+
+        name = await client.wait_for("message", check=check)
+        proposal["name"] = name.content
+        proposals.append(proposal)
+
+        await channel.send("Is this budget or general?")
+
+        type = await client.wait_for("message", check=check)
+        proposal["type"] = type.content
+
+        await channel.send(f"Great! what is the abstract?")
+
+        abstract = await client.wait_for("message", check=check)
+        proposal["abstract"] = abstract.content
+
+        await channel.send("Can you provide some background?")
+
+        background = await client.wait_for("message", check=check)
+        proposal["background"] = background.content
+
+        if proposal["type"].lower() == "budget":
+            title = f"**Bloom Budget Proposal (BBP) #{get_budget_id()} {name.content}**"
+
+        else:
+            title = f"**Topic/Vote {get_governance_id()}: {name.content}**"
+
+        msg = f"""
+                {title}
+
+                __**Abstract**__
+                {abstract.content}
+
+                **__Background__**
+                {background.content}
+
+                ** :thumbsup: Yes**
+                ** <:bulby_sore:1127463114481356882> Reassess**
+                ** <:pepe_angel:1161835636857241733> Abstain**
+
+                Vote will conclude in 48h from now.
+                """
+
+        await channel.send(textwrap.dedent(msg))
+
