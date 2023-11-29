@@ -3,16 +3,19 @@ from dotenv import load_dotenv
 import os
 import asyncio
 
-# TODO:
-# Delete events? Edit events?
-# Emotes/emojis
-# Discord time FMT
-# Interested usernames
-
 load_dotenv()
 
 def format_event(event):
-    formatted_event = f"**Event Name:** {event.name}\n**Event ID:** {event.id}\n**Event Start Time:** {event.start_time}\n**Event Description:** {event.description}\n**Event Interested**:{event.user_count}"
+    # Format the event start time for Discord time
+    formatted_start_time = event.start_time.strftime('<t:%s>' % str(int(event.start_time.timestamp())))
+
+    formatted_event = (
+        f"**Event Name:** {event.name}\n"
+        f"**Event ID:** {event.id}\n"
+        f"**Event Start Time:** {formatted_start_time}\n"
+        f"**Event Description:** {event.description}\n"
+        f"**Event Interested:** {event.user_count}"
+    )
     return formatted_event
 
 async def notify_new_event(bot, event):
