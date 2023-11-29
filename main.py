@@ -64,8 +64,19 @@ async def listevents(ctx):
     await ctx.send(f"**All Events**:\n{formatted_string}")
 
 @bot.command(name='deleteevent')
-async def deleteevent(ctx, event_id: int):
+async def deleteevent(ctx, event_id: int = None):
+    if event_id is None:
+        await ctx.send("Please enter an event_id with this command. Example: `!deleteevent 1179241076016566272`")
+        return
+
     guild = ctx.guild
+
+    try:
+        event_id = int(event_id)
+    except ValueError:
+        await ctx.send("Invalid event_id. Please provide a valid integer. Use !listevents to get a list of events")
+        return
+
     event = guild.get_scheduled_event(event_id)
 
     if event:
