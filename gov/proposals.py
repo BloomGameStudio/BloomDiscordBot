@@ -18,6 +18,10 @@ client = discord.Client(intents=intents)
 # ----------
 
 
+
+new_proposal_emoji = "💡"
+
+proposals = []
 @client.event
 async def on_message(message):
     if message.author == client.user:
