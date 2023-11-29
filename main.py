@@ -86,4 +86,28 @@ async def deleteevent(ctx, event_id: int = None):
     else:
         await ctx.send(f"No event found with ID {event_id}.")
 
+@bot.command(name='bothelp')
+async def help_command(ctx):
+    help_message = (
+        "**Here are the available commands this bot supports:**\n\n"
+        "```\n"
+        "!listevents: List all upcoming events.\n"
+        "```\n"
+        "```\n"
+        "!deleteevent [event_id]: Delete an event with the specified ID.\n"
+        "```\n"
+        "```\n"
+        "!contributors: List all stored contributors, Name, UID.\n"
+        "```\n"
+        "```\n"
+        "!addcontributor: Allows you to add a contributor to stored contributors\n"
+        "  you provide the following after the bot responds: name, UID, EmojiID\n"
+        "```\n"
+        "```\n"
+        "!removecontributor: Allows you to remove a contributor; you must provide a contributor's UID with this command\n"
+        "```\n"
+    )
+
+    await ctx.send(help_message)
+    
 bot.run(os.getenv('TOKEN'))
