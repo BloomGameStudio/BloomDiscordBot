@@ -3,6 +3,7 @@ import textwrap
 import random
 import os
 
+
 # Discord Client Setup
 intents = discord.Intents.default()
 intents.message_content = True
@@ -18,10 +19,15 @@ client = discord.Client(intents=intents)
 # ----------
 
 
+@client.event
+async def on_ready():
+    print(f"We have logged in as {client.user}")
+
 
 new_proposal_emoji = "💡"
 
 proposals = []
+
 
 def get_governance_id():
     return random.randint(10, 100)
@@ -29,6 +35,7 @@ def get_governance_id():
 
 def get_budget_id():
     return random.randint(10, 100)
+
 
 @client.event
 async def on_message(message):
@@ -189,6 +196,9 @@ async def on_reaction_add(reaction, user):
 
         await channel.send(textwrap.dedent(msg))
 
+
+def create_budget_vote(name, abstract, background):
+    pass
 
 
 client.run(os.environ["DISCORD_BOT_TOKEN"])
