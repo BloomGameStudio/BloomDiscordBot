@@ -31,16 +31,21 @@ async def daily_check_events():
 
     if guild:
         event_list = await check_upcoming_events(guild, time_range=24 * 3600)
-        formatted_events = [format_event(event) for event in event_list]
-        formatted_string = "\n\n".join(formatted_events)
 
-        channel_id = int(os.getenv("CHANNEL_ID"))
-        channel = guild.get_channel(channel_id)
+        if event_list:
+            formatted_events = [format_event(event) for event in event_list]
+            formatted_string = "\n\n".join(formatted_events)
 
-        if channel:
-            await channel.send(f"**Upcoming Events in the Next 24 Hours**:\n{formatted_string}")
+            channel_id = int(os.getenv("CHANNEL_ID"))
+            channel = guild.get_channel(channel_id)
+
+            if channel:
+                # Tag @here and send the message
+                await channel.send(f"**Upcoming Events in the Next 24 Hours - @here**:\n{formatted_string}")
+            else:
+                print(f"Event channel not found")
         else:
-            print(f"Event channel not found")
+            print("No upcoming events in the next 24 hours.")
     else:
         print(f"Guild not found")
 
