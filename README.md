@@ -1,5 +1,9 @@
 # BloomDiscordBot
 
+# Help:
+
+You can type !bothelp to get details about what commands can be used, along with a brief description of them
+
 # Events:
 
 When a person creates an event within Blooms Discord server, there will initially be a one hour delay from the time of creation to when the details of the event are posted. This will allow the person sometime to make changes to the details, timing and so on.

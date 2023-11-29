@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - This CHANGELOG file.
 
-
+- !bothelp command to provide details about useable comamnds.
 - Functionality to list, and delete existing events.
 - Daily schedule task that identifies events scheduled to start within the next 24 hours
 - Tag given everyone a heads up that an event will start within the next 24 hours
