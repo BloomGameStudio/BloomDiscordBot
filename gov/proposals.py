@@ -22,6 +22,14 @@ client = discord.Client(intents=intents)
 new_proposal_emoji = "💡"
 
 proposals = []
+
+def get_governance_id():
+    return random.randint(10, 100)
+
+
+def get_budget_id():
+    return random.randint(10, 100)
+
 @client.event
 async def on_message(message):
     if message.author == client.user:
