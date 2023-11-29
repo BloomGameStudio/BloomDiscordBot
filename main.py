@@ -63,4 +63,16 @@ async def listevents(ctx):
 
     await ctx.send(f"**All Events**:\n{formatted_string}")
 
+@bot.command(name='deleteevent')
+async def deleteevent(ctx, event_id: int):
+    guild = ctx.guild
+    event = guild.get_scheduled_event(event_id)
+
+    if event:
+        # Delete the event
+        await event.delete()
+        await ctx.send(f"Event with ID {event_id} has been deleted.")
+    else:
+        await ctx.send(f"No event found with ID {event_id}.")
+
 bot.run(os.getenv('TOKEN'))
