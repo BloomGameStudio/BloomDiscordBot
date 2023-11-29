@@ -10,6 +10,14 @@ intents.message_content = True
 client = discord.Client(intents=intents)
 
 
+# TODO:Add this to the draft proposal output ->
+
+# This is a draft preview
+# To publish the draft do xyz
+
+# ----------
+
+
 @client.event
 async def on_message(message):
     if message.author == client.user:
