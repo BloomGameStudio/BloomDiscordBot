@@ -41,7 +41,7 @@ async def daily_check_events():
 
             if channel:
                 # Tag @here and send the message
-                await channel.send(f"**Upcoming Events in the Next 24 Hours - @here**:\n{formatted_string}")
+                await channel.send(f"<:inevitable_bloom:1178256658741346344> **Upcoming Events in the Next 24 Hours - @here** <:inevitable_bloom:1178256658741346344> \n{formatted_string}")
             else:
                 print(f"Event channel not found")
         else:
@@ -61,7 +61,7 @@ async def listevents(ctx):
     formatted_events = [format_event(event) for event in event_list]
     formatted_string = "\n\n".join(formatted_events)
 
-    await ctx.send(f"**All Events**:\n{formatted_string}")
+    await ctx.send(f"🗓️**All Events**🗓️\n{formatted_string}")
 
 @bot.command(name='deleteevent')
 async def deleteevent(ctx, event_id: int = None):
@@ -82,7 +82,7 @@ async def deleteevent(ctx, event_id: int = None):
     if event:
         # Delete the event
         await event.delete()
-        await ctx.send(f"Event with ID {event_id} has been deleted.")
+        await ctx.send(f"Event with ID {event_id} has been deleted 🗑️")
     else:
         await ctx.send(f"No event found with ID {event_id}.")
 
