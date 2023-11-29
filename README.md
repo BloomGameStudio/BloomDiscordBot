@@ -2,7 +2,7 @@
 
 # Help:
 
-You can type !bothelp to get details about what commands can be used, along with a brief description of them
+You can type ```$bothelp``` to get details about what commands can be used, along with a brief description of them
 
 # Events:
 
@@ -15,18 +15,18 @@ Events can also be deleted through a command, detailed below.
 # Commands:
 
 The following commands can be used to manage, and list events.
-All commands start with: !
+All commands start with: $
 
 **List Events:**
 
 ```
-!listevents
+$listevents
 ```
 
 **Example:**
 
 ```
-!listevents
+$listevents
 ```
 
 **Response:**
@@ -43,13 +43,13 @@ Event Interested: 0
 **Delete Events:**
 
 ```
-!deleteevent <event_id>
+$deleteevent <event_id>
 ```
 
 **Example:**
 
 ```
-!deleteevent 1179242504395165748
+$deleteevent 1179242504395165748
 ```
 
 **Response:**
