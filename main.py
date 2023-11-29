@@ -9,8 +9,10 @@ load_dotenv()
 intents = discord.Intents.default()
 intents.message_content = True
 
-bot = commands.Bot(command_prefix="!", intents=intents)
+bot = commands.Bot(command_prefix="$", intents=intents)
 
+
+#Should consider using @bot.command instead of bot.event to make things more modular / cleaner
 @bot.event
 async def on_message(message):
     for emoji_id, contributor_uid in emoji_id_mapping.items():
@@ -26,7 +28,7 @@ async def on_message(message):
                 await send_dm_once(bot, contributor, message_link)
 
     # Process add_contributor command
-    if message.content.startswith("!addcontributor"):
+    if message.content.startswith("$addcontributor"):
         await message.channel.send("**To add a contributor provide the following information:**\n"
                                    "\n"
                                    "**1. Name**\n"
@@ -60,12 +62,12 @@ async def on_message(message):
             await message.channel.send("Timeout. Please run the command again.")
 
     # Process contributors command
-    if message.content.startswith("!contributors"):
+    if message.content.startswith("$contributors"):
         contributors_list = "\n".join([f"{contributor['name']} - UID: {contributor['uid']}" for contributor in contributors])
         await message.channel.send("<:artifacts:1113725319011110943> **List of Contributors** <:artifacts:1113725319011110943>\n" + contributors_list)
 
     # Process removecontributor command
-    if message.content.startswith("!removecontributor"):
+    if message.content.startswith("$removecontributor"):
         result_message = remove_contributor(message.content)
         await message.channel.send(result_message)
 

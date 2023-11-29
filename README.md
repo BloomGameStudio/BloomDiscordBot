@@ -9,7 +9,7 @@ A link to the message they have been mentioned in will be included.
 # Commands:
 
 The following commands can be used to manage, and list contributors. All commands 
-start with: !
+start with: $
 
 **Remove Contributor:** 
 
@@ -18,7 +18,7 @@ start with: !
 **Example:**
 
 ```
-!removecontributor 316765092689608706
+$removecontributor 316765092689608706
 ```
 
 **Response:**
@@ -27,20 +27,25 @@ Contributor Sarahtonein removed successfully!
 ```
 
 **Add Contributor:**
+```
+$addcontributor
+```
 
-!addcontributor
-
-1. !addcontributor
+```
+1. $addcontributor
 
 2. Bot will respond with required details.
 
 3. Respond with required details and the contributor will be added.
 
+```
+
 **Example:**
 
 ```
-!addcontributor
+$addcontributor
 ```
+
 ```
 To add a contributor, please provide the following information:
 Name
@@ -54,18 +59,23 @@ Example:Sarahtonein 123456789012345678 <:sarah:1176399164154851368>
 
 ```
 Contributor Sarahtonein added successfully!
+
 ```
 
 **List Contributors:**
 
-!contributors
+```
+$contributors
+```
 
 **Example:**
 
 ```
-!contributors
+$contributors
 ```
+
 **Response:**
+
 ```
 List of Contributors:
 Sarahtonein - UID: 316765092689608706
