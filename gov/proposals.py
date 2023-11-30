@@ -29,6 +29,7 @@ new_proposal_emoji = "💡"
 proposals = []
 
 
+# QUESTION: Should these be incremental, instead of random?
 def get_governance_id():
     return random.randint(10, 100)
 
@@ -44,7 +45,7 @@ async def on_message(message):
 
     fmt_proposals = ""
 
-    # Loop over proposals and convert them to str with every proposal name beeing on a newline
+    # Loop over proposals and convert them to str with every proposal name being on a newline
     for proposal in proposals:
         fmt_proposals += f"📝 {proposal['name']}\n"
 
@@ -58,6 +59,30 @@ async def on_message(message):
 
         await message.channel.send(f"{new_proposal_emoji} New")
 
+    if message.content.startswith("!publish_draft"):
+        await message.channel.send("Sure! Here are the existing drafts:")
+        for proposal in proposals:
+            await message.channel.send(f"📝 {proposal['name']}")
+
+        # Extract the draft name from the message
+        draft_name = message.content.split("!publish_draft ", 1)[1].strip()
+
+        # Find the draft with the specified name
+        draft_to_publish = next(
+            (item for item in proposals if item["name"].strip() == draft_name),
+            None,
+        )
+
+        if draft_to_publish:
+            await message.channel.send(f"Publishing draft: {draft_to_publish['name']}")
+
+            # Implement your logic to publish the draft
+            await publish_draft(draft_to_publish)
+
+            # Remove the published draft from the list
+            proposals.remove(draft_to_publish)
+        else:
+            await message.channel.send(f"Draft not found: {draft_name}")
 
 @client.event
 async def on_reaction_add(reaction, user):
@@ -200,5 +225,9 @@ async def on_reaction_add(reaction, user):
 def create_budget_vote(name, abstract, background):
     pass
 
+
+async def publish_draft(draft):
+    #tbd
+    pass
 
 client.run(os.environ["DISCORD_BOT_TOKEN"])
