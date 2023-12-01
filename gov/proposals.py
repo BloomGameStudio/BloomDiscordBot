@@ -2,7 +2,15 @@ import discord
 import textwrap
 import random
 import os
+import configparser
 
+# Load configuration
+config = configparser.ConfigParser()
+config.read('config.ini')  
+
+# Global vars
+current_governance_id = config.getint('ID_START_VALUES', 'governance_id')
+current_budget_id = config.getint('ID_START_VALUES', 'budget_id')
 
 # Discord Client Setup
 intents = discord.Intents.default()
@@ -28,15 +36,21 @@ new_proposal_emoji = "💡"
 
 proposals = []
 
+def get_next_governance_id():
+    global current_governance_id
+    current_governance_id += 1
+    return current_governance_id
 
-# QUESTION: Should these be incremental, instead of random?
+def get_next_budget_id():
+    global current_budget_id
+    current_budget_id += 1
+    return current_budget_id
+
 def get_governance_id():
-    return random.randint(10, 100)
-
+    return current_governance_id
 
 def get_budget_id():
-    return random.randint(10, 100)
-
+    return current_budget_id
 
 @client.event
 async def on_message(message):
@@ -51,7 +65,7 @@ async def on_message(message):
 
     if message.content.startswith("!vote_draft") or message.content.startswith("!v"):
         msg = f"Would you like to work on an existing draft or a new one? existing drafts are:"
-
+       
         await message.channel.send(msg)
 
         for proposal in proposals:
@@ -113,23 +127,23 @@ async def on_reaction_add(reaction, user):
 
         while True:
             if change_selection == "title":
-                await channel.send("What is be the new title?")
+                await channel.send("What will be the new title?")
                 change_answer = await client.wait_for("message", check=check)
                 edit_proposal["name"] = change_answer.content
 
             if change_selection == "type":
-                await channel.send("What is be the new type?")
+                await channel.send("What will be the new type?")
                 change_answer = await client.wait_for("message", check=check)
                 edit_proposal["type"] = change_answer.content
 
             if change_selection == "abstract":
-                await channel.send("What is be the new abstract?")
+                await channel.send("What will be the new abstract?")
                 change_answer = await client.wait_for("message", check=check)
-
+                
                 edit_proposal["abstract"] = change_answer.content
 
             if change_selection == "background":
-                await channel.send("What is be the new background?")
+                await channel.send("What will be the new background?")
                 change_answer = await client.wait_for("message", check=check)
                 edit_proposal["background"] = change_answer.content
 
@@ -194,7 +208,7 @@ async def on_reaction_add(reaction, user):
 
         if proposal["type"].lower() == "budget":
             title = f"**Bloom Budget Proposal (BBP) #{get_budget_id()} {name.content}**"
-
+       
         else:
             title = f"**Topic/Vote {get_governance_id()}: {name.content}**"
 
@@ -229,12 +243,15 @@ async def publish_draft(draft):
         print("Error: Channel not found.")
         return
 
-    # Create the message content using the draft information
+    # Increment the IDs only when publishing
     if draft["type"].lower() == "budget":
+        current_budget_id = get_next_budget_id()
         title = f"**Bloom Budget Proposal (BBP) #{get_budget_id()} {draft['name']}**"
     else:
+        current_governance_id = get_next_governance_id()
         title = f"**Topic/Vote {get_governance_id()}: {draft['name']}**"
 
+    # Create the message content using the draft information
     msg = f"""
     {title}
 
