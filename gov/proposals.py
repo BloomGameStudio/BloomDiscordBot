@@ -3,14 +3,15 @@ import textwrap
 import random
 import os
 import configparser
+import asyncio
 
 # Load configuration
 config = configparser.ConfigParser()
 config.read('config.ini')  
 
-# Global vars
 current_governance_id = config.getint('ID_START_VALUES', 'governance_id')
 current_budget_id = config.getint('ID_START_VALUES', 'budget_id')
+ongoing_votes = {}
 
 # Discord Client Setup
 intents = discord.Intents.default()
@@ -243,14 +244,13 @@ async def publish_draft(draft):
         print("Error: Channel not found.")
         return
 
-    # Increment the IDs only when publishing
     if draft["type"].lower() == "budget":
         current_budget_id = get_next_budget_id()
         title = f"**Bloom Budget Proposal (BBP) #{get_budget_id()} {draft['name']}**"
     else:
         current_governance_id = get_next_governance_id()
         title = f"**Topic/Vote {get_governance_id()}: {draft['name']}**"
-
+  
     # Create the message content using the draft information
     msg = f"""
     {title}
@@ -268,9 +268,50 @@ async def publish_draft(draft):
     Vote will conclude in 48h from now.
     """
 
-    # Send the draft message to the specified channel
-    await channel.send(textwrap.dedent(msg))
+    vote_message = await channel.send(textwrap.dedent(msg))
 
-    print(f"Draft '{draft['name']}' published successfully.")
+    # Store the vote message ID and relevant information
+    ongoing_votes[vote_message.id] = {
+        "draft": draft,
+        "end_time": asyncio.get_event_loop().time() + 48 * 3600,  # 48 hours in seconds
+        "yes_count": 0,
+        "reassess_count": 0,
+        "abstain_count": 0,
+    }
+
+    # Start the timer coroutine
+    asyncio.create_task(vote_timer(vote_message.id))
+
+
+async def vote_timer(message_id):
+    # Sleep until the vote ends
+    await asyncio.sleep(ongoing_votes[message_id]["end_time"] - asyncio.get_event_loop().time())
+
+    # Count the reactions
+    vote_message = await client.get_channel(int(os.environ["POST_CHANNEL_ID"])).fetch_message(message_id)
+    for reaction in vote_message.reactions:
+    # Check if the bot's reaction is present (not needed in this case)
+    
+        if str(reaction.emoji) == "👍":
+            ongoing_votes[message_id]["yes_count"] = reaction.count
+        elif str(reaction.emoji) == "<:bulby_sore:1127463114481356882>":
+            ongoing_votes[message_id]["reassess_count"] = reaction.count
+        elif str(reaction.emoji) == "<:pepe_angel:1161835636857241733>":
+            ongoing_votes[message_id]["abstain_count"] = reaction.count
+
+    # Check the result and post it
+    result_message = f"Vote for '{ongoing_votes[message_id]['draft']['name']}' has concluded:\n\n"
+
+    if ongoing_votes[message_id]["yes_count"] > 5: #Set to qurom needed
+        result_message += "The vote passes! :tada:"
+    else:
+        result_message += "The vote fails. :disappointed:"
+
+    result_message += f"\n\nYes: {ongoing_votes[message_id]['yes_count']}\nReassess: {ongoing_votes[message_id]['reassess_count']}\nAbstain: {ongoing_votes[message_id]['abstain_count']}"
+
+    await client.get_channel(int(os.environ["POST_CHANNEL_ID"])).send(result_message)
+
+    # Remove the vote from ongoing_votes
+    del ongoing_votes[message_id]
 
 client.run(os.environ["DISCORD_BOT_TOKEN"])
