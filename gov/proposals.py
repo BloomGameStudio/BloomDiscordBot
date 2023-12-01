@@ -60,29 +60,27 @@ async def on_message(message):
         await message.channel.send(f"{new_proposal_emoji} New")
 
     if message.content.startswith("!publish_draft"):
-        await message.channel.send("Sure! Here are the existing drafts:")
-        for proposal in proposals:
-            await message.channel.send(f"📝 {proposal['name']}")
+        # Split the message content
+        split_content = message.content.split("!publish_draft ", 1)
 
-        # Extract the draft name from the message
-        draft_name = message.content.split("!publish_draft ", 1)[1].strip()
+        # Check if there are elements after splitting
+        if len(split_content) > 1:
+            draft_name = split_content[1].strip()
 
-        # Find the draft with the specified name
-        draft_to_publish = next(
-            (item for item in proposals if item["name"].strip() == draft_name),
-            None,
-        )
+            # Find the draft with the specified name
+            draft_to_publish = next(
+                (item for item in proposals if item["name"].strip() == draft_name),
+                None,
+            )
 
-        if draft_to_publish:
-            await message.channel.send(f"Publishing draft: {draft_to_publish['name']}")
-
-            # Implement your logic to publish the draft
-            await publish_draft(draft_to_publish)
-
-            # Remove the published draft from the list
-            proposals.remove(draft_to_publish)
+            if draft_to_publish:
+                await message.channel.send(f"Publishing draft: {draft_to_publish['name']}")
+                await publish_draft(draft_to_publish)
+                proposals.remove(draft_to_publish)
+            else:
+                await message.channel.send(f"Draft not found: {draft_name}")
         else:
-            await message.channel.send(f"Draft not found: {draft_name}")
+            await message.channel.send("Please provide the name of the draft to publish.")
 
 @client.event
 async def on_reaction_add(reaction, user):
@@ -147,11 +145,8 @@ async def on_reaction_add(reaction, user):
 
                 if edit_proposal["type"].lower() == "budget":
                     title = f"**Bloom Budget Proposal (BBP) #{get_budget_id()} {edit_proposal['name']}**"
-
                 else:
-                    title = (
-                        f"**Topic/Vote {get_governance_id()}: {edit_proposal['name']}**"
-                    )
+                    title = f"**Topic/Vote {get_governance_id()}: {edit_proposal['name']}**"
 
                 msg = f"""
                 {title}
@@ -225,9 +220,40 @@ async def on_reaction_add(reaction, user):
 def create_budget_vote(name, abstract, background):
     pass
 
-
 async def publish_draft(draft):
-    #tbd
-    pass
+    channel_id = int(os.environ["POST_CHANNEL_ID"])
+    print(f"{channel_id}")
+    channel = client.get_channel(channel_id)
+
+    if not channel:
+        print("Error: Channel not found.")
+        return
+
+    # Create the message content using the draft information
+    if draft["type"].lower() == "budget":
+        title = f"**Bloom Budget Proposal (BBP) #{get_budget_id()} {draft['name']}**"
+    else:
+        title = f"**Topic/Vote {get_governance_id()}: {draft['name']}**"
+
+    msg = f"""
+    {title}
+
+    __**Abstract**__
+    {draft["abstract"]}
+
+    **__Background__**
+    {draft["background"]}
+
+    ** :thumbsup: Yes**
+    ** <:bulby_sore:1127463114481356882> Reassess**
+    ** <:pepe_angel:1161835636857241733> Abstain**
+
+    Vote will conclude in 48h from now.
+    """
+
+    # Send the draft message to the specified channel
+    await channel.send(textwrap.dedent(msg))
+
+    print(f"Draft '{draft['name']}' published successfully.")
 
 client.run(os.environ["DISCORD_BOT_TOKEN"])
