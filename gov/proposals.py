@@ -64,7 +64,7 @@ async def on_message(message):
     for proposal in proposals:
         fmt_proposals += f"📝 {proposal['name']}\n"
 
-    if message.content.startswith("!vote_draft") or message.content.startswith("!v"):
+    if message.content.startswith("$vote_draft") or message.content.startswith("!v"):
         msg = f"Would you like to work on an existing draft or a new one? existing drafts are:"
        
         await message.channel.send(msg)
@@ -74,9 +74,9 @@ async def on_message(message):
 
         await message.channel.send(f"{new_proposal_emoji} New")
 
-    if message.content.startswith("!publish_draft"):
+    if message.content.startswith("$publish_draft"):
         # Split the message content
-        split_content = message.content.split("!publish_draft ", 1)
+        split_content = message.content.split("$publish_draft ", 1)
 
         # Check if there are elements after splitting
         if len(split_content) > 1:
