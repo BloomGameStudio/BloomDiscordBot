@@ -64,7 +64,7 @@ async def on_message(message):
     for proposal in proposals:
         fmt_proposals += f"📝 {proposal['name']}\n"
 
-    if message.content.startswith("$vote_draft") or message.content.startswith("!v"):
+    if message.content.startswith("$vote_draft") or message.content.startswith("$v"):
         msg = f"Would you like to work on an existing draft or a new one? existing drafts are:"
        
         await message.channel.send(msg)
