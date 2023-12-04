@@ -121,10 +121,10 @@ async def on_reaction_add(reaction, user):
 
         if edit_proposal:
             await reaction.message.channel.send(f"You are editing: {edit_proposal['name']}")
-            await reaction.message.channel.send("**Draft Details:**")
-            await reaction.message.channel.send(f"**Title:** {edit_proposal['name']}")
-            await reaction.message.channel.send(f"**Abstract:** {edit_proposal['abstract']}")
-            await reaction.message.channel.send(f"**Background:** {edit_proposal['background']} ")
+            await reaction.message.channel.send("**Draft Details:**\n"
+                                       f"**Title:** {edit_proposal['name']}\n"
+                                       f"**Abstract:** {edit_proposal['abstract']}\n"
+                                       f"**Background:** {edit_proposal['background']}\n")
 
             change_selection = await client.wait_for("message", check=check)
             change_selection = change_selection.content.lower()
@@ -178,7 +178,8 @@ async def on_reaction_add(reaction, user):
                     ** <:bulby_sore:1127463114481356882> Reassess**
                     ** <:pepe_angel:1161835636857241733> Abstain**
 
-                    Vote will conclude in 48h from now.
+                    Vote will conclude in 48h from now.\n
+                    If you wish to publish your draft proposal, please use command ``$publish_draft``.
                     """
 
                     await channel.send(textwrap.dedent(msg))
@@ -234,7 +235,8 @@ async def on_reaction_add(reaction, user):
         ** <:bulby_sore:1127463114481356882> Reassess**
         ** <:pepe_angel:1161835636857241733> Abstain**
 
-        Vote will conclude in 48h from now.
+        Vote will conclude in 48h from now. \n
+        If you wish to publish your draft proposal, please use command ``$publish_draft``
         """
 
         await channel.send(textwrap.dedent(msg))
