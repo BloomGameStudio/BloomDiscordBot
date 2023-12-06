@@ -1,7 +1,7 @@
 import discord
 import os
 from discord.ext import commands, tasks
-from emojis.emojis import *
+from emojis.emojis import emoji_id_mapping, contributors, send_dm_once, update_json_file, add_contributor
 from updates.updates import *
 from shared.shared import current_budget_id, current_governance_id
 from gov.proposals import proposals, new_proposal_emoji, publish_draft, get_governance_id, textwrap, get_budget_id
@@ -9,14 +9,15 @@ import asyncio
 
 ##TODO:
 # Fix channel posting for budget / general proposals
-# Emoji react tagg / DM
 # Review / tidy
+# Balus comment on persisting across sessions?
 
 load_dotenv()
 
 
 intents = discord.Intents.default()
 intents.message_content = True
+intents.reactions = True
 
 bot = commands.Bot(command_prefix="$", intents=intents)
 
@@ -34,16 +35,15 @@ async def on_ready():
         daily_check_events.start()
     else:
         print(f"Guild not found")
-
+    
 @bot.event
 async def on_message(message):
     for emoji_id, contributor_uid in emoji_id_mapping.items():
         contributor = next((c for c in contributors if c["uid"].lower() == contributor_uid.lower()), None)
 
         if emoji_id in message.content:
-            print(f'Emoji Found!', emoji_id)
-            await message.add_reaction(emoji_id)
-
+            print(f'Emoji Found in message!', emoji_id)
+            
             if contributor:
                 print(f'Messaging the user, {contributor["uid"]}')
                 message_link = message.jump_url
@@ -94,7 +94,7 @@ async def listcontributors(ctx):
     contributors_list = "\n".join([f"{contributor['name']} - UID: {contributor['uid']}" for contributor in contributors])
     await ctx.send("<:artifacts:1113725319011110943> **List of Contributors** <:artifacts:1113725319011110943>\n" + contributors_list)
 
-@bot.command(name='removecontributor')
+@bot.command(name='remove_contributor')
 async def removecontributor(ctx, uid_to_remove=None):
     if uid_to_remove:
         for contributor in contributors:
@@ -111,7 +111,7 @@ async def removecontributor(ctx, uid_to_remove=None):
     else:
         await ctx.send("Please provide the UID of the contributor to remove.")
 
-@bot.command(name='addcontributor')
+@bot.command(name='add_contributor')
 async def addcontributor(ctx):
     ctx.channel
 
@@ -152,7 +152,7 @@ async def on_scheduled_event_create(event):
     print(f"New scheduled event created: {event.name}")
     await notify_new_event(bot, event)
 
-@bot.command(name='listevents')
+@bot.command(name='list_events')
 async def listevents(ctx):
     guild = ctx.guild
     event_list = await check_upcoming_events(guild)
@@ -187,7 +187,7 @@ async def daily_check_events():
     else:
         print(f"Guild not found")
 
-@bot.command(name='deleteevent')
+@bot.command(name='delete_event')
 async def deleteevent(ctx, event_id: int = None):
     if event_id is None:
         await ctx.send("Please enter an event_id with this command. Example: `$deleteevent 1179241076016566272`")
@@ -210,7 +210,7 @@ async def deleteevent(ctx, event_id: int = None):
     else:
         await ctx.send(f"No event found with ID {event_id}.")
 
-@bot.command(name='bothelp')
+@bot.command(name='bot_help')
 async def help_command(ctx):
     help_message = (
         "**Here are the available commands this bot supports:**\n\n"
@@ -236,14 +236,32 @@ async def help_command(ctx):
 
 @bot.event
 async def on_reaction_add(reaction, user):
-    # The channel in which to operate in
+    #Skip reactions from the bot
+    if user == bot.user:
+        return
     channel = reaction.message.channel
 
     def check(m):
         # message author == user who added the reaction
         return m.author == user
 
-    if reaction.emoji == "📝":
+    contributor_emoji = next(
+        (emoji_id for emoji_id, contributor_uid in emoji_id_mapping.items() if str(reaction.emoji) == emoji_id),
+        
+        None
+    )
+
+    if contributor_emoji:
+        contributor = next(
+            (c for c in contributors if c["uid"].lower() == emoji_id_mapping[contributor_emoji].lower()),
+            None
+        )
+
+        if contributor:
+            message_link = reaction.message.jump_url
+            await send_dm_once(bot, contributor, message_link)
+
+    elif reaction.emoji == "📝":
         # Find/Get proposal that the user wants to edit or None
         edit_proposal = next(
             (
