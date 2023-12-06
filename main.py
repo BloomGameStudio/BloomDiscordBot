@@ -383,7 +383,7 @@ async def daily_check_events():
             formatted_events = [format_event(event) for event in event_list]
             formatted_string = "\n\n".join(formatted_events)
 
-            channel_id = int(os.getenv("GENERAL_CHAT"))
+            channel_id = int(os.getenv("GENERAL_CHANNEL_ID"))
             channel = guild.get_channel(channel_id)
 
             if channel:

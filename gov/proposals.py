@@ -76,15 +76,14 @@ async def publish_draft(draft, client):
     }
 
     # Start the timer coroutine
-    asyncio.create_task(vote_timer(vote_message.id, client))
+    asyncio.create_task(vote_timer(vote_message.id, client,channel_id))
 
-
-async def vote_timer(message_id, client):
+async def vote_timer(message_id, client, channel_id):
     # Sleep until the vote ends
     await asyncio.sleep(ongoing_votes[message_id]["end_time"] - asyncio.get_event_loop().time())
 
     # Count the reactions
-    vote_message = await client.get_channel(int(os.environ["GOVERNANCE_CHANNEL_ID"])).fetch_message(message_id)
+    vote_message = await client.get_channel(channel_id).fetch_message(message_id)
     for reaction in vote_message.reactions:
         # Check if the bot's reaction is present (not needed in this case)
 
@@ -98,14 +97,14 @@ async def vote_timer(message_id, client):
     # Check the result and post it
     result_message = f"Vote for '{ongoing_votes[message_id]['draft']['name']}' has concluded:\n\n"
 
-    if ongoing_votes[message_id]["yes_count"] > 0:  # Set to amount you need
+    if ongoing_votes[message_id]["yes_count"] > 0:  # Set to the amount you need
         result_message += "The vote passes! :tada:"
     else:
         result_message += "The vote fails. :disappointed:"
 
     result_message += f"\n\nYes: {ongoing_votes[message_id]['yes_count']}\nReassess: {ongoing_votes[message_id]['reassess_count']}\nAbstain: {ongoing_votes[message_id]['abstain_count']}"
 
-    await client.get_channel(int(os.environ["POST_CHANNEL_ID"])).send(result_message)
+    await client.get_channel(channel_id).send(result_message)
 
     # Remove the vote from ongoing_votes
     del ongoing_votes[message_id]
