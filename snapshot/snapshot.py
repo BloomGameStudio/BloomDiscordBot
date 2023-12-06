@@ -4,6 +4,12 @@ from datetime import datetime, timezone
 
 w3 = Web3(Web3.HTTPProvider('blah blah'))
 
+#TODO:
+#Use .env for details
+#Setup test snapshot
+#Test
+
+
 address = "WALLET_ADDRESS"
 
 private_key = "PRIVATE_KEY"
