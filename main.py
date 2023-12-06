@@ -349,7 +349,7 @@ async def help_command(ctx):
     help_message = (
         "**Here are the available commands this bot supports:**\n\n"
         "```\n"
-        "$listevents: List all upcoming events.\n"
+        "$list_events: List all upcoming events.\n"
         "```\n"
         "```\n"
         "$delete_event [event_id]: Delete an event with the specified ID.\n"
@@ -364,6 +364,16 @@ async def help_command(ctx):
         "```\n"
         "$remove_contributor: Allows you to remove a contributor; you must provide a contributor's UID with this command\n"
         "```\n"
+        "```\n"
+        "$publish_draft: Allows you to publish a draft and start a vote coutdown."
+        "```\n"
+        "```\n"
+        "$v or $vote_draft: Ällows you to start drafting a proposal. These can be edited by using the same command and reacting with 📝"
+        "```\n"
+        "```\n"
+        "$bot_help: This will give you the list of commands available.\n"
+        "```\n"
+        "This bot will also DM contributors if you react to a message with their respective emoji, or include it in a message"
     )
 
     await ctx.send(help_message)
@@ -371,7 +381,7 @@ async def help_command(ctx):
 #Bot tasks
 
 # This may have its own issues if the bot is restarted
-@tasks.loop(minutes=2)
+@tasks.loop(minutes=20)
 async def daily_check_events():
     guild_id = int(os.getenv("GUILD_ID"))
     guild = bot.get_guild(guild_id)
