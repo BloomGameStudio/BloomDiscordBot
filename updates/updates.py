@@ -30,7 +30,7 @@ async def notify_new_event(bot, event):
         event = await guild.fetch_scheduled_event(event.id)
         formatted_event = format_event(event)
 
-        channel_id = int(os.getenv("CHANNEL_ID"))
+        channel_id = int(os.getenv("GENERAL_CHANNEL_ID"))
         channel = guild.get_channel(channel_id)
 
         if channel:
