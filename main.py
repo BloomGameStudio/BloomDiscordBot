@@ -6,11 +6,7 @@ from updates.updates import *
 from gov.proposals import proposals, new_proposal_emoji, publish_draft, get_governance_id, textwrap, get_budget_id
 import asyncio
 
-##TODO:
-# Review / tidy
-
 load_dotenv()
-
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -399,8 +395,5 @@ async def daily_check_events():
             print("No upcoming events in the next 24 hours.")
     else:
         print(f"Guild not found")
-
-
-
 
 bot.run(os.getenv('DISCORD_BOT_TOKEN'))
