@@ -3,14 +3,11 @@ import os
 from discord.ext import commands, tasks
 from emojis.emojis import emoji_id_mapping, contributors, send_dm_once, update_json_file, add_contributor
 from updates.updates import *
-from shared.shared import current_budget_id, current_governance_id
 from gov.proposals import proposals, new_proposal_emoji, publish_draft, get_governance_id, textwrap, get_budget_id
 import asyncio
 
 ##TODO:
-# Fix channel posting for budget / general proposals
 # Review / tidy
-# Balus comment on persisting across sessions?
 
 load_dotenv()
 
@@ -21,11 +18,14 @@ intents.reactions = True
 
 bot = commands.Bot(command_prefix="$", intents=intents)
 
+#Bot events
+
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user.name} ({bot.user.id})')
     await bot.change_presence(activity=discord.Game(name="Watching you sleep"))
 
+    os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'emojis'))
     guild_id = int(os.getenv("GUILD_ID"))
     guild = bot.get_guild(guild_id)
 
@@ -60,179 +60,10 @@ async def on_message(message):
 
     await bot.process_commands(message)
 
-@bot.command(name='vote_draft', aliases=['v'], pass_context=True)
-async def votedraft(ctx):
-
-    if ctx.channel.id != int(os.getenv('GOVERNANCE_TALK')):
-        await ctx.send("This command can only be used in the Governance talk channel")
-        return
-    msg = "Would you like to work on an existing draft or a new one? Existing drafts are:"
-
-    await ctx.send(msg)
-
-    for proposal in proposals:
-        await ctx.send(f"📝 {proposal['name']}")
-
-    await ctx.send(f"{new_proposal_emoji} New")
-
-@bot.command(name='publish_draft')
-async def publishdraft(ctx, *, draft_name):
-    draft_to_publish = next(
-        (item for item in proposals if item["name"].strip() == draft_name.strip()),
-        None,
-    )
-
-    if draft_to_publish:
-        await ctx.send(f"Publishing draft: {draft_to_publish['name']}")
-        await publish_draft(draft_to_publish, bot)
-        proposals.remove(draft_to_publish)
-    else:
-        await ctx.send(f"Draft not found: {draft_name}")
-
-@bot.command(name='contributors')
-async def listcontributors(ctx):
-    contributors_list = "\n".join([f"{contributor['name']} - UID: {contributor['uid']}" for contributor in contributors])
-    await ctx.send("<:artifacts:1113725319011110943> **List of Contributors** <:artifacts:1113725319011110943>\n" + contributors_list)
-
-@bot.command(name='remove_contributor')
-async def removecontributor(ctx, uid_to_remove=None):
-    if uid_to_remove:
-        for contributor in contributors:
-            if contributor["uid"] == uid_to_remove:
-                emoji_id_to_remove = next((emoji_id for emoji_id, c in emoji_id_mapping.items() if c == contributor), None)
-                if emoji_id_to_remove:
-                    del emoji_id_mapping[emoji_id_to_remove]
-                contributors.remove(contributor)
-                update_json_file()
-                print(f"Contributor {contributor['name']} removed successfully!")
-                await ctx.send(f"Contributor {contributor['name']} removed successfully!")
-                return
-        await ctx.send("Contributor not found.")
-    else:
-        await ctx.send("Please provide the UID of the contributor to remove.")
-
-@bot.command(name='add_contributor')
-async def addcontributor(ctx):
-    ctx.channel
-
-    await ctx.send("**To add a contributor, provide the following information:**\n"
-                   "\n"
-                   "**1. Name**\n"
-                   "**2. User ID (UID)**\n"
-                   "**3. Emoji ID**\n"
-                   "**Example:** `Sarahtonein 123456789012345678 <:sarah:123456789>`")
-
-    def check(msg):
-        return msg.author == ctx.author and msg.channel == ctx.channel
-
-    try:
-        response = await bot.wait_for('message', check=check, timeout=60)
-        inputs = response.content.split()
-        if len(inputs) == 3:
-            name, uid, emoji_id = inputs
-
-            # Check if the UID already exists in contributors
-            existing_contributor = next((c for c in contributors if c["uid"].lower() == uid.lower()), None)
-
-            if existing_contributor:
-                print(f'Contributor {existing_contributor["name"]} already exists')
-                await ctx.send(f"Contributor {existing_contributor['name']} already exists")
-            else:
-                # UID doesn't exist, call add_contributor
-                new_contributor = add_contributor(name, uid, emoji_id)
-                print(f'New contributor added:', name, uid)
-                await ctx.send(f"Contributor {new_contributor['name']} added successfully!")
-        else:
-            await ctx.send("Invalid input. Please provide all required information.")
-    except asyncio.TimeoutError:
-        await ctx.send("Timeout. Please run the command again.")
-
 @bot.event
 async def on_scheduled_event_create(event):
     print(f"New scheduled event created: {event.name}")
     await notify_new_event(bot, event)
-
-@bot.command(name='list_events')
-async def listevents(ctx):
-    guild = ctx.guild
-    event_list = await check_upcoming_events(guild)
-    formatted_events = [format_event(event) for event in event_list]
-    formatted_string = "\n\n".join(formatted_events)
-
-    await ctx.send(f"🗓️**All Events**🗓️\n{formatted_string}")
-
-# This may have its own issues if the bot is restarted
-@tasks.loop(minutes=2)
-async def daily_check_events():
-    guild_id = int(os.getenv("GUILD_ID"))
-    guild = bot.get_guild(guild_id)
-
-    if guild:
-        event_list = await check_upcoming_events(guild, time_range=24 * 3600)
-
-        if event_list:
-            formatted_events = [format_event(event) for event in event_list]
-            formatted_string = "\n\n".join(formatted_events)
-
-            channel_id = int(os.getenv("CHANNEL_ID"))
-            channel = guild.get_channel(channel_id)
-
-            if channel:
-                # Tag @here and send the message
-                await channel.send(f"<:inevitable_bloom:1178256658741346344> **Upcoming Events in the Next 24 Hours - here** <:inevitable_bloom:1178256658741346344> \n{formatted_string}")
-            else:
-                print(f"Event channel not found")
-        else:
-            print("No upcoming events in the next 24 hours.")
-    else:
-        print(f"Guild not found")
-
-@bot.command(name='delete_event')
-async def deleteevent(ctx, event_id: int = None):
-    if event_id is None:
-        await ctx.send("Please enter an event_id with this command. Example: `$deleteevent 1179241076016566272`")
-        return
-
-    guild = ctx.guild
-
-    try:
-        event_id = int(event_id)
-    except ValueError:
-        await ctx.send("Invalid event_id. Please provide a valid integer. Use $listevents to get a list of events")
-        return
-
-    event = guild.get_scheduled_event(event_id)
-
-    if event:
-        # Delete the event
-        await event.delete()
-        await ctx.send(f"Event with ID {event_id} has been deleted 🗑️")
-    else:
-        await ctx.send(f"No event found with ID {event_id}.")
-
-@bot.command(name='bot_help')
-async def help_command(ctx):
-    help_message = (
-        "**Here are the available commands this bot supports:**\n\n"
-        "```\n"
-        "$listevents: List all upcoming events.\n"
-        "```\n"
-        "```\n"
-        "$deleteevent [event_id]: Delete an event with the specified ID.\n"
-        "```\n"
-        "```\n"
-        "$contributors: List all stored contributors, Name, UID.\n"
-        "```\n"
-        "```\n"
-        "$addcontributor: Allows you to add a contributor to stored contributors\n"
-        "  you provide the following after the bot responds: name, UID, EmojiID\n"
-        "```\n"
-        "```\n"
-        "$removecontributor: Allows you to remove a contributor; you must provide a contributor's UID with this command\n"
-        "```\n"
-    )
-
-    await ctx.send(help_message)
 
 @bot.event
 async def on_reaction_add(reaction, user):
@@ -395,6 +226,181 @@ async def on_reaction_add(reaction, user):
         """
 
         await channel.send(textwrap.dedent(msg))
+
+#Bot commands
+
+@bot.command(name='vote_draft', aliases=['v'], pass_context=True)
+async def votedraft(ctx):
+
+    if ctx.channel.id != int(os.getenv('GOVERNANCE_TALK')):
+        await ctx.send("This command can only be used in the Governance talk channel")
+        return
+    msg = "Would you like to work on an existing draft or a new one? Existing drafts are:"
+
+    await ctx.send(msg)
+
+    for proposal in proposals:
+        await ctx.send(f"📝 {proposal['name']}")
+
+    await ctx.send(f"{new_proposal_emoji} New")
+
+@bot.command(name='publish_draft')
+async def publishdraft(ctx, *, draft_name):
+    draft_to_publish = next(
+        (item for item in proposals if item["name"].strip() == draft_name.strip()),
+        None,
+    )
+
+    if draft_to_publish:
+        await ctx.send(f"Publishing draft: {draft_to_publish['name']}")
+        await publish_draft(draft_to_publish, bot)
+        proposals.remove(draft_to_publish)
+    else:
+        await ctx.send(f"Draft not found: {draft_name}")
+
+@bot.command(name='contributors')
+async def listcontributors(ctx):
+    contributors_list = "\n".join([f"{contributor['name']} - UID: {contributor['uid']}" for contributor in contributors])
+    await ctx.send("<:artifacts:1113725319011110943> **List of Contributors** <:artifacts:1113725319011110943>\n" + contributors_list)
+
+@bot.command(name='remove_contributor')
+async def removecontributor(ctx, uid_to_remove=None):
+    if uid_to_remove:
+        for contributor in contributors:
+            if contributor["uid"] == uid_to_remove:
+                emoji_id_to_remove = next((emoji_id for emoji_id, c in emoji_id_mapping.items() if c == contributor), None)
+                if emoji_id_to_remove:
+                    del emoji_id_mapping[emoji_id_to_remove]
+                contributors.remove(contributor)
+                update_json_file()
+                print(f"Contributor {contributor['name']} removed successfully!")
+                await ctx.send(f"Contributor {contributor['name']} removed successfully!")
+                return
+        await ctx.send("Contributor not found.")
+    else:
+        await ctx.send("Please provide the UID of the contributor to remove.")
+
+@bot.command(name='add_contributor')
+async def addcontributor(ctx):
+    ctx.channel
+
+    await ctx.send("**To add a contributor, provide the following information:**\n"
+                   "\n"
+                   "**1. Name**\n"
+                   "**2. User ID (UID)**\n"
+                   "**3. Emoji ID**\n"
+                   "**Example:** `Sarahtonein 123456789012345678 <:sarah:123456789>`")
+
+    def check(msg):
+        return msg.author == ctx.author and msg.channel == ctx.channel
+
+    try:
+        response = await bot.wait_for('message', check=check, timeout=60)
+        inputs = response.content.split()
+        if len(inputs) == 3:
+            name, uid, emoji_id = inputs
+
+            # Check if the UID already exists in contributors
+            existing_contributor = next((c for c in contributors if c["uid"].lower() == uid.lower()), None)
+
+            if existing_contributor:
+                print(f'Contributor {existing_contributor["name"]} already exists')
+                await ctx.send(f"Contributor {existing_contributor['name']} already exists")
+            else:
+                # UID doesn't exist, call add_contributor
+                new_contributor = add_contributor(name, uid, emoji_id)
+                print(f'New contributor added:', name, uid)
+                await ctx.send(f"Contributor {new_contributor['name']} added successfully!")
+        else:
+            await ctx.send("Invalid input. Please provide all required information.")
+    except asyncio.TimeoutError:
+        await ctx.send("Timeout. Please run the command again.")
+
+@bot.command(name='list_events')
+async def listevents(ctx):
+    guild = ctx.guild
+    event_list = await check_upcoming_events(guild)
+    formatted_events = [format_event(event) for event in event_list]
+    formatted_string = "\n\n".join(formatted_events)
+
+    await ctx.send(f"🗓️**All Events**🗓️\n{formatted_string}")
+
+@bot.command(name='delete_event')
+async def deleteevent(ctx, event_id: int = None):
+    if event_id is None:
+        await ctx.send("Please enter an event_id with this command. Example: `$deleteevent 1179241076016566272`")
+        return
+
+    guild = ctx.guild
+
+    try:
+        event_id = int(event_id)
+    except ValueError:
+        await ctx.send("Invalid event_id. Please provide a valid integer. Use $listevents to get a list of events")
+        return
+
+    event = guild.get_scheduled_event(event_id)
+
+    if event:
+        # Delete the event
+        await event.delete()
+        await ctx.send(f"Event with ID {event_id} has been deleted 🗑️")
+    else:
+        await ctx.send(f"No event found with ID {event_id}.")
+
+@bot.command(name='bot_help')
+async def help_command(ctx):
+    help_message = (
+        "**Here are the available commands this bot supports:**\n\n"
+        "```\n"
+        "$listevents: List all upcoming events.\n"
+        "```\n"
+        "```\n"
+        "$delete_event [event_id]: Delete an event with the specified ID.\n"
+        "```\n"
+        "```\n"
+        "$contributors: List all stored contributors, Name, UID.\n"
+        "```\n"
+        "```\n"
+        "$add_contributor: Allows you to add a contributor to stored contributors\n"
+        "  you provide the following after the bot responds: name, UID, EmojiID\n"
+        "```\n"
+        "```\n"
+        "$remove_contributor: Allows you to remove a contributor; you must provide a contributor's UID with this command\n"
+        "```\n"
+    )
+
+    await ctx.send(help_message)
+
+#Bot tasks
+
+# This may have its own issues if the bot is restarted
+@tasks.loop(minutes=2)
+async def daily_check_events():
+    guild_id = int(os.getenv("GUILD_ID"))
+    guild = bot.get_guild(guild_id)
+
+    if guild:
+        event_list = await check_upcoming_events(guild, time_range=24 * 3600)
+
+        if event_list:
+            formatted_events = [format_event(event) for event in event_list]
+            formatted_string = "\n\n".join(formatted_events)
+
+            channel_id = int(os.getenv("GENERAL_CHAT"))
+            channel = guild.get_channel(channel_id)
+
+            if channel:
+                # Tag @here and send the message
+                await channel.send(f"<:inevitable_bloom:1178256658741346344> **Upcoming Events in the Next 24 Hours - here** <:inevitable_bloom:1178256658741346344> \n{formatted_string}")
+            else:
+                print(f"Event channel not found")
+        else:
+            print("No upcoming events in the next 24 hours.")
+    else:
+        print(f"Guild not found")
+
+
 
 
 bot.run(os.getenv('DISCORD_BOT_TOKEN'))
