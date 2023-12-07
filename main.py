@@ -1,12 +1,16 @@
 import discord
 import os
+import asyncio
 from discord.ext import commands, tasks
 from emojis.emojis import emoji_id_mapping, contributors, send_dm_once, update_json_file, add_contributor
-from updates.updates import *
+from updates.updates import check_upcoming_events, load_dotenv, notify_new_event, format_event
 from gov.proposals import proposals, new_proposal_emoji, publish_draft, get_governance_id, textwrap, get_budget_id
-import asyncio
+
+#Load ENV
 
 load_dotenv()
+
+#Discord Config
 
 intents = discord.Intents.default()
 intents.message_content = True
