@@ -5,13 +5,22 @@
 You will need to set the following environment variables for the bot to function as required:
 
 DISCORD_BOT_TOKEN
+
 GUILD_ID
+
 GENERAL_CHANNEL_ID
+
 GOVERNANCE_TALK_CHANNEL_ID
+
 GOVERNANCE_CHANNEL_ID
+
 GOVERNANCE_BUDGET_CHANNEL_ID
 
 Refer to the .env.example if needed.
+
+Discord.py is used, use pip install discord.py if needed.
+
+Web3 will be used when snapshot is integrated.
 
 # Help Command:
 
@@ -24,11 +33,11 @@ You can type ```$bot_help``` to get details about what commands can be used, alo
 Proposals can be drafted by utilizing various commands. 
 The drafts will automatically be posted so that you can view / make changes to it prior to posting it.
 
-When you decide to post the draft, they can request the bot to do this.
+When you decide to post the draft, you can request the bot to do this.
 
 **Commands:**
 
-The following commands can be used to creat, edit, and publish drafts.
+The following commands can be used to create, edit, and publish drafts.
 All commands start with $.
 
 **Vote Draft:**
