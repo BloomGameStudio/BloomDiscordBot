@@ -35,7 +35,7 @@ The drafts will automatically be posted so that you can view / make changes to i
 
 When you decide to post the draft, you can request the bot to do this.
 
-**Commands:**
+# Commands
 
 The following commands can be used to create, edit, and publish drafts.
 All commands start with $.
