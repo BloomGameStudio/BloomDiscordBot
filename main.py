@@ -232,7 +232,7 @@ async def on_reaction_add(reaction, user):
 @bot.command(name='vote_draft', aliases=['v'], pass_context=True)
 async def votedraft(ctx):
 
-    if ctx.channel.id != int(os.getenv('GOVERNANCE_TALK')):
+    if ctx.channel.id != int(os.getenv('GOVERNANCE_TALK_CHANNEL_ID')):
         await ctx.send("This command can only be used in the Governance talk channel")
         return
     msg = "Would you like to work on an existing draft or a new one? Existing drafts are:"
