@@ -69,7 +69,7 @@ async def publish_draft(draft, client):
     # Store the vote message ID and relevant information
     ongoing_votes[vote_message.id] = {
         "draft": draft,
-        "end_time": asyncio.get_event_loop().time() + 1 * 60,  # 48 hours in seconds
+        "end_time": asyncio.get_event_loop().time() + 60 * 60 * 48,  # 48 hours in seconds
         "yes_count": 0,
         "reassess_count": 0,
         "abstain_count": 0,
@@ -97,7 +97,7 @@ async def vote_timer(message_id, client, channel_id):
     # Check the result and post it
     result_message = f"Vote for '{ongoing_votes[message_id]['draft']['name']}' has concluded:\n\n"
 
-    if ongoing_votes[message_id]["yes_count"] > 0:  # Set to the amount you need
+    if ongoing_votes[message_id]["yes_count"] > 5:  # Set to the amount you need, this was arbitrarily picked
         result_message += "The vote passes! :tada:"
     else:
         result_message += "The vote fails. :disappointed:"

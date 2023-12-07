@@ -385,7 +385,7 @@ async def help_command(ctx):
 #Bot tasks
 
 # This may have its own issues if the bot is restarted
-@tasks.loop(minutes=20)
+@tasks.loop(hours=24)
 async def daily_check_events():
     guild_id = int(os.getenv("GUILD_ID"))
     guild = bot.get_guild(guild_id)
