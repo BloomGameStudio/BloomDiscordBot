@@ -1,6 +1,7 @@
 import textwrap
 import os
 import asyncio
+from datetime import timezone, timedelta, datetime
 from shared.shared import current_budget_id, current_governance_id
 
 new_proposal_emoji = "💡"
@@ -47,6 +48,11 @@ async def publish_draft(draft, client):
     if not channel:
         print(f"Error: Channel with ID {channel_id} not found.")
         return
+    end_time = datetime.utcnow() + timedelta(hours=48)
+
+    #Format end time using Discord Syntax
+    formatted_end_time = end_time.strftime('<t:%s:f>' % str(int(end_time.timestamp())))
+    
     # Create the message content using the draft information
     msg = f"""
     {title}
@@ -61,7 +67,7 @@ async def publish_draft(draft, client):
     ** <:bulby_sore:1127463114481356882> Reassess**
     ** <:pepe_angel:1161835636857241733> Abstain**
 
-    Vote will conclude in 48h from now.
+    Vote will conclude at {formatted_end_time}.
     """
 
     vote_message = await channel.send(textwrap.dedent(msg))

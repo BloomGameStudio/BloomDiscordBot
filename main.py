@@ -1,6 +1,7 @@
 import discord
 import os
 import asyncio
+from datetime import datetime, timezone, timedelta
 from discord.ext import commands, tasks
 from emojis.emojis import emoji_id_mapping, contributors, send_dm_once, update_json_file, add_contributor
 from updates.updates import check_upcoming_events, load_dotenv, notify_new_event, format_event
@@ -151,6 +152,10 @@ async def on_reaction_add(reaction, user):
                     else:
                         title = f"**Topic/Vote {get_governance_id()}: {edit_proposal['name']}**"
 
+                    end_time = datetime.utcnow() + timedelta(hours=48)
+
+                    formatted_end_time = end_time.strftime('<t:%s:f>' % str(int(end_time.timestamp())))
+
                     msg = f"""
                     {title}
 
@@ -164,7 +169,7 @@ async def on_reaction_add(reaction, user):
                     ** <:bulby_sore:1127463114481356882> Reassess**
                     ** <:pepe_angel:1161835636857241733> Abstain**
 
-                    Vote will conclude in 48h from now.\n
+                    Vote will conclude at {formatted_end_time}. \n
                     If you wish to publish your draft proposal, please use command ``$publish_draft``.
                     """
 
@@ -208,6 +213,10 @@ async def on_reaction_add(reaction, user):
         else:
             title = f"**Topic/Vote {get_governance_id()}: {name.content}**"
 
+        end_time = datetime.utcnow() + timedelta(hours=48)
+
+        formatted_end_time = end_time.strftime('<t:%s:f>' % str(int(end_time.timestamp())))
+
         msg = f"""
         {title}
 
@@ -221,7 +230,7 @@ async def on_reaction_add(reaction, user):
         ** <:bulby_sore:1127463114481356882> Reassess**
         ** <:pepe_angel:1161835636857241733> Abstain**
 
-        Vote will conclude in 48h from now. \n
+        Vote will conclude at {formatted_end_time} . \n
         If you wish to publish your draft proposal, please use command ``$publish_draft``
         """
 
