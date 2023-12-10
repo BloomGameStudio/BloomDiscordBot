@@ -165,7 +165,7 @@ async def on_reaction_add(reaction, user):
                     **__Background__**
                     {edit_proposal["background"]}
 
-                    ** <a:rave_kirby:1161841544291164252> Yes**
+                    ** <:inevitable_bloom:1178256658741346344> Yes**
                     ** <:bulby_sore:1127463114481356882> Reassess**
                     ** <:pepe_angel:1161835636857241733> Abstain**
 
@@ -226,7 +226,7 @@ async def on_reaction_add(reaction, user):
         **__Background__**
         {background.content}
 
-        ** <a:rave_kirby:1161841544291164252> Yes**
+        ** <:inevitable_bloom:1178256658741346344> Yes**
         ** <:bulby_sore:1127463114481356882> Reassess**
         ** <:pepe_angel:1161835636857241733> Abstain**
 
