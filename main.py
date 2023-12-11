@@ -138,7 +138,8 @@ async def on_reaction_add(reaction, user):
                     edit_proposal["background"] = change_answer.content
 
                 await channel.send(
-                    "You can edit further by repeating the previous step. If you are finished type 'save' without the single quotes"
+                    "You can edit further by repeating the previous step. If you are finished type 'save' without the single quotes \n"
+                    "If you wish to publish your draft, please use command $publish_draft"
                 )
 
                 change_selection = await bot.wait_for("message", check=check)
@@ -231,6 +232,7 @@ async def on_reaction_add(reaction, user):
         ** <:pepe_angel:1161835636857241733> Abstain**
 
         Vote will conclude at {formatted_end_time} . \n
+        
         If you wish to publish your draft proposal, please use command ``$publish_draft``
         """
 
