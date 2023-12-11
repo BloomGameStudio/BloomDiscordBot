@@ -1,0 +1,11 @@
+version: '1'
+services:
+  bot:
+    image: ghcr.io/bloomgamestudio/BloomDiscordBot:main
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - bloom_discord_bot:/main
+
+volumes:
+  bloom_discord_bot:
