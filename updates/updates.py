@@ -2,19 +2,44 @@ from datetime import datetime, timezone, timedelta
 from dotenv import load_dotenv
 import os
 import asyncio
+import json
 
 load_dotenv()
 
+def load_posted_events():
+    try:
+        # Assuming main.py is one level up from the updates directory
+        file_path = os.path.join(os.path.dirname(__file__), "..", "updates", "posted_events.json")
+        print(f"Loading events from: {file_path}")
+        with open(file_path, "r") as file:
+            return json.load(file)
+    except FileNotFoundError:
+        return []
+
+def save_posted_events(posted_events):
+    try:
+        # Assuming main.py is one level up from the updates directory
+        file_path = os.path.join(os.path.dirname(__file__), "..", "updates", "posted_events.json")
+        print(f"Saving events to: {file_path}")
+        with open(file_path, "w") as file:
+            json.dump(posted_events, file)
+    except Exception as e:
+        print(f"Error saving posted events: {e}")
+                
 def format_event(event):
     # Format the event start time for Discord time
     formatted_start_time = event.start_time.strftime('<t:%s>' % str(int(event.start_time.timestamp())))
+    guild_id = int(os.getenv("GUILD_ID"))
+    event_url = f"https://discord.com/events/{guild_id}/{event.id}"
 
     formatted_event = (
-        f"**Event Name:** {event.name}\n"
-        f"**Event ID:** {event.id}\n"
-        f"**Event Start Time:** {formatted_start_time}\n"
-        f"**Event Description:** {event.description}\n"
-        f"**Event Interested:** {event.user_count}"
+        f"\n"
+        f"🌺**{event.name}**🌺\n"
+        #f"**Event Start Time @ ** {formatted_start_time}\n"
+        #f"**Event Description:** {event.description}\n"
+        #f"{event.image}"
+        f"To request someones attendance, react to this message with their emoji! \n"
+        f":link:**Event Link:link: ** {event_url}\n"
     )
     return formatted_event
 

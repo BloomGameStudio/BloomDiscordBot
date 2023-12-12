@@ -4,7 +4,7 @@ import asyncio
 from datetime import datetime, timezone, timedelta
 from discord.ext import commands, tasks
 from emojis.emojis import emoji_id_mapping, contributors, send_dm_once, update_json_file, add_contributor
-from updates.updates import check_upcoming_events, load_dotenv, notify_new_event, format_event
+from updates.updates import check_upcoming_events, load_dotenv, notify_new_event, format_event, load_posted_events, save_posted_events
 from gov.proposals import proposals, new_proposal_emoji, publish_draft, get_governance_id, textwrap, get_budget_id
 
 #Load ENV
@@ -18,7 +18,6 @@ intents.message_content = True
 intents.reactions = True
 
 bot = commands.Bot(command_prefix="$", intents=intents)
-
 #Bot events
 
 @bot.event
@@ -394,10 +393,14 @@ async def help_command(ctx):
     await ctx.send(help_message)
 
 #Bot tasks
+# Global variable to keep track of the task count
+task_count = 0
 
-# This may have its own issues if the bot is restarted
-@tasks.loop(hours=24)
+@tasks.loop(minutes=1)
 async def daily_check_events():
+    global task_count
+    task_count += 1
+
     guild_id = int(os.getenv("GUILD_ID"))
     guild = bot.get_guild(guild_id)
 
@@ -405,20 +408,44 @@ async def daily_check_events():
         event_list = await check_upcoming_events(guild, time_range=24 * 3600)
 
         if event_list:
-            formatted_events = [format_event(event) for event in event_list]
-            formatted_string = "\n\n".join(formatted_events)
-
             channel_id = int(os.getenv("GENERAL_CHANNEL_ID"))
             channel = guild.get_channel(channel_id)
 
             if channel:
-                # Tag @here and send the message
-                await channel.send(f"<:inevitable_bloom:1178256658741346344> **Upcoming Events in the Next 24 Hours - here** <:inevitable_bloom:1178256658741346344> \n{formatted_string}")
+                # Check if it's the initial run or not
+                if task_count == 1:
+                    # Initial run, post events to Discord
+                    formatted_events = [format_event(event) for event in event_list]
+                    formatted_string = "\n\n".join(formatted_events)
+
+                    # Tag @here and send the message
+                    await channel.send(f"<:inevitable_bloom:1178256658741346344> **Upcoming Events in the Next 24 Hours - here** <:inevitable_bloom:1178256658741346344> \n{formatted_string}")
+
+                    # Save only the event IDs on the initial run
+                    save_posted_events([event.id for event in event_list])
+                else:
+                    # Subsequent runs, load posted events
+                    posted_events = load_posted_events()
+                    new_events = [event for event in event_list if event.id not in posted_events]
+
+                    if new_events:
+                        formatted_events = [format_event(event) for event in new_events]
+                        formatted_string = "\n\n".join(formatted_events)
+
+                        # Tag @here and send the message
+                        await channel.send(f"<:inevitable_bloom:1178256658741346344> **Upcoming Events in the Next 24 Hours - here** <:inevitable_bloom:1178256658741346344> \n{formatted_string}")
+
+                        # Update the posted_events list only for newly posted events
+                        posted_events.extend([event.id for event in new_events])
+                        save_posted_events(posted_events)
+                    else:
+                        print("No new upcoming events in the next 24 hours.")
             else:
                 print(f"Event channel not found")
         else:
             print("No upcoming events in the next 24 hours.")
     else:
         print(f"Guild not found")
+
 
 bot.run(os.getenv('DISCORD_BOT_TOKEN'))
