@@ -396,7 +396,7 @@ async def help_command(ctx):
 # Global variable to keep track of the task count
 task_count = 0
 
-@tasks.loop(minutes=1)
+@tasks.loop(hours=1)
 async def daily_check_events():
     global task_count
     task_count += 1

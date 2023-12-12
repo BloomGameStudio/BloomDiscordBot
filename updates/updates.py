@@ -25,7 +25,7 @@ def save_posted_events(posted_events):
             json.dump(posted_events, file)
     except Exception as e:
         print(f"Error saving posted events: {e}")
-                
+
 def format_event(event):
     # Format the event start time for Discord time
     formatted_start_time = event.start_time.strftime('<t:%s>' % str(int(event.start_time.timestamp())))
@@ -49,7 +49,7 @@ async def notify_new_event(bot, event):
 
     if guild:
         # Wait for 60 mins before sending the notification
-        await asyncio.sleep(60)
+        await asyncio.sleep(60 * 60)
 
         # Fetch the event again to get the updated details
         event = await guild.fetch_scheduled_event(event.id)
