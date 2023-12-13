@@ -48,7 +48,7 @@ async def notify_new_event(bot, event):
 
     if guild:
         # Wait for 60 mins before sending the notification
-        await asyncio.sleep(60 * 60)
+        await asyncio.sleep(60)
 
         # Fetch the event again to get the updated details
         event = await guild.fetch_scheduled_event(event.id)
@@ -58,8 +58,12 @@ async def notify_new_event(bot, event):
         channel = guild.get_channel(channel_id)
 
         if channel:
-            # Send the notification
-            await channel.send(f"**Newly Created Event**:\n{formatted_event}")
+            # Send the notification and capture the Message object
+            message = await channel.send(f"**Newly Created Event**:\n{formatted_event}")
+
+            # Get the message ID and print it
+            message_id = message.id
+            print(f"Message ID of the notification: {message_id}")
         else:
             print(f"Event channel not found")
     else:

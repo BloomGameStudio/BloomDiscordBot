@@ -336,12 +336,12 @@ async def listevents(ctx):
 
     # Formatting the information
     formatted_events = [
-        f"🌺**{name}**🌺\n**event_id: **{event_id}\n**Description:** {description}"
+        f"🌺 **{name}**🌺 \n**event_id: **{event_id}\n**Description:** {description}"
         for name, event_id, description in event_info_list
     ]
     formatted_string = "\n\n".join(formatted_events)
 
-    await ctx.send(f"🗓️**All Events**🗓️\n\n{formatted_string}")
+    await ctx.send(f"🗓️ **All Events**🗓️ \n\n{formatted_string}")
 
 
 @bot.command(name='delete_event')
@@ -402,7 +402,7 @@ async def help_command(ctx):
     await ctx.send(help_message)
 
 #Bot tasks
-@tasks.loop(hours=1)
+@tasks.loop(minutes=1)
 async def daily_check_events():
     guild_id = int(os.getenv("GUILD_ID"))
     guild = bot.get_guild(guild_id)
