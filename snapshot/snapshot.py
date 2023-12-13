@@ -1,41 +1,21 @@
 from web3 import Web3
-from snapshot import Snapshot
-import dotenv
-import os
+from typing import Any, Dict
+import requests  # You may need to install the 'requests' library
 
-dotenv.load_dotenv()
+class Snapshot:
+    def __init__(self, hub_url: str):
+        self.hub_url = hub_url
 
-# Connect to Ethereum node
-web3 = Web3(Web3.HTTPProvider('https://ethereum-goerli.publicnode.com'))
+    def proposal(self, web3: Web3, account: str, proposal_data: Dict[str, Any]) -> Dict[str, Any]:
+        # Implement the logic for creating a proposal here
+        # You need to interact with the Snapshot hub using requests
 
-# Ensure connection to Ethereum node is successful
-if not web3.isConnected():
-    print("Failed to connect to Ethereum goerli node")
-    exit()
+        # Example: Just print the proposal data for now
+        print("Creating Proposal:")
+        print(proposal_data)
 
-# Specify your Ethereum address
-account = os.getenv("ETH_ADDRESS")
+        # Simulate a receipt for testing
+        receipt = {'status': 'success', 'proposal_id': '123456'}
+        return receipt
 
-# Create a Snapshot instance
-snapshot = Snapshot()
-
-# Define proposal parameters
-proposal_data = {
-    'space': 'myENS.eth',
-    'type': 'single-choice',
-    'title': 'Test proposal using Snapshot.py',
-    'body': 'This is the content of the proposal',
-    'choices': ['Alice', 'Bob', 'Carol'],
-    'start': 1636984800,
-    'end': 1637244000,
-    'snapshot': 13620822,
-    'network': '1',
-    'plugins': '{}',
-    'app': 'my-app'
-}
-
-# Create a proposal
-receipt = snapshot.proposal(web3, account, proposal_data)
-
-# Print the receipt or perform other actions as needed
-print(receipt)
+    # Add more methods for interacting with the Snapshot hub if needed
