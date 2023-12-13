@@ -330,10 +330,19 @@ async def addcontributor(ctx):
 async def listevents(ctx):
     guild = ctx.guild
     event_list = await check_upcoming_events(guild)
-    formatted_events = [format_event(event) for event in event_list]
+
+    # Extracting event information
+    event_info_list = [(event.name, event.id, event.description) for event in event_list]
+
+    # Formatting the information
+    formatted_events = [
+        f"🌺**{name}**🌺\n**event_id: **{event_id}\n**Description:** {description}"
+        for name, event_id, description in event_info_list
+    ]
     formatted_string = "\n\n".join(formatted_events)
 
-    await ctx.send(f"🗓️**All Events**🗓️\n{formatted_string}")
+    await ctx.send(f"🗓️**All Events**🗓️\n\n{formatted_string}")
+
 
 @bot.command(name='delete_event')
 async def deleteevent(ctx, event_id: int = None):
