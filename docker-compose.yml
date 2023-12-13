@@ -5,7 +5,7 @@ services:
     restart: unless-stopped
     env_file: .env
     volumes:
-      - bloom_discord_bot:/main
+      - data:/main
 
 volumes:
-  bloom_discord_bot:
+  data:

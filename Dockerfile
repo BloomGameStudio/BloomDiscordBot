@@ -11,6 +11,8 @@ COPY Pipfile .
 COPY Pipfile.lock .
 RUN pipenv install --deploy 
 
+# Create a volume directory
+VOLUME /main/data
 
 # Install application into container
 COPY . .
