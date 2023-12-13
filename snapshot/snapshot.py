@@ -10,18 +10,18 @@ web3 = Web3(Web3.HTTPProvider('https://ethereum-goerli.publicnode.com'))
 
 # Ensure connection to Ethereum node is successful
 if not web3.isConnected():
-    print("Failed to connect to Ethereum node")
+    print("Failed to connect to Ethereum goerli node")
     exit()
 
 # Specify your Ethereum address
-account = os.getenv("ETH_ADDRESs")
+account = os.getenv("ETH_ADDRESS")
 
 # Create a Snapshot instance
 snapshot = Snapshot()
 
 # Define proposal parameters
 proposal_data = {
-    'space': 'retrogress.eth',
+    'space': 'myENS.eth',
     'type': 'single-choice',
     'title': 'Test proposal using Snapshot.py',
     'body': 'This is the content of the proposal',
