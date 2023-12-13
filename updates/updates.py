@@ -28,7 +28,6 @@ def save_posted_events(posted_events):
 
 def format_event(event):
     # Format the event start time for Discord time
-    formatted_start_time = event.start_time.strftime('<t:%s>' % str(int(event.start_time.timestamp())))
     guild_id = int(os.getenv("GUILD_ID"))
     event_url = f"https://discord.com/events/{guild_id}/{event.id}"
 
