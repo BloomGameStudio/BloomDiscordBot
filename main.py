@@ -393,59 +393,57 @@ async def help_command(ctx):
     await ctx.send(help_message)
 
 #Bot tasks
-# Global variable to keep track of the task count
-task_count = 0
-
 @tasks.loop(hours=1)
 async def daily_check_events():
-    global task_count
-    task_count += 1
-
     guild_id = int(os.getenv("GUILD_ID"))
     guild = bot.get_guild(guild_id)
 
     if guild:
         event_list = await check_upcoming_events(guild, time_range=24 * 3600)
 
-        if event_list:
-            channel_id = int(os.getenv("GENERAL_CHANNEL_ID"))
-            channel = guild.get_channel(channel_id)
-
-            if channel:
-                # Check if it's the initial run or not
-                if task_count == 1:
-                    # Initial run, post events to Discord
-                    formatted_events = [format_event(event) for event in event_list]
-                    formatted_string = "\n\n".join(formatted_events)
-
-                    # Tag @here and send the message
-                    await channel.send(f"<:inevitable_bloom:1178256658741346344> **Upcoming Events in the Next 24 Hours - here** <:inevitable_bloom:1178256658741346344> \n{formatted_string}")
-
-                    # Save only the event IDs on the initial run
-                    save_posted_events([event.id for event in event_list])
-                else:
-                    # Subsequent runs, load posted events
-                    posted_events = load_posted_events()
-                    new_events = [event for event in event_list if event.id not in posted_events]
-
-                    if new_events:
-                        formatted_events = [format_event(event) for event in new_events]
-                        formatted_string = "\n\n".join(formatted_events)
-
-                        # Tag @here and send the message
-                        await channel.send(f"<:inevitable_bloom:1178256658741346344> **Upcoming Events in the Next 24 Hours - here** <:inevitable_bloom:1178256658741346344> \n{formatted_string}")
-
-                        # Update the posted_events list only for newly posted events
-                        posted_events.extend([event.id for event in new_events])
-                        save_posted_events(posted_events)
-                    else:
-                        print("No new upcoming events in the next 24 hours.")
-            else:
-                print(f"Event channel not found")
-        else:
+        if not event_list:
             print("No upcoming events in the next 24 hours.")
+            return
+
+        channel_id = int(os.getenv("GENERAL_CHANNEL_ID"))
+        channel = guild.get_channel(channel_id)
+
+        if not channel:
+            print(f"Event channel not found")
+            return
+
+        # Common message part
+        common_message = f"<:inevitable_bloom:1178256658741346344> **Upcoming Events in the Next 24 Hours** <:inevitable_bloom:1178256658741346344>"
+
+        # Load posted events
+        posted_events = load_posted_events()
+
+        # Check if it's the initial run or not
+        if not posted_events:
+            # Initial run, post events to Discord
+            formatted_string = "\n".join([f"{common_message}\n:link:**Event Link:link: ** https://discord.com/events/{guild_id}/{event.id}" for event in event_list])
+
+            # Send message
+            await channel.send(formatted_string)
+
+            # Save only the event IDs on the initial run
+            save_posted_events([event.id for event in event_list])
+        else:
+            # Subsequent runs, filter out already posted events
+            new_events = [event for event in event_list if event.id not in posted_events]
+
+            if new_events:
+                formatted_string = "\n".join([f"{common_message}\n:link:**Event Link:link: ** https://discord.com/events/{guild_id}/{event.id}" for event in new_events])
+
+                # Send message
+                await channel.send(formatted_string)
+
+                # Update the posted_events list only for newly posted events
+                posted_events.extend([event.id for event in new_events])
+                save_posted_events(posted_events)
+            else:
+                print("No new upcoming events in the next 24 hours.")
     else:
         print(f"Guild not found")
-
 
 bot.run(os.getenv('DISCORD_BOT_TOKEN'))
