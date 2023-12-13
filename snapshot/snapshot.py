@@ -1,48 +1,41 @@
 from web3 import Web3
-import requests
-from datetime import datetime, timezone
+from snapshot import Snapshot
+import dotenv
+import os
 
-w3 = Web3(Web3.HTTPProvider('blah blah'))
+dotenv.load_dotenv()
 
-#TODO:
-#Use .env for details
-#Setup test snapshot
-#Test
+# Connect to Ethereum node
+web3 = Web3(Web3.HTTPProvider('https://ethereum-goerli.publicnode.com'))
 
+# Ensure connection to Ethereum node is successful
+if not web3.isConnected():
+    print("Failed to connect to Ethereum node")
+    exit()
 
-address = "WALLET_ADDRESS"
+# Specify your Ethereum address
+account = os.getenv("ETH_ADDRESs")
 
-private_key = "PRIVATE_KEY"
+# Create a Snapshot instance
+snapshot = Snapshot()
 
-snapshot_api_key = "SNAPSHOT_API_KEY"
-
-project_name = "PROJECT_NAME"
-
-#Construct the proposal
+# Define proposal parameters
 proposal_data = {
-    "space": "space.eth",
-    "type": "single-choice",
-    "title": "test proposal using snapshot.py",
-    "body": "This is the content of the proposal",
-    "choices": ["Alice", "Bob", "Carol"],
-    "start": #get current time,
-    "end": #current time +48 hours,
-    "snapshot": ,
-    "network": "1",
-    "plugins": "{}",
-    "app": "project name"
+    'space': 'retrogress.eth',
+    'type': 'single-choice',
+    'title': 'Test proposal using Snapshot.py',
+    'body': 'This is the content of the proposal',
+    'choices': ['Alice', 'Bob', 'Carol'],
+    'start': 1636984800,
+    'end': 1637244000,
+    'snapshot': 13620822,
+    'network': '1',
+    'plugins': '{}',
+    'app': 'my-app'
 }
 
-#Sign the message with the private key
+# Create a proposal
+receipt = snapshot.proposal(web3, account, proposal_data)
 
-signature = w3.eth.account.sign_message(proposal_data, private_key=privatekey)
-
-#Include the signature in the proposal data
-proposal_data["sig"] = signature.signature.hex()
-
-#Make a POST request to the Snapshot API
-url = "https://hub.snapshot.org/api/message"
-headers = {"Authorization": f"Bearer {snapshot_api_key}"}
-response = requests.post(url, json=proposal_data, headers=headers)
-
-print(response.json())
+# Print the receipt or perform other actions as needed
+print(receipt)
