@@ -1,12 +1,50 @@
 import discord
 import os
 import asyncio
+import requests
 from datetime import datetime, timezone, timedelta
 from discord.ext import commands, tasks
 from emojis.emojis import emoji_id_mapping, contributors, send_dm_once, update_json_file, add_contributor
 from updates.updates import check_upcoming_events, load_dotenv, notify_new_event, format_event, load_posted_events, save_posted_events
 from gov.proposals import proposals, new_proposal_emoji, publish_draft, get_governance_id, textwrap, get_budget_id
 from shared.shared import logging
+
+
+def get_guild_scheduled_event_users(guild_id, scheduled_event_id, limit=100, with_member=False, before=None, after=None):
+    url = f"https://discord.com/api/v10/guilds/{guild_id}/scheduled-events/{scheduled_event_id}/users"
+
+    params = {
+        'limit': limit,
+        'with_member': with_member,
+        'before': before,
+        'after': after
+    }
+
+    headers = {
+        'Authorization': 'Bot MTE3NjM5MjA2MTk5NDQwOTk5NA.G-cCG-.7CQuMqqqhQl5GluatD8QnAvzaafLZqt2-OrR_s'  # Add 'Bot' before the token
+    }
+
+    response = requests.get(url, params=params, headers=headers)
+
+    if response.status_code == 200:
+        return response.json()
+    else:
+        print(f"Error: {response.status_code} - {response.text}")
+        return None
+
+# Example usage
+async def fetch_and_send_users_for_event(bot, guild_id, event_id, channel):
+    users = get_guild_scheduled_event_users(guild_id, event_id)
+
+    if users:
+        user_mentions = [f"<@{user['user_id']}>" for user in users]
+        user_list_string = ', '.join(user_mentions)
+
+        formatted_string = (
+            f"Subscribed Users for Event: {user_list_string}\n"
+        )
+
+        await channel.send(formatted_string)
 
 #Load ENV
 
@@ -412,18 +450,18 @@ async def daily_check_events():
         event_list = await check_upcoming_events(guild, time_range=24 * 3600)
 
         if not event_list:
-            print("No upcoming events in the next 24 hours.")
+            logging.info("No upcoming events in the next 24 hours.")
             return
 
         channel_id = int(os.getenv("GENERAL_CHANNEL_ID"))
         channel = guild.get_channel(channel_id)
 
         if not channel:
-            print(f"Event channel not found")
+            logging.warning("Event channel not found")
             return
 
         # Common message part
-        common_message = f"<:inevitable_bloom:1178256658741346344> **Upcoming Events in the Next 24 Hours** <:inevitable_bloom:1178256658741346344>"
+        common_message = f"<:inevitable_bloom:1178256658741346344> **Upcoming Events in the Next 24 Hours** <:inevitable_bloom:1178256658741346344> \n"
 
         # Load posted events
         posted_events = load_posted_events()
@@ -432,13 +470,17 @@ async def daily_check_events():
         if not posted_events:
             # Initial run, post events to Discord
             for event in event_list:
-                interested_users = await event.interested_users()
-                formatted_event = format_event(event, interested_users)
+                # Fetch subscribed users for each event
+                users = get_guild_scheduled_event_users(guild_id, event.id)
+                user_mentions = [f"<@{user['user_id']}>" for user in users]
+                user_list_string = ', '.join(user_mentions)
 
                 formatted_string = (
+                    f"\n"
                     f"{common_message}\n"
-                    f":link:**Event Link:link: ** https://discord.com/events/{guild_id}/{event.id}\n"
-                    f"{formatted_event}"
+                    f":link: **Event Link https://discord.com/events/{guild_id}/{event.id} :link:**\n"
+                    f"{user_list_string}\n"
+                    f"\n"
                 )
 
                 # Send message
@@ -451,13 +493,16 @@ async def daily_check_events():
 
             if new_events:
                 for event in new_events:
-                    interested_users = await event.interested_users()
-                    formatted_event = format_event(event, interested_users)
+                    # Fetch subscribed users for each event
+                    users = get_guild_scheduled_event_users(guild_id, event.id)
+                    user_mentions = [f"<@{user['user_id']}>" for user in users]
+                    user_list_string = ', '.join(user_mentions)
 
                     formatted_string = (
                         f"{common_message}\n"
-                        f":link:**Event Link:link: ** https://discord.com/events/{guild_id}/{event.id}\n"
-                        f"{formatted_event}"
+                        f":link: **Event Link https://discord.com/events/{guild_id}/{event.id} :link:**\n"
+                        f"{user_list_string}\n"
+                        f"\n"
                     )
 
                     # Send message
@@ -467,8 +512,8 @@ async def daily_check_events():
                 posted_events.extend([event.id for event in new_events])
                 save_posted_events(posted_events)
             else:
-                print("No new upcoming events in the next 24 hours.")
+                logging.info("No new upcoming events in the next 24 hours.")
     else:
-        print(f"Guild not found")
-
+        logging.warning("Guild not found")
+        
 bot.run(os.getenv('DISCORD_BOT_TOKEN'))
