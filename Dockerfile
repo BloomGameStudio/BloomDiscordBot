@@ -6,10 +6,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends gcc
 
 WORKDIR /bot
 
-# Install python dependencies in /.venv
+# Copy only Pipfile (ignore Pipfile.lock)
 COPY Pipfile .
-COPY Pipfile.lock .
-RUN pipenv install --deploy 
+
+# Install python dependencies in /.venv
+RUN pipenv install --deploy
 
 # Create a volume directory
 VOLUME /main/data
