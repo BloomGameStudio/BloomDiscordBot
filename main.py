@@ -404,7 +404,7 @@ async def help_command(ctx):
     await ctx.send(help_message)
 
 #Bot tasks
-@tasks.loop(minutes=1)
+@tasks.loop(minutes=59)
 async def daily_check_events():
     guild_id = int(os.getenv("GUILD_ID"))
     guild = bot.get_guild(guild_id)

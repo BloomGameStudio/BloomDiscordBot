@@ -20,12 +20,15 @@ def load_posted_events():
 def save_posted_events(posted_events):
     try:
         file_path = os.path.join(os.path.dirname(__file__), "..", "updates", "posted_events.json")
+
         logging.info(f"Saving events to: {file_path}")
+
         with open(file_path, "w") as file:
             json.dump(posted_events, file)
+            
     except Exception as e:
         logging.error(f"Error saving posted events: {e}")
-
+    
 def format_event(event):
     # Format the event start time for Discord time
     guild_id = int(os.getenv("GUILD_ID"))
@@ -46,8 +49,8 @@ async def notify_new_event(bot, event):
     guild = bot.get_guild(guild_id)
 
     if guild:
-        # Wait for 60 mins before sending the notification
-        await asyncio.sleep(60)
+        # Wait for 30 mins before sending the notification
+        await asyncio.sleep(60 * 30)
 
         # Fetch the event again to get the updated details
         event = await guild.fetch_scheduled_event(event.id)
@@ -88,10 +91,9 @@ async def check_upcoming_events(guild, time_range=None):
 
     return upcoming_events
 
-
-# For some reason it doesn't appear that you can access the userIDs interested
-# in a scheduled event.
-# performing a GET request, however, does.
+# NOTE: For some reason it doesn't appear that you can access the userIDs interested
+# in a scheduled event. It's either a count, or a boolean.
+# performing a GET request, however, does allow this.
 def get_guild_scheduled_event_users(guild_id, scheduled_event_id, limit=100, with_member=False, before=None, after=None):
     url = f"https://discord.com/api/v10/guilds/{guild_id}/scheduled-events/{scheduled_event_id}/users"
 
@@ -102,8 +104,9 @@ def get_guild_scheduled_event_users(guild_id, scheduled_event_id, limit=100, wit
         'after': after
     }
 
+    bot_token = os.getenv("DISCORD_BOT_TOKEN")
     headers = {
-        'Authorization': 'Bot '
+        'Authorization': f'Bot {bot_token}'
     }
 
     response = requests.get(url, params=params, headers=headers)
