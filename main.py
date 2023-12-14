@@ -431,22 +431,37 @@ async def daily_check_events():
         # Check if it's the initial run or not
         if not posted_events:
             # Initial run, post events to Discord
-            formatted_string = "\n".join([f"{common_message}\n:link:**Event Link:link: ** https://discord.com/events/{guild_id}/{event.id}" for event in event_list])
+            for event in event_list:
+                interested_users = await event.interested_users()
+                formatted_event = format_event(event, interested_users)
 
-            # Send message
-            await channel.send(formatted_string)
+                formatted_string = (
+                    f"{common_message}\n"
+                    f":link:**Event Link:link: ** https://discord.com/events/{guild_id}/{event.id}\n"
+                    f"{formatted_event}"
+                )
 
-            # Save only the event IDs on the initial run
+                # Send message
+                await channel.send(formatted_string)
+
             save_posted_events([event.id for event in event_list])
         else:
             # Subsequent runs, filter out already posted events
             new_events = [event for event in event_list if event.id not in posted_events]
 
             if new_events:
-                formatted_string = "\n".join([f"{common_message}\n:link:**Event Link:link: ** https://discord.com/events/{guild_id}/{event.id}" for event in new_events])
+                for event in new_events:
+                    interested_users = await event.interested_users()
+                    formatted_event = format_event(event, interested_users)
 
-                # Send message
-                await channel.send(formatted_string)
+                    formatted_string = (
+                        f"{common_message}\n"
+                        f":link:**Event Link:link: ** https://discord.com/events/{guild_id}/{event.id}\n"
+                        f"{formatted_event}"
+                    )
+
+                    # Send message
+                    await channel.send(formatted_string)
 
                 # Update the posted_events list only for newly posted events
                 posted_events.extend([event.id for event in new_events])

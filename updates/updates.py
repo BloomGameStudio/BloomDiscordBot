@@ -7,36 +7,7 @@ import json
 
 
 load_dotenv()
-
-def load_new_events():
-    try:
-        file_path = os.path.join(os.path.dirname(__file__), "..", "updates", "new_events.json")
-        logging.info(f"Loading new events from {file_path}")
-        with open(file_path, "r") as file:
-            return json.load(file)
-    except (FileNotFoundError, json.JSONDecodeError):
-        return []
-
-def save_new_events(event_id, message_id):
-    try:
-        file_path = os.path.join(os.path.dirname(__file__), "..", "updates", "new_events.json")
-        logging.info(f"Savings new event to: {file_path}")
-
-        # Load existing events
-        existing_events = load_new_events()
-
-        # Append the new event
-        new_event = {"event_id": event_id, "message_id": message_id}
-        existing_events.append(new_event)
-
-        # Save the updated events
-        with open(file_path, "w") as file:
-            json.dump(existing_events, file)
-
-        logging.info(f"Contents after saving: {existing_events}")
-    except Exception as e:
-        logging.error(f"Error saving new event: {e}")
-        
+      
 def load_posted_events():
     try:
         file_path = os.path.join(os.path.dirname(__file__), "..", "updates", "posted_events.json")
@@ -88,14 +59,8 @@ async def notify_new_event(bot, event):
 
         if channel:
             # Send the notification and capture the Message object
-            message = await channel.send(f"**Newly Created Event**:\n{formatted_event}")
+            await channel.send(f"**Newly Created Event**:\n{formatted_event}")
 
-            # Get the message ID
-            message_id = message.id
-            logging.info(f"Message ID of the posted new event: {message_id}")
-
-            # Save the event ID and message ID
-            save_new_events(event.id, message_id)
         else:
             logging.info(f"Event channel not found")
     else:
