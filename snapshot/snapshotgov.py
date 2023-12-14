@@ -2,20 +2,24 @@ from web3 import Web3
 from snapshot import Snapshot
 import dotenv
 import os
+import time
+
+# Get the current Unix time
+current_time = int(time.time())
+current_block_number = 0  # Placeholder for the current block number
 
 dotenv.load_dotenv()
 
 # Connect to Ethereum node
-web3 = Web3(Web3.HTTPProvider('https://ethereum-goerli.publicnode.com'))
+web3 = Web3(Web3.HTTPProvider('https://rpc.ankr.com/eth_goerli'))
 
 # Ensure connection to Ethereum node is successful
 if not web3.is_connected():
-    print("Failed to connect to Ethereum goerli node")
+    print("Failed to connect to the Ethereum Goerli node")
     exit()
 
-# Specify the hub URL for the testnet
-hub_url = 'https://testnet.hub.snapshot.org/api/msg'
-snapshot = Snapshot(hub_url)
+# Get the current block number from the Goerli testnet
+current_block_number = web3.eth.block_number
 
 # Specify your Ethereum address
 account = os.getenv("ETH_ADDRESS")
@@ -27,16 +31,23 @@ proposal_data = {
     'title': 'Test proposal using Snapshot.py',
     'body': 'This is the content of the proposal',
     'choices': ['Alice', 'Bob', 'Carol'],
-    'start': 1636984800,
-    'end': 1637244000,
-    'snapshot': 13620822,
+    'start': current_time,  # Set the start time to the current time
+    'end': current_time + (1 * 60 * 60),  # End time is 1 hour after the start time
+    'snapshot': current_block_number,  # Use the current block number as the snapshot value
     'network': '1',
     'plugins': '{}',
     'app': 'my-apptest'
 }
 
-# Create a proposal
-receipt = snapshot.proposal(web3, account, proposal_data)
+print(proposal_data)
 
-# Print the receipt or perform other actions as needed
-print(receipt)
+# Create a proposal
+if current_block_number:
+    hub_url = 'https://testnet.hub.snapshot.org/api/msg'
+    snapshot = Snapshot(hub_url)
+    receipt = snapshot.proposal(web3, account, proposal_data)
+
+    # Print the receipt or perform other actions as needed
+    print(receipt)
+else:
+    print("Failed to get the current block number")
