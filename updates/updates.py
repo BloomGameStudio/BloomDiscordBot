@@ -33,11 +33,10 @@ def format_event(event):
 
     formatted_event = (
         f"\n"
-        f"🌺**{event.name}**🌺\n"
-        #f"**Event Start Time @ ** {formatted_start_time}\n"
-        #f"**Event Description:** {event.description}\n"
-        #f"{event.image}"
+        f" **{event.name}**\n"
+        f"\n"
         f"To request someones attendance, react to this message with their emoji! \n"
+        f"\n"
         f":link:** Event Link** {event_url} :link:\n"
     )
     return formatted_event
@@ -59,7 +58,7 @@ async def notify_new_event(bot, event):
 
         if channel:
             # Send the notification and capture the Message object
-            await channel.send(f"**Newly Created Event**:\n{formatted_event}")
+            await channel.send(f"🌺 **__Newly Created Event__** 🌺 \n{formatted_event}")
 
         else:
             logging.info(f"Event channel not found")
