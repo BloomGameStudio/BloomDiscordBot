@@ -21,7 +21,7 @@ def get_guild_scheduled_event_users(guild_id, scheduled_event_id, limit=100, wit
     }
 
     headers = {
-        'Authorization': 'Bot MTE3NjM5MjA2MTk5NDQwOTk5NA.G-cCG-.7CQuMqqqhQl5GluatD8QnAvzaafLZqt2-OrR_s'  # Add 'Bot' before the token
+        'Authorization': 'Bot '
     }
 
     response = requests.get(url, params=params, headers=headers)
@@ -515,5 +515,5 @@ async def daily_check_events():
                 logging.info("No new upcoming events in the next 24 hours.")
     else:
         logging.warning("Guild not found")
-        
+
 bot.run(os.getenv('DISCORD_BOT_TOKEN'))
