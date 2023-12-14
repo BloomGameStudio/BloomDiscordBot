@@ -14,7 +14,7 @@ if not web3.is_connected():
     exit()
 
 # Specify the hub URL for the testnet
-hub_url = 'https://testnet.hub.snapshot.org/api'
+hub_url = 'https://testnet.hub.snapshot.org/api/msg'
 snapshot = Snapshot(hub_url)
 
 # Specify your Ethereum address
@@ -32,7 +32,7 @@ proposal_data = {
     'snapshot': 13620822,
     'network': '1',
     'plugins': '{}',
-    'app': 'my-app'
+    'app': 'my-apptest'
 }
 
 # Create a proposal

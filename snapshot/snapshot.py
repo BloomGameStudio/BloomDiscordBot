@@ -7,15 +7,26 @@ class Snapshot:
         self.hub_url = hub_url
 
     def proposal(self, web3: Web3, account: str, proposal_data: Dict[str, Any]) -> Dict[str, Any]:
-        # Implement the logic for creating a proposal here
-        # You need to interact with the Snapshot hub using requests
+        headers = {
+            'Content-Type': 'application/json'
+        }
+        
+        # Construct the payload
+        payload = {
+            'address': account,
+            'msg': proposal_data
+        }
 
-        # Example: Just print the proposal data for now
-        print("Creating Proposal:")
-        print(proposal_data)
+        # Make an HTTP POST request to the Snapshot API
+        response = requests.post(f'{self.hub_url}', json=payload, headers=headers)
 
-        # Simulate a receipt for testing
-        receipt = {'status': 'success', 'proposal_id': '123456'}
-        return receipt
+        # Check if the request was successful
+        if response.status_code == 200:
+            receipt = response.json()
+            return receipt
+        else:
+            # Handle the case when the request fails
+            print(f'Failed to create proposal: {response.status_code} - {response.text}')
+            return {'status': 'failed'}
 
     # Add more methods for interacting with the Snapshot hub if needed
