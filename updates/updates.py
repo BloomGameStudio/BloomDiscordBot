@@ -4,7 +4,7 @@ from shared.shared import logging
 import os
 import asyncio
 import json
-
+import requests
 
 load_dotenv()
       
@@ -87,3 +87,29 @@ async def check_upcoming_events(guild, time_range=None):
             upcoming_events.append(event)
 
     return upcoming_events
+
+
+# For some reason it doesn't appear that you can access the userIDs interested
+# in a scheduled event.
+# performing a GET request, however, does.
+def get_guild_scheduled_event_users(guild_id, scheduled_event_id, limit=100, with_member=False, before=None, after=None):
+    url = f"https://discord.com/api/v10/guilds/{guild_id}/scheduled-events/{scheduled_event_id}/users"
+
+    params = {
+        'limit': limit,
+        'with_member': with_member,
+        'before': before,
+        'after': after
+    }
+
+    headers = {
+        'Authorization': 'Bot '
+    }
+
+    response = requests.get(url, params=params, headers=headers)
+
+    if response.status_code == 200:
+        return response.json()
+    else:
+        print(f"Error: {response.status_code} - {response.text}")
+        return None

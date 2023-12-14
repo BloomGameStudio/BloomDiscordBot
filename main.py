@@ -1,50 +1,13 @@
 import discord
 import os
 import asyncio
-import requests
 from datetime import datetime, timezone, timedelta
 from discord.ext import commands, tasks
 from emojis.emojis import emoji_id_mapping, contributors, send_dm_once, update_json_file, add_contributor
-from updates.updates import check_upcoming_events, load_dotenv, notify_new_event, format_event, load_posted_events, save_posted_events
+from updates.updates import check_upcoming_events, load_dotenv, notify_new_event, format_event, load_posted_events, save_posted_events, get_guild_scheduled_event_users
 from gov.proposals import proposals, new_proposal_emoji, publish_draft, get_governance_id, textwrap, get_budget_id
 from shared.shared import logging
 
-
-def get_guild_scheduled_event_users(guild_id, scheduled_event_id, limit=100, with_member=False, before=None, after=None):
-    url = f"https://discord.com/api/v10/guilds/{guild_id}/scheduled-events/{scheduled_event_id}/users"
-
-    params = {
-        'limit': limit,
-        'with_member': with_member,
-        'before': before,
-        'after': after
-    }
-
-    headers = {
-        'Authorization': 'Bot '
-    }
-
-    response = requests.get(url, params=params, headers=headers)
-
-    if response.status_code == 200:
-        return response.json()
-    else:
-        print(f"Error: {response.status_code} - {response.text}")
-        return None
-
-# Example usage
-async def fetch_and_send_users_for_event(bot, guild_id, event_id, channel):
-    users = get_guild_scheduled_event_users(guild_id, event_id)
-
-    if users:
-        user_mentions = [f"<@{user['user_id']}>" for user in users]
-        user_list_string = ', '.join(user_mentions)
-
-        formatted_string = (
-            f"Subscribed Users for Event: {user_list_string}\n"
-        )
-
-        await channel.send(formatted_string)
 
 #Load ENV
 
