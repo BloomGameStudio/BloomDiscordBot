@@ -1,15 +1,17 @@
 # BloomDiscordBot
 
+# Governance
+
 **Creating proposals:**
 
 Proposals can be drafted by utilizing various commands. 
 The drafts will automatically be posted so that you can view / make changes to it prior to posting it.
 
-When you decide to post the draft, they can request the bot to do this.
+When you decide to post the draft, you can request the bot to do this.
 
-**Commands:**
+# Commands
 
-The following commands can be used to creat, edit, and publish drafts.
+The following commands can be used to create, edit, and publish drafts.
 All commands start with $.
 
 **Vote Draft:**
