@@ -2,7 +2,7 @@
 
 # Help:
 
-You can type ```$bothelp``` to get details about what commands can be used, along with a brief description of them
+You can type ```$bot_help``` to get details about what commands can be used, along with a brief description of them
 
 # Events:
 
@@ -20,36 +20,39 @@ All commands start with: $
 **List Events:**
 
 ```
-$listevents
+$list_events
 ```
 
 **Example:**
 
 ```
-$listevents
+$list_events
 ```
 
 **Response:**
 
 ```
-All Events:
-Event Name: cvbncvbncvbn
-Event ID: 1178917740216594432
-Event Start Time: November 30, 2023 4:00 PM
-Event Description: 
-Event Interested: 0
+🗓️ All Events🗓️ 
+
+🌺 Scrutinizer Game night🌺 
+event_id: 1180231420476670043
+Description: 
+
+🌺 Modular Mesh Architecture🌺 
+event_id: 1184322631692980325
+Description:
 ```
 
 **Delete Events:**
 
 ```
-$deleteevent <event_id>
+$delet_eevent <event_id>
 ```
 
 **Example:**
 
 ```
-$deleteevent 1179242504395165748
+$delete_event 1179242504395165748
 ```
 
 **Response:**
