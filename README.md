@@ -18,7 +18,7 @@ start with: $
 **Example:**
 
 ```
-$removecontributor 316765092689608706
+$removecontributor @contributor
 ```
 
 **Response:**
