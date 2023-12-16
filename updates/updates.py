@@ -76,8 +76,8 @@ async def check_upcoming_events(guild, time_range=None):
     events = get_all_events(guild)
     upcoming_events = []
 
-    # Check if the events start time is <= the current time
-    # And >= the specified time range
+    # Check if the event's start time is in the future (after or equal to the current time)
+    # And if a time range is specified, ensure the time difference is within that range
     for event in events:
         if time_range:
             # Fetch the event again to get the updated user_count
