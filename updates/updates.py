@@ -1,13 +1,10 @@
 from datetime import datetime, timezone, timedelta
-from dotenv import load_dotenv
 from shared.shared import logging
 import os
 import asyncio
 import json
 import requests
 
-load_dotenv()
-      
 def load_posted_events():
     try:
         file_path = os.path.join(os.path.dirname(__file__), "..", "updates", "posted_events.json")
@@ -68,12 +65,9 @@ async def notify_new_event(bot, event):
     else:
         logging.info(f"Guild not found")
 
-def get_all_events(guild):
-    return guild.scheduled_events
-
 async def check_upcoming_events(guild, time_range=None):
     current_time = datetime.now().astimezone(timezone.utc)
-    events = get_all_events(guild)
+    events = guild.scheduled_events
     upcoming_events = []
 
     # Check if the event's start time is in the future (after or equal to the current time)
