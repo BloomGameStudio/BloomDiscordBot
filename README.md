@@ -46,7 +46,7 @@ Description:
 **Delete Events:**
 
 ```
-$delet_eevent <event_id>
+$delete_event <event_id>
 ```
 
 **Example:**
