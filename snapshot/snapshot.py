@@ -1,6 +1,6 @@
 from web3 import Web3
 from typing import Any, Dict
-import requests  # You may need to install the 'requests' library
+import requests
 
 class Snapshot:
     def __init__(self, hub_url: str):
@@ -17,6 +17,9 @@ class Snapshot:
             'msg': proposal_data
         }
 
+        # Print the payload for debugging
+        print("Payload:", payload)
+
         # Make an HTTP POST request to the Snapshot API
         response = requests.post(f'{self.hub_url}', json=payload, headers=headers)
 
@@ -28,5 +31,3 @@ class Snapshot:
             # Handle the case when the request fails
             print(f'Failed to create proposal: {response.status_code} - {response.text}')
             return {'status': 'failed'}
-
-    # Add more methods for interacting with the Snapshot hub if needed

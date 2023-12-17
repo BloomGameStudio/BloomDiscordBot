@@ -28,7 +28,8 @@ account = os.getenv("ETH_ADDRESS")
 proposal_data = {
     'space': 'testdao1.eth',
     'type': 'single-choice',
-    'title': 'Test proposal using Snapshot.py',
+    'name': 'Test proposal using Snapshot.py',
+    'discussion': 'Test',
     'body': 'This is the content of the proposal',
     'choices': ['Alice', 'Bob', 'Carol'],
     'start': current_time,  # Set the start time to the current time
