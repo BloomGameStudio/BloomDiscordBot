@@ -1,6 +1,7 @@
 import os
 import logging
 from discord.ext import tasks, commands
+from updates.updates import check_upcoming_events, load_posted_events, get_guild_scheduled_event_users, save_posted_events
 
 def setup_tasks(bot: commands.Bot):
     @tasks.loop(minutes=59)

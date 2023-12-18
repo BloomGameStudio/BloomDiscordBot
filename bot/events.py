@@ -1,14 +1,13 @@
-from discord.ext import commands
-import discord
 import os
 import logging
+from discord.ext import commands, tasks
+from updates.updates import check_upcoming_events, notify_new_event
 
-def setup_events(bot: events.Bot):
+def setup_events(bot: commands.Bot):
     @bot.event
     async def on_ready():
         logging.info(f"Logged in as {bot.user.name} ({bot.user.id})")
-        await bot.change_presence(activity=discord.Game(name="Watching you sleep"))
-
+        await bot.change_presence()
         os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'emojis'))
         guild_id = int(os.getenv("GUILD_ID"))
         guild = bot.get_guild(guild_id)
