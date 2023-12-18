@@ -1,9 +1,9 @@
 from datetime import datetime, timezone, timedelta
-from shared.shared import logging
 import os
 import asyncio
 import json
 import requests
+import logging
 
 def load_posted_events():
     try:
