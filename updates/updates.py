@@ -65,26 +65,6 @@ async def notify_new_event(bot, event):
     else:
         logging.info(f"Guild not found")
 
-async def check_upcoming_events(guild, time_range=None):
-    current_time = datetime.now().astimezone(timezone.utc)
-    events = guild.scheduled_events
-    upcoming_events = []
-
-    # Check if the event's start time is in the future (after or equal to the current time)
-    # And if a time range is specified, ensure the time difference is within that range
-    for event in events:
-        if time_range:
-            # Fetch the event again to get the updated user_count
-            event = await guild.fetch_scheduled_event(event.id)
-
-            time_difference = event.start_time - current_time
-            if 0 <= time_difference.total_seconds() <= time_range:
-                upcoming_events.append(event)
-        else:
-            upcoming_events.append(event)
-
-    return upcoming_events
-
 # NOTE: For some reason it doesn't appear that you can access the userIDs interested
 # in a scheduled event. It's either a count, or a boolean.
 # performing a GET request, however, does allow this.
