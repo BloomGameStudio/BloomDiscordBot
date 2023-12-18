@@ -6,7 +6,7 @@ You can type ```$bot_help``` to get details about what commands can be used, alo
 
 # Events:
 
-When a person creates an event within Blooms Discord server, there will initially be a one hour delay from the time of creation to when the details of the event are posted. This will allow the person sometime to make changes to the details, timing and so on.
+When a person creates an event within Blooms Discord server, there will initially be a 30 minute delay from the time of creation to when the details of the event are posted. This will allow the person sometime to make changes to the details, timing and so on.
 
 There is a daily scheduled task that will identify events starting within the next 24 hours. If any are detected everyone is informed of the events details in a Discord message.
 
