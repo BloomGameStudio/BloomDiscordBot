@@ -3,9 +3,9 @@ from discord.ext import commands
 
 def setup_commands(bot: commands.Bot):
     @bot.command(name='list_events')
-    async def listevents(ctx):
+    async def list_events(ctx):
         guild = ctx.guild
-        event_list = await check_upcoming_events(guild)
+        event_list = guild.scheduled_events
 
         # Extracting event information
         event_info_list = [(event.name, event.id, event.description) for event in event_list]
@@ -18,9 +18,9 @@ def setup_commands(bot: commands.Bot):
         formatted_string = "\n\n".join(formatted_events)
 
         await ctx.send(f"🗓️ **All Events**🗓️ \n\n{formatted_string}")
-
+        
     @bot.command(name='delete_event')
-    async def deleteevent(ctx, event_id: int = None):
+    async def delete_event(ctx, event_id: int = None):
         if event_id is None:
             await ctx.send("Please enter an event_id with this command. Example: `$deleteevent 1179241076016566272`")
             return
