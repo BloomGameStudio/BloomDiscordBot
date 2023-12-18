@@ -13,7 +13,7 @@ def setup_events(bot: commands.Bot):
         guild = bot.get_guild(guild_id)
 
         if guild:
-            # Start the background task to check events automatically every 24 hours
+            # Start the background task to check events automatically every hour
             check_events.start(bot)
         else:
             logging.error("Discord server ID not found")
