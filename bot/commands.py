@@ -51,6 +51,9 @@ def setup_commands(bot: commands.Bot):
             if len(inputs) == 2:
                 uid, emoji_id = inputs
 
+                # Strip the <@> characters from the uid
+                uid = uid.strip('<@!>')
+
                 # Check if the UID already exists in contributors
                 existing_contributor = next((c for c in contributors if c["uid"] == uid), None)
 
