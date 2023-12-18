@@ -42,19 +42,7 @@ async def check_events(bot: commands.Bot):
             for event in upcoming_events:
                 # Fetch subscribed users for each event
                 users = get_guild_scheduled_event_users(guild_id, event.id)
-                user_mentions = [f"<@{user['user_id']}>" for user in users]
-                user_list_string = ', '.join(user_mentions)
-
-                formatted_string = (
-                    f"\n"
-                    f"{common_message}\n"
-                    f":link: **Event Link https://discord.com/events/{guild_id}/{event.id} :link:**\n"
-                    f"\n"
-                    f"{user_list_string}\n"
-                )
-
-                # Send message
-                await channel.send(formatted_string)
+                await format_and_send_message(event, users, common_message, guild_id, channel)
 
             save_posted_events([event.id for event in upcoming_events])
         else:
@@ -65,18 +53,7 @@ async def check_events(bot: commands.Bot):
                 for event in new_events:
                     # Fetch subscribed users for each event
                     users = get_guild_scheduled_event_users(guild_id, event.id)
-                    user_mentions = [f"<@{user['user_id']}>" for user in users]
-                    user_list_string = ', '.join(user_mentions)
-
-                    formatted_string = (
-                        f"{common_message}\n"
-                        f":link: **Event Link https://discord.com/events/{guild_id}/{event.id} :link:**\n"
-                        f"\n"
-                        f"{user_list_string}\n"
-                    )
-
-                    # Send message
-                    await channel.send(formatted_string)
+                    await format_and_send_message(event, users, common_message, guild_id, channel)
 
                 # Update the posted_events list only for newly posted events
                 posted_events.extend([event.id for event in new_events])
@@ -85,3 +62,17 @@ async def check_events(bot: commands.Bot):
                 logging.info("No new upcoming events in the next 24 hours.")
     else:
         logging.warning("Guild not found")
+
+async def format_and_send_message(event, users, common_message, guild_id, channel):
+    user_mentions = [f"<@{user['user_id']}>" for user in users]
+    user_list_string = ', '.join(user_mentions)
+
+    formatted_string = (
+        f"{common_message}\n"
+        f":link: **Event Link https://discord.com/events/{guild_id}/{event.id} :link:**\n"
+        f"\n"
+        f"{user_list_string}\n"
+    )
+
+    # Send message
+    await channel.send(formatted_string)
