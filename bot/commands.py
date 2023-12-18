@@ -1,4 +1,3 @@
-from updates.updates import check_upcoming_events
 from discord.ext import commands
 
 def setup_commands(bot: commands.Bot):
@@ -18,7 +17,7 @@ def setup_commands(bot: commands.Bot):
         formatted_string = "\n\n".join(formatted_events)
 
         await ctx.send(f"🗓️ **All Events**🗓️ \n\n{formatted_string}")
-        
+
     @bot.command(name='delete_event')
     async def delete_event(ctx, event_id: int = None):
         if event_id is None:
