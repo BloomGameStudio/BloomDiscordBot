@@ -5,7 +5,7 @@ from discord.ext import tasks, commands
 from updates.updates import load_posted_events, get_guild_scheduled_event_users, save_posted_events
 
 @tasks.loop(minutes=60)
-async def daily_check_events(bot: commands.Bot):
+async def check_events(bot: commands.Bot):
     guild_id = int(os.getenv("GUILD_ID"))
     guild = bot.get_guild(guild_id)
 

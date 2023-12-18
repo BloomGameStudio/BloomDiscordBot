@@ -1,22 +1,20 @@
 import os
 import logging
 from discord.ext import commands, tasks
-from updates.updates import check_upcoming_events, notify_new_event
-from bot.tasks import daily_check_events
+from updates.updates import notify_new_event
+from bot.tasks import check_events
 
 def setup_events(bot: commands.Bot):
     @bot.event
     async def on_ready():
         logging.info(f"Logged in as {bot.user.name} ({bot.user.id})")
         await bot.change_presence()
-        os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'emojis'))
         guild_id = int(os.getenv("GUILD_ID"))
         guild = bot.get_guild(guild_id)
 
         if guild:
-            await check_upcoming_events(guild)
             # Start the background task to check events automatically every 24 hours
-            daily_check_events.start()
+            check_events.start(bot)
         else:
             logging.error("Discord server ID not found")
 
