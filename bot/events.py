@@ -2,6 +2,7 @@ import os
 import logging
 from discord.ext import commands, tasks
 from updates.updates import check_upcoming_events, notify_new_event
+from bot.tasks import daily_check_events
 
 def setup_events(bot: commands.Bot):
     @bot.event
