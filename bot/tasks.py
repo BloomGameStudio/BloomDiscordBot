@@ -15,7 +15,7 @@ async def check_events(bot: commands.Bot):
         upcoming_events = []
 
         for event in events:
-            time_difference = event.start_time - current_time  # Changed this line
+            time_difference = event.start_time - current_time
             if 0 <= time_difference.total_seconds() <= 24 * 3600:
                 upcoming_events.append(event)
 
