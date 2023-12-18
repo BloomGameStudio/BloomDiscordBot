@@ -3,7 +3,7 @@ from emojis.emojis import emoji_id_mapping, contributors, send_dm_once
 import discord
 import logging
 
-def setup(bot):
+def setup_events(bot: commands.Bot):
     @bot.event
     async def on_message(message):
         for emoji_id, contributor_uid in emoji_id_mapping.items():
@@ -19,7 +19,7 @@ def setup(bot):
                         await send_dm_once(bot, contributor, message_link)
                     except discord.errors.NotFound:
                         logging.warning(f'User not found: {contributor["uid"]}')
-                        
+
         if message.author == bot.user:
             return
 

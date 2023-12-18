@@ -2,7 +2,7 @@ from discord.ext import commands
 from emojis.emojis import emoji_id_mapping, contributors, update_json_file, add_contributor
 import asyncio
 
-def setup(bot):
+def setup_commands(bot: commands.Bot):
     @bot.command(name='contributors')
     async def listcontributors(ctx):
         # Include only the emoji in the list
