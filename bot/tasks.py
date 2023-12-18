@@ -1,5 +1,6 @@
 import os
 import logging
+from datetime import datetime, timezone
 from discord.ext import tasks, commands
 from updates.updates import check_upcoming_events, load_posted_events, get_guild_scheduled_event_users, save_posted_events
 
@@ -10,9 +11,16 @@ def setup_tasks(bot: commands.Bot):
         guild = bot.get_guild(guild_id)
 
         if guild:
-            event_list = await check_upcoming_events(guild, time_range=24 * 3600)
+            current_time = datetime.now().astimezone(timezone.utc)
+            events = await guild.fetch_scheduled_events()
+            upcoming_events = []
 
-            if not event_list:
+            for event in events:
+                time_difference = event.scheduled_start_time - current_time
+                if 0 <= time_difference.total_seconds() <= 24 * 3600:
+                    upcoming_events.append(event)
+
+            if not upcoming_events:
                 logging.info("No upcoming events in the next 24 hours.")
                 return
 
@@ -32,7 +40,7 @@ def setup_tasks(bot: commands.Bot):
             # Check if it's the initial run or not
             if not posted_events:
                 # Initial run, post events to Discord
-                for event in event_list:
+                for event in upcoming_events:
                     # Fetch subscribed users for each event
                     users = get_guild_scheduled_event_users(guild_id, event.id)
                     user_mentions = [f"<@{user['user_id']}>" for user in users]
@@ -49,10 +57,10 @@ def setup_tasks(bot: commands.Bot):
                     # Send message
                     await channel.send(formatted_string)
 
-                save_posted_events([event.id for event in event_list])
+                save_posted_events([event.id for event in upcoming_events])
             else:
                 # Subsequent runs, filter out already posted events
-                new_events = [event for event in event_list if event.id not in posted_events]
+                new_events = [event for event in upcoming_events if event.id not in posted_events]
 
                 if new_events:
                     for event in new_events:
