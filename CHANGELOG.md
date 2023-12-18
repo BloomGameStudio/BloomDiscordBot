@@ -11,11 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - This CHANGELOG file.
 
-- !bothelp command to provide details about useable comamnds.
+- $bot_help command to provide details about useable comamnds.
 - Functionality to list, and delete existing events.
-- Daily schedule task that identifies events scheduled to start within the next 24 hours
+- schedule task that identifies events scheduled to start within the next 24 hours
 - Tag given everyone a heads up that an event will start within the next 24 hours
-- Delay between event creation events by 1 hour to allow for editing of event details before posting to everyone. 
+- Delay between event creation events by 30 minutes to allow for editing of event details before posting to everyone. 
 
 ## [0.1.0] - x-x-2023
 
