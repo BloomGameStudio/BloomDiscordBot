@@ -1,10 +1,18 @@
 import os
 import logging
-from discord.ext import commands, tasks
-from updates.updates import notify_new_event
-from bot.tasks import check_events
+from discord.ext import commands
+from events.event_operations import notify_new_event
+from events.tasks import check_events
 
-def setup_events(bot: commands.Bot):
+"""
+The bot listens for the on_ready event and then calls check_events in tasks.py
+This task runs every hour to check for upcoming events within the next 24 hours.
+
+The bot will listen for the on_scheduled_event_create event and then call notify_new_event in event_operations.py
+setup_event_events is used so that all event events can be loaded at once. instead of individually.
+"""
+
+def setup_event_events(bot: commands.Bot):
     @bot.event
     async def on_ready():
         logging.info(f"Logged in as {bot.user.name} ({bot.user.id})")

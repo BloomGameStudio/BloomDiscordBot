@@ -1,14 +1,11 @@
-import os
-import asyncio
 import json
 import requests
 import logging
+import asyncio
+from constants import FILE_PATH, GUILD_ID, GENERAL_CHANNEL_ID, DISCORD_BOT_TOKEN
+from datetime import datetime, timezone
 
-GUILD_ID = int(os.getenv("GUILD_ID"))
-GENERAL_CHANNEL_ID = int(os.getenv("GENERAL_CHANNEL_ID"))
-DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")
-FILE_PATH = os.path.join(os.path.dirname(__file__), "..", "updates", "posted_events.json")
-
+# Load the stored events from the JSON file
 def load_posted_events():
     try:
         logging.info(f"Loading events from: {FILE_PATH}")
@@ -17,6 +14,7 @@ def load_posted_events():
     except FileNotFoundError:
         return []
 
+# Save the posted events to the JSON file
 def save_posted_events(posted_events):
     try:
         logging.info(f"Saving events to: {FILE_PATH}")
@@ -27,6 +25,7 @@ def save_posted_events(posted_events):
     except Exception as e:
         logging.error(f"Error saving posted events: {e}")
     
+# Format the event message and send it to the channel
 def format_event(event):
     # Format the event start time for Discord time
     event_url = f"https://discord.com/events/{GUILD_ID}/{event.id}"
@@ -40,28 +39,6 @@ def format_event(event):
         f":link:** Event Link** {event_url} :link:\n"
     )
     return formatted_event
-
-async def notify_new_event(bot, event):
-    guild = bot.get_guild(GUILD_ID)
-
-    if guild:
-        # Wait for 30 mins before sending the notification
-        await asyncio.sleep(60 * 1)
-
-        # Fetch the event again to get the updated details
-        event = await guild.fetch_scheduled_event(event.id)
-        formatted_event = format_event(event)
-
-        channel = guild.get_channel(GENERAL_CHANNEL_ID)
-
-        if channel:
-            # Send the notification and capture the Message object
-            await channel.send(f"🌺 **__Newly Created Event__** 🌺 \n{formatted_event}")
-
-        else:
-            logging.info(f"Event channel not found")
-    else:
-        logging.info(f"Guild not found")
 
 # NOTE: For some reason it doesn't appear that you can access the userIDs interested
 # in a scheduled event. It's either a count, or a boolean.
@@ -87,3 +64,39 @@ def get_guild_scheduled_event_users(scheduled_event_id, limit=100, with_member=F
     else:
         print(f"Error: {response.status_code} - {response.text}")
         return None
+
+# Notify the channel about the newly created event after a short delay
+async def notify_new_event(bot, event):
+    guild = bot.get_guild(GUILD_ID)
+
+    if guild:
+        # Wait for 30 mins before sending the notification
+        await asyncio.sleep(60 * 30)
+
+        # Fetch the event again to get the updated details
+        event = await guild.fetch_scheduled_event(event.id)
+        formatted_event = format_event(event)
+
+        channel = guild.get_channel(GENERAL_CHANNEL_ID)
+
+        if channel:
+            # Send the notification and capture the Message object
+            await channel.send(f"🌺 **__Newly Created Event__** 🌺 \n{formatted_event}")
+
+        else:
+            logging.info(f"Event channel not found")
+    else:
+        logging.info(f"Guild not found")
+
+# Fetch all upcoming events within the next 24 hours this is called by tasks.py
+async def fetch_upcoming_events(guild):
+    current_time = datetime.now().astimezone(timezone.utc)
+    events = await guild.fetch_scheduled_events()
+    upcoming_events = []
+
+    for event in events:
+        time_difference = event.start_time - current_time
+        if 0 <= time_difference.total_seconds() <= 24 * 3600:
+            upcoming_events.append(event)
+
+    return upcoming_events

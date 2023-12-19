@@ -1,21 +1,18 @@
 from discord.ext import commands
+from events.command_operations import list_events_operation, delete_event_operation
 
-def setup_commands(bot: commands.Bot):
+"""
+When the bot is initiated the command list below will be loaded so that they can be called.
+The function calls related to the commands are located in command_operations.py
+
+setup_event_commands is used so that all event commands can be loaded at once. instead of individually.
+"""
+
+def setup_event_commands(bot: commands.Bot):
     @bot.command(name='list_events')
     async def list_events(ctx):
         guild = ctx.guild
-        event_list = guild.scheduled_events
-
-        # Extracting event information
-        event_info_list = [(event.name, event.id, event.description) for event in event_list]
-
-        # Formatting the information
-        formatted_events = [
-            f"🌺 **{name}**🌺 \n**event_id: **{event_id}\n**Description:** {description}"
-            for name, event_id, description in event_info_list
-        ]
-        formatted_string = "\n\n".join(formatted_events)
-
+        formatted_string = await list_events_operation(guild)
         await ctx.send(f"🗓️ **All Events**🗓️ \n\n{formatted_string}")
 
     @bot.command(name='delete_event')
@@ -32,14 +29,8 @@ def setup_commands(bot: commands.Bot):
             await ctx.send("Invalid event_id. Please provide a valid integer. Use $listevents to get a list of events")
             return
 
-        event = guild.get_scheduled_event(event_id)
-
-        if event:
-            # Delete the event
-            await event.delete()
-            await ctx.send(f"Event with ID {event_id} has been deleted 🗑️")
-        else:
-            await ctx.send(f"No event found with ID {event_id}.")
+        message = await delete_event_operation(guild, event_id)
+        await ctx.send(message)
 
     @bot.command(name='bot_help')
     async def help_command(ctx):
