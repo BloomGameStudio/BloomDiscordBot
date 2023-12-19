@@ -1,8 +1,8 @@
-import os
 import logging
 from discord.ext import commands
 from events.event_operations import notify_new_event
 from events.tasks import check_events
+from constants import GUILD_ID
 
 """
 The bot listens for the on_ready event and then calls check_events in tasks.py
@@ -17,8 +17,7 @@ def setup_event_events(bot: commands.Bot):
     async def on_ready():
         logging.info(f"Logged in as {bot.user.name} ({bot.user.id})")
         await bot.change_presence()
-        guild_id = int(os.getenv("GUILD_ID"))
-        guild = bot.get_guild(guild_id)
+        guild = bot.get_guild(GUILD_ID)
 
         if guild:
             # Start the background task to check events automatically every hour
