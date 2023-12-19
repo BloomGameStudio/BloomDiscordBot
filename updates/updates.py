@@ -4,22 +4,24 @@ import json
 import requests
 import logging
 
+GUILD_ID = int(os.getenv("GUILD_ID"))
+GENERAL_CHANNEL_ID = int(os.getenv("GENERAL_CHANNEL_ID"))
+DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")
+FILE_PATH = os.path.join(os.path.dirname(__file__), "..", "updates", "posted_events.json")
+
 def load_posted_events():
     try:
-        file_path = os.path.join(os.path.dirname(__file__), "..", "updates", "posted_events.json")
-        logging.info(f"Loading events from: {file_path}")
-        with open(file_path, "r") as file:
+        logging.info(f"Loading events from: {FILE_PATH}")
+        with open(FILE_PATH, "r") as file:
             return json.load(file)
     except FileNotFoundError:
         return []
 
 def save_posted_events(posted_events):
     try:
-        file_path = os.path.join(os.path.dirname(__file__), "..", "updates", "posted_events.json")
+        logging.info(f"Saving events to: {FILE_PATH}")
 
-        logging.info(f"Saving events to: {file_path}")
-
-        with open(file_path, "w") as file:
+        with open(FILE_PATH, "w") as file:
             json.dump(posted_events, file)
             
     except Exception as e:
@@ -27,8 +29,7 @@ def save_posted_events(posted_events):
     
 def format_event(event):
     # Format the event start time for Discord time
-    guild_id = int(os.getenv("GUILD_ID"))
-    event_url = f"https://discord.com/events/{guild_id}/{event.id}"
+    event_url = f"https://discord.com/events/{GUILD_ID}/{event.id}"
 
     formatted_event = (
         f"\n"
@@ -41,19 +42,17 @@ def format_event(event):
     return formatted_event
 
 async def notify_new_event(bot, event):
-    guild_id = int(os.getenv("GUILD_ID"))
-    guild = bot.get_guild(guild_id)
+    guild = bot.get_guild(GUILD_ID)
 
     if guild:
         # Wait for 30 mins before sending the notification
-        await asyncio.sleep(60 * 30)
+        await asyncio.sleep(60 * 1)
 
         # Fetch the event again to get the updated details
         event = await guild.fetch_scheduled_event(event.id)
         formatted_event = format_event(event)
 
-        channel_id = int(os.getenv("GENERAL_CHANNEL_ID"))
-        channel = guild.get_channel(channel_id)
+        channel = guild.get_channel(GENERAL_CHANNEL_ID)
 
         if channel:
             # Send the notification and capture the Message object
@@ -67,8 +66,8 @@ async def notify_new_event(bot, event):
 # NOTE: For some reason it doesn't appear that you can access the userIDs interested
 # in a scheduled event. It's either a count, or a boolean.
 # performing a GET request, however, does allow this.
-def get_guild_scheduled_event_users(guild_id, scheduled_event_id, limit=100, with_member=False, before=None, after=None):
-    url = f"https://discord.com/api/v10/guilds/{guild_id}/scheduled-events/{scheduled_event_id}/users"
+def get_guild_scheduled_event_users(scheduled_event_id, limit=100, with_member=False, before=None, after=None):
+    url = f"https://discord.com/api/v10/guilds/{GUILD_ID}/scheduled-events/{scheduled_event_id}/users"
 
     params = {
         'limit': limit,
@@ -77,9 +76,8 @@ def get_guild_scheduled_event_users(guild_id, scheduled_event_id, limit=100, wit
         'after': after
     }
 
-    bot_token = os.getenv("DISCORD_BOT_TOKEN")
     headers = {
-        'Authorization': f'Bot {bot_token}'
+        'Authorization': f'Bot {DISCORD_BOT_TOKEN}'
     }
 
     response = requests.get(url, params=params, headers=headers)

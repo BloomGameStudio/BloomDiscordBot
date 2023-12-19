@@ -2,12 +2,11 @@ import os
 import logging
 from datetime import datetime, timezone
 from discord.ext import tasks, commands
-from updates.updates import load_posted_events, get_guild_scheduled_event_users, save_posted_events
+from updates.updates import load_posted_events, get_guild_scheduled_event_users, save_posted_events, GUILD_ID, GENERAL_CHANNEL_ID
 
-@tasks.loop(minutes=60)
+@tasks.loop(minutes=1)
 async def check_events(bot: commands.Bot):
-    guild_id = int(os.getenv("GUILD_ID"))
-    guild = bot.get_guild(guild_id)
+    guild = bot.get_guild(GUILD_ID)
 
     if guild:
         current_time = datetime.now().astimezone(timezone.utc)
@@ -23,8 +22,7 @@ async def check_events(bot: commands.Bot):
             logging.info("No upcoming events in the next 24 hours.")
             return
 
-        channel_id = int(os.getenv("GENERAL_CHANNEL_ID"))
-        channel = guild.get_channel(channel_id)
+        channel = guild.get_channel(GENERAL_CHANNEL_ID)
 
         if not channel:
             logging.warning("Event channel not found")
@@ -41,8 +39,8 @@ async def check_events(bot: commands.Bot):
             # Initial run, post events to Discord
             for event in upcoming_events:
                 # Fetch subscribed users for each event
-                users = get_guild_scheduled_event_users(guild_id, event.id)
-                await format_and_send_message(event, users, common_message, guild_id, channel)
+                users = get_guild_scheduled_event_users(event.id)
+                await format_and_send_message(event, users, common_message, channel)
 
             save_posted_events([event.id for event in upcoming_events])
         else:
@@ -52,8 +50,8 @@ async def check_events(bot: commands.Bot):
             if new_events:
                 for event in new_events:
                     # Fetch subscribed users for each event
-                    users = get_guild_scheduled_event_users(guild_id, event.id)
-                    await format_and_send_message(event, users, common_message, guild_id, channel)
+                    users = get_guild_scheduled_event_users(event.id)
+                    await format_and_send_message(event, users, common_message, channel)
 
                 # Update the posted_events list only for newly posted events
                 posted_events.extend([event.id for event in new_events])
@@ -63,13 +61,13 @@ async def check_events(bot: commands.Bot):
     else:
         logging.warning("Guild not found")
 
-async def format_and_send_message(event, users, common_message, guild_id, channel):
+async def format_and_send_message(event, users, common_message, channel):
     user_mentions = [f"<@{user['user_id']}>" for user in users]
     user_list_string = ', '.join(user_mentions)
 
     formatted_string = (
         f"{common_message}\n"
-        f":link: **Event Link https://discord.com/events/{guild_id}/{event.id} :link:**\n"
+        f":link: **Event Link https://discord.com/events/{GUILD_ID}/{event.id} :link:**\n"
         f"\n"
         f"{user_list_string}\n"
     )
