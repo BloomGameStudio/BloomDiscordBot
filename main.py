@@ -1,9 +1,9 @@
 import discord
 import os
 from discord.ext import commands
-from bot.commands import setup_commands
-from bot.events import setup_events
-from updates.updates import load_posted_events
+from events.commands import setup_event_commands
+from events.events import setup_event_events
+from events.event_operations import load_posted_events
 
 def main():
     # Discord Config
@@ -11,12 +11,11 @@ def main():
     intents.message_content = True
     intents.reactions = True
     bot = commands.Bot(command_prefix="$", intents=intents)
+    bot.posted_events = load_posted_events()
 
-    # Setup commands and events
-    setup_commands(bot)
-    setup_events(bot)
-
-    load_posted_events()
+    # Setup the event discord commands, and events
+    setup_event_commands(bot)
+    setup_event_events(bot)
 
     # Run the bot
     bot.run(os.getenv('DISCORD_BOT_TOKEN'))
