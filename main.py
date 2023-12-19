@@ -1,9 +1,9 @@
 import discord
-import os
 from discord.ext import commands
 from events.commands import setup_event_commands
 from events.events import setup_event_events
 from events.event_operations import load_posted_events
+from constants import DISCORD_BOT_TOKEN
 
 def main():
     # Discord Config
@@ -18,7 +18,7 @@ def main():
     setup_event_events(bot)
 
     # Run the bot
-    bot.run(os.getenv('DISCORD_BOT_TOKEN'))
+    bot.run(DISCORD_BOT_TOKEN)
 
 if __name__ == "__main__":
     main()
