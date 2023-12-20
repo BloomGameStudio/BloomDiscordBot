@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Functionality to detect contributors emojis in chat, react, and ping the respective user for said emoji,
+- Functionality to detect contributors emojis in chat, as well as if their emoji is used as a react. ping the respective user for said emoji.
 - Functions to add, remove, or check the contributors that exist
 
 - This CHANGELOG file.
