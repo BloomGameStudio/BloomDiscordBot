@@ -13,7 +13,7 @@ start with: $
 
 **Remove Contributor:** 
 
-!removecontributor <uid> 
+$remove_contributor @contributor 
 
 **Example:**
 
@@ -28,11 +28,11 @@ Contributor Sarahtonein removed successfully!
 
 **Add Contributor:**
 ```
-$addcontributor
+$add_contributor
 ```
 
 ```
-1. $addcontributor
+1. $add_contributor
 
 2. Bot will respond with required details.
 
@@ -43,7 +43,7 @@ $addcontributor
 **Example:**
 
 ```
-$addcontributor
+$add_contributor
 ```
 
 ```
@@ -76,12 +76,12 @@ $contributors
 **Response:**
 
 ```
-List of Contributors:
-Sarahtonein - UID: 316765092689608706
-Lapras - UID: 395761182939807744
-Balu - UID: 353572599957291010
-Pizzacat - UID: 303732860265693185
-Spaghetto - UID: 406302927884386318
-Baguette - UID: 548974112131776522
-Breeze - UID: 154033306894073856
+:artifacts: List of Contributors :artifacts:
+:gumbo:
+:lap:
+:balu:
+:pizzacat:
+:spag:
+:baguette:
+:breeze:
 ```
