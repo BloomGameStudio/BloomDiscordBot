@@ -20,7 +20,7 @@ async def handle_message(bot, message, contributors, emoji_id_mapping):
                 try:
                     logging.info(f'Messaging the user, {contributor["uid"]}')
                     message_link = message.jump_url
-                    await send_dm_once(bot, contributor, message_link, contributors, emoji_id_mapping)
+                    await send_dm_once(bot, contributor, message_link)
                 except discord.errors.NotFound:
                     logging.warning(f'User not found: {contributor["uid"]}')
 
