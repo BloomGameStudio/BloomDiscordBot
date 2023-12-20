@@ -16,8 +16,17 @@ async def send_dm_once(bot, contributor, message_link):
         await user.send(dm_message)
 
 def update_json_file(contributors, emoji_id_mapping):
+    # Extract emoji names from emojiIdMapping
+    emoji_names = {uid: emoji.split(':')[1] for emoji, uid in emoji_id_mapping.items()}
+
+    # Add 'note' to each contributor
+    for contributor in contributors:
+        uid = contributor['uid']
+        if uid in emoji_names:
+            contributor['note'] = emoji_names[uid]
+
     with open(FILE_PATH, 'w') as json_file:
-        json.dump({"contributors": contributors or [], "emojiIdMapping": emoji_id_mapping or {}}, json_file)
+        json.dump({"contributors": contributors or [], "emojiIdMapping": emoji_id_mapping or {}}, json_file, indent=4)
 
 async def list_contributors(ctx, emoji_id_mapping):
     emoji_mapping_list = [emoji for emoji in emoji_id_mapping.keys()]
