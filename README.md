@@ -47,11 +47,10 @@ $addcontributor
 ```
 
 ```
-To add a contributor, please provide the following information:
-Name
-User ID (UID)
-Emoji ID
-Example:Sarahtonein 123456789012345678 <:sarah:1176399164154851368>
+ To add a contributor, reply to this message by tagging them with their emoji
+    
+ **Example:** `@user <:emoji:123456789>`
+If you are adding yourself, simply react to this post with your emoji
 
 ```
 
