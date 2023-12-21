@@ -14,8 +14,8 @@ def main():
     bot = commands.Bot(command_prefix="$", intents=intents)
     
     # Setup the governance discord commands, and events
-    setup_gov_commands(bot, contributors, emoji_id_mapping)
-    setup_gov_events(bot, contributors, emoji_id_mapping)
+    setup_gov_commands()
+    setup_gov_events()
 
     # Run the bot
     bot.run(DISCORD_BOT_TOKEN)
