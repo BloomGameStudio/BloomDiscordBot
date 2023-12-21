@@ -1,4 +1,4 @@
-FROM python:3.10
+FROM python:3.11
 
 # Install pipenv and compilation dependencies
 RUN pip install pipenv
