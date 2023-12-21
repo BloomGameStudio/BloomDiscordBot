@@ -1,20 +1,27 @@
 import discord
-import os
-import asyncio
-from discord.ext import commands, tasks
-from emojis.emojis import emoji_id_mapping, contributors, send_dm_once, update_json_file, add_contributor
-from updates.updates import check_upcoming_events, load_dotenv, notify_new_event, format_event, load_posted_events, save_posted_events, get_guild_scheduled_event_users
-from gov.proposals import proposals, new_proposal_emoji, publish_draft, get_governance_id, textwrap, get_budget_id
-from shared.shared import logging
+from discord.ext import commands
+from gov.commands import setup_gov_commands
+from gov.events import setup_gov_events
+from constants import DISCORD_BOT_TOKEN, FILE_PATH
+import json
 
-#Load ENV
-load_dotenv()
+def main():
 
-#Discord Config
-intents = discord.Intents.default()
-intents.message_content = True
-intents.reactions = True
-bot = commands.Bot(command_prefix="$", intents=intents)
+    # Discord Config
+    intents = discord.Intents.default()
+    intents.message_content = True
+    intents.reactions = True
+    bot = commands.Bot(command_prefix="$", intents=intents)
+    
+    # Setup the governance discord commands, and events
+    setup_gov_commands(bot, contributors, emoji_id_mapping)
+    setup_gov_events(bot, contributors, emoji_id_mapping)
+
+    # Run the bot
+    bot.run(DISCORD_BOT_TOKEN)
+
+if __name__ == "__main__":
+    main()
 
 @bot.event
 async def on_message(message):
