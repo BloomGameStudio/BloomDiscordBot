@@ -1,5 +1,6 @@
 import asyncio
 import json
+import discord
 from constants import FILE_PATH
 
 def add_contributor_to_list(uid, emoji_id, contributors, emoji_id_mapping):    
@@ -54,18 +55,31 @@ async def remove_contributor(ctx, contributors, emoji_id_mapping, user_mention=N
         await ctx.send("Please provide the mention of the contributor to remove.")
 
 async def add_contributor(ctx, contributors, emoji_id_mapping, bot):
-    await ctx.send("**To add a contributor, reply to this message by tagging them with their emoji**\n"
+    message = await ctx.send("**To add a contributor, reply to this message by tagging them with their emoji**\n"
                 "\n"
                 "**Example:** `@user <:emoji:123456789>`\n"
                 "\n"
                 "If you are adding yourself, simply react to this post with your emoji")
 
-    def check(msg):
+    def check_message(msg):
         return msg.author == ctx.author and msg.channel == ctx.channel
 
-    try:
-        response = await bot.wait_for('message', check=check, timeout=60)
-        inputs = response.content.split()
+    def check_reaction(reaction, user):
+        return user == ctx.author and reaction.message.id == message.id
+
+    #Wait 60 seconds for either a message or a reaction, whichever is done first.
+    done, pending = await asyncio.wait([
+        asyncio.create_task(bot.wait_for('message', check=check_message, timeout=60)),
+        asyncio.create_task(bot.wait_for('reaction_add', check=check_reaction, timeout=60))
+    ], return_when=asyncio.FIRST_COMPLETED)
+
+    #Cancel the task(s) that didn't finish.
+    for future in pending:
+        future.cancel()
+
+    result = done.pop().result()
+    if isinstance(result, discord.Message):
+        inputs = result.content.split()
         if len(inputs) == 2:
             uid, emoji_id = inputs
             uid = uid.strip('<@!>')
@@ -74,9 +88,20 @@ async def add_contributor(ctx, contributors, emoji_id_mapping, bot):
             if existing_contributor:
                 await ctx.send(f"Contributor {existing_contributor['uid']} already exists")
             else:
-                add_contributor_to_list(uid, emoji_id, contributors, emoji_id_mapping)  # Pass emoji_id here
+                add_contributor_to_list(uid, emoji_id, contributors, emoji_id_mapping)
                 await ctx.send(f"Contributor added successfully!")
         else:
             await ctx.send("Invalid input. Please provide all required information.")
-    except asyncio.TimeoutError:
+    elif isinstance(result, tuple) and len(result) == 2:
+        reaction, user = result
+        emoji_id = str(reaction.emoji)
+        uid = str(user.id)
+        existing_contributor = next((c for c in contributors if c["uid"] == uid), None)
+
+        if existing_contributor:
+            await ctx.send(f"Contributor {existing_contributor['uid']} already exists")
+        else:
+            add_contributor_to_list(uid, emoji_id, contributors, emoji_id_mapping)
+            await ctx.send(f"Contributor added successfully!")
+    else:
         await ctx.send("Timeout. Please run the command again.")
