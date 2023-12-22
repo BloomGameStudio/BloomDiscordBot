@@ -3,11 +3,10 @@ import os
 import asyncio
 import time
 from datetime import timezone, timedelta, datetime
-from shared.shared import current_budget_id, current_governance_id
-
-new_proposal_emoji = "💡"
+from constants import current_budget_id, current_governance_id
 
 proposals = []
+
 ongoing_votes = {}
 
 def get_next_governance_id():
@@ -27,13 +26,16 @@ def get_budget_id():
     return current_budget_id
 
 async def publish_draft(draft, client):
+    #Delete?
     channel = None  # Initialize channel with None
 
     if draft["type"].lower() == "budget":
+        #Import and remove os.getenv
         channel_id = int(os.getenv("GOVERNANCE_BUDGET_CHANNEL_ID"))
         current_budget_id = get_next_budget_id()
         title = f"**Bloom Budget Proposal (BBP) #{current_budget_id}: {draft['name']}**"
     else:
+        #Same here
         channel_id = int(os.getenv("GOVERNANCE_CHANNEL_ID"))
         current_governance_id = get_next_governance_id()
         title = f"**Bloom Improvement Proposal (BIP) #{current_governance_id}: {draft['name']}**"
