@@ -1,9 +1,10 @@
 from .proposals import publish_draft
+from constants import GOVERNANCE_TALK_CHANNEL_ID
 import os
 
 async def handle_votedraft(ctx, proposals, new_proposal_emoji):
     if ctx.channel.id != int(os.getenv('GOVERNANCE_TALK_CHANNEL_ID')):
-        await ctx.send("This command can only be used in the Governance talk channel")
+        await ctx.send(f"This command can only be used in <#{GOVERNANCE_TALK_CHANNEL_ID}>")
         return
     msg = "Would you like to work on an existing draft proposal, or do you wish to create a new one? \nExisting drafts are:"
 
