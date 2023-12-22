@@ -35,7 +35,7 @@ async def publish_draft(draft, client):
         current_governance_id = get_next_governance_id()
         update_id_values(current_governance_id, 'governance')  # Update the governance ID in the config file
         title = f"**Bloom Improvement Proposal (BIP) #{current_governance_id}: {draft['name']}**"
-        
+
     channel = client.get_channel(channel_id)
 
     if not channel:
@@ -92,7 +92,7 @@ async def vote_timer(message_id, client, channel_id, title):
     # Check the result and post it
     result_message = f"Vote for '{title}' has concluded:\n\n"
 
-    if ongoing_votes[message_id]["yes_count"] >= 1: #Set to qurom needed
+    if ongoing_votes[message_id]["yes_count"] >= 5: #Set to qurom needed
         result_message += "The vote passes! :tada:"
         # Call the snapshot creation function
         subprocess.run(['node', './snapshot/wrapper.js', title, ongoing_votes[message_id]['draft']['abstract'], ongoing_votes[message_id]['draft']['background'], 'Yes', 'No', 'Abstain'], check=True)
