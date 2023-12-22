@@ -2,6 +2,7 @@ import textwrap
 import os
 import asyncio
 import time
+import subprocess
 from datetime import timezone, timedelta, datetime
 from constants import current_budget_id, current_governance_id
 
@@ -82,9 +83,9 @@ async def publish_draft(draft, client):
     }
 
     # Start the timer coroutine
-    asyncio.create_task(vote_timer(vote_message.id, client, channel_id))
+    asyncio.create_task(vote_timer(vote_message.id, client, channel_id, title))
 
-async def vote_timer(message_id, client, channel_id):
+async def vote_timer(message_id, client, channel_id, title):
     # Sleep until the vote ends
     await asyncio.sleep(ongoing_votes[message_id]["end_time"] - asyncio.get_event_loop().time())
 
@@ -101,10 +102,12 @@ async def vote_timer(message_id, client, channel_id):
             ongoing_votes[message_id]["abstain_count"] = reaction.count
 
     # Check the result and post it
-    result_message = f"Vote for '{ongoing_votes[message_id]['draft']['name']}' has concluded:\n\n"
+    result_message = f"Vote for '{title}' has concluded:\n\n"
 
-    if ongoing_votes[message_id]["yes_count"] > 5: #Set to qurom needed
+    if ongoing_votes[message_id]["yes_count"] >= 5: #Set to qurom needed
         result_message += "The vote passes! :tada:"
+        # Call the snapshot creation function
+        subprocess.run(['node', './snapshot/wrapper.js', title, ongoing_votes[message_id]['draft']['abstract'], ongoing_votes[message_id]['draft']['background'], 'Yes', 'No', 'Abstain'], check=True)
     else:
         result_message += "The vote fails. :disappointed:"
 

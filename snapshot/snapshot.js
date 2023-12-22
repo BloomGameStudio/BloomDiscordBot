@@ -4,7 +4,7 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
-async function createProposal() {
+async function createProposal(title, abstract, background, options) {
   try {
     const ethAddress = process.env.ETH_ADDRESS;
     const ethPrivateKey = process.env.ETH_PRIVATE_KEY;
@@ -29,9 +29,9 @@ async function createProposal() {
     const proposalParams = {
       space: 'testdao1.eth',
       type: 'single-choice', // define the voting system
-      title: 'Test proposal using Snapshot.js',
-      body: 'This is the content of the proposal',
-      choices: ['Alice', 'Bob', 'Carol'],
+      title: title,
+      body: `${abstract}\n\n${background}`,
+      choices: options,
       start: currentTime,
       end: currentTime + oneHourInSeconds, // End time is one hour later as an example
       snapshot: await provider.getBlockNumber(), // Current block number as snapshot
