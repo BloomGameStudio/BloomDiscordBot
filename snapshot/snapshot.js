@@ -50,5 +50,5 @@ async function createProposal() {
   }
 }
 
-// Create the proposal
-createProposal();
+
+module.exports = createProposal;
