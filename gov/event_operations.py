@@ -1,8 +1,4 @@
-import logging
-import discord
 import textwrap
-from constants import new_proposal_emoji
-from .proposals import proposals
 
 async def handle_on_message(bot, message, proposals):
     fmt_proposals = ""

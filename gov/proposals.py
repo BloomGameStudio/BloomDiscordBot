@@ -1,10 +1,8 @@
 import textwrap
 import os
 import asyncio
-import time
 import subprocess
-from datetime import timezone, timedelta, datetime
-from constants import current_budget_id, current_governance_id
+from constants import current_budget_id, current_governance_id, GOVERNANCE_BUDGET_CHANNEL_ID, GOVERNANCE_CHANNEL_ID
 
 proposals = []
 
@@ -31,13 +29,11 @@ async def publish_draft(draft, client):
     channel = None  # Initialize channel with None
 
     if draft["type"].lower() == "budget":
-        #Import and remove os.getenv
-        channel_id = int(os.getenv("GOVERNANCE_BUDGET_CHANNEL_ID"))
+        channel_id = int(GOVERNANCE_BUDGET_CHANNEL_ID)
         current_budget_id = get_next_budget_id()
         title = f"**Bloom Budget Proposal (BBP) #{current_budget_id}: {draft['name']}**"
     else:
-        #Same here
-        channel_id = int(os.getenv("GOVERNANCE_CHANNEL_ID"))
+        channel_id = int(GOVERNANCE_CHANNEL_ID)
         current_governance_id = get_next_governance_id()
         title = f"**Bloom Improvement Proposal (BIP) #{current_governance_id}: {draft['name']}**"
 
