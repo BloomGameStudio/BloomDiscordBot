@@ -4,6 +4,11 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
+function removeMarkdown(text) {
+  const markdownRegex = /([_*~`]|(\\r\\n|\\n))/g;
+  return text.replace(markdownRegex, '');
+}
+
 async function createProposal(title, abstract, background, options) {
   try {
     const ethAddress = process.env.ETH_ADDRESS;
@@ -29,9 +34,9 @@ async function createProposal(title, abstract, background, options) {
     const proposalParams = {
       space: 'testdao1.eth',
       type: 'single-choice', // define the voting system
-      title: title,
-      body: `${abstract}\n\n${background}`,
-      choices: options,
+      title: removeMarkdown(title),
+      body: `Abstract: ${removeMarkdown(abstract)}\n\n Background:${removeMarkdown(background)}`,
+      choices: options.map(removeMarkdown),
       start: currentTime,
       end: currentTime + oneHourInSeconds, // End time is one hour later as an example
       snapshot: await provider.getBlockNumber(), // Current block number as snapshot
@@ -49,6 +54,5 @@ async function createProposal(title, abstract, background, options) {
     console.error('Error creating proposal:', error);
   }
 }
-
 
 module.exports = createProposal;
