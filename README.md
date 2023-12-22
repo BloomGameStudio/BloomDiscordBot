@@ -99,8 +99,6 @@ test draft background
  :bulby_sore: Reassess
  :pepe_angel: Abstain
 
-Vote will conclude in 48h from now.
-
 If you wish to publish your draft proposal, please use command $publish_draft.
 ```
 
@@ -108,7 +106,12 @@ If you wish to publish your draft proposal, please use command $publish_draft.
 
 In order to publish a draft you need to use the command $publish_draft [draft name]
 
-This will automatically publish the draft you request to the appropriate Discord channel depending on if it is a general proposal or a budget.
+This will automatically publish the draft you want to the appropriate Discord channel (Gov-Budget or Governance) depending on if it is a general proposal or a budget.
+
+If / when a published draft reaches qurom, the draft is approved and subsequently posted to Snapshot. NOTE: env vars ``ETH_ADDRESS`` and ``ETH_PRIVATE_KEY``
+need to be set.
+
+A Snapshot space is required to be configured and is outside the scope of this documentation. Please refer to https://docs.snapshot.org/ to configure a Snapshot space.
 
 **Example:**
 
@@ -126,7 +129,7 @@ new draft abstract
 Background
 new draft background
 
- :thumbsup: Yes
+ :inevitable_bloom:Yes
  :bulby_sore: Reassess
  :pepe_angel: Abstain
 
