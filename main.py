@@ -1,8 +1,8 @@
 import discord
+import os
 from discord.ext import commands
 from gov.commands import setup_gov_commands
 from gov.events import setup_gov_events
-from constants import DISCORD_BOT_TOKEN
 
 def main():
 
@@ -17,7 +17,7 @@ def main():
     setup_gov_events(bot)
 
     # Run the bot
-    bot.run(DISCORD_BOT_TOKEN)
-
+    bot.run(os.getenv("DISCORD_BOT_TOKEN")
+    )
 if __name__ == "__main__":
     main()
