@@ -12,7 +12,7 @@ When you decide to post the draft, you can request the bot to do this.
 # Commands
 
 The following commands can be used to create, edit, and publish drafts.
-All commands start with $.
+All commands start with $. The $ symbol is being used as ! currently conflicts with the existing OK Bloomer bot.
 
 **Vote Draft:**
 
