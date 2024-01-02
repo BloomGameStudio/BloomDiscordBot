@@ -3,7 +3,6 @@ import asyncio
 import subprocess
 import config.config as cfg
 from constants import GOVERNANCE_BUDGET_CHANNEL_ID, GOVERNANCE_CHANNEL_ID
-#from config.config import current_governance_id, current_budget_id, update_id_values
 
 proposals = []
 
@@ -63,7 +62,6 @@ async def publish_draft(draft, client):
     # Store the vote message ID and relevant information
     ongoing_votes[vote_message.id] = {
         "draft": draft,
-        "end_time": asyncio.get_event_loop().time() + 48 * 3600,  # 48 hours in seconds
         "yes_count": 0,
         "reassess_count": 0,
         "abstain_count": 0,
@@ -74,7 +72,7 @@ async def publish_draft(draft, client):
     
 async def vote_timer(message_id, client, channel_id, title):
     # Sleep until the vote ends
-    await asyncio.sleep(ongoing_votes[message_id]["end_time"] - asyncio.get_event_loop().time())
+    await asyncio.sleep(48 * 3600)
 
     # Count the reactions
     vote_message = await client.get_channel(channel_id).fetch_message(message_id)
