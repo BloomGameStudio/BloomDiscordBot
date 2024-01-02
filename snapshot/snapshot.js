@@ -32,7 +32,7 @@ async function createProposal(title, abstract, background, options) {
     const oneHourInSeconds = 3600;
 
     const proposalParams = {
-      space: 'testdao1.eth',
+      space: 'testnet-1.eth',
       type: 'single-choice', // define the voting system
       title: removeMarkdown(title),
       body: `Abstract:\n ${removeMarkdown(abstract)}\n\n Background:\n ${removeMarkdown(background)}`,
