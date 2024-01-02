@@ -1,39 +1,38 @@
 import textwrap
 import asyncio
 import subprocess
+import config.config as cfg
 from constants import GOVERNANCE_BUDGET_CHANNEL_ID, GOVERNANCE_CHANNEL_ID
-from config.config import current_governance_id, current_budget_id, update_id_values
+#from config.config import current_governance_id, current_budget_id, update_id_values
 
 proposals = []
 
 ongoing_votes = {}
 
 def get_next_governance_id():
-    global current_governance_id
-    current_governance_id += 1
-    return current_governance_id
+    cfg.current_governance_id += 1
+    return cfg.current_governance_id
 
 def get_next_budget_id():
-    global current_budget_id
-    current_budget_id += 1
-    return current_budget_id
+    cfg.current_budget_id += 1
+    return cfg.current_budget_id
 
 def get_governance_id():
-    return current_governance_id
+    return cfg.current_governance_id
 
 def get_budget_id():
-    return current_budget_id
+    return cfg.current_budget_id
 
 async def publish_draft(draft, client):
     if draft["type"].lower() == "budget":
         channel_id = int(GOVERNANCE_BUDGET_CHANNEL_ID)
         current_budget_id = get_next_budget_id()
-        update_id_values(current_budget_id, 'budget')  # Update the budget ID in the config file
+        cfg.update_id_values(current_budget_id, 'budget')  # Update the budget ID in the config file
         title = f"**Bloom Budget Proposal (BBP) #{current_budget_id}: {draft['name']}**"
     else:
         channel_id = int(GOVERNANCE_CHANNEL_ID)
         current_governance_id = get_next_governance_id()
-        update_id_values(current_governance_id, 'governance')  # Update the governance ID in the config file
+        cfg.update_id_values(current_governance_id, 'governance')  # Update the governance ID in the config file
         title = f"**Bloom Improvement Proposal (BIP) #{current_governance_id}: {draft['name']}**"
 
     channel = client.get_channel(channel_id)
