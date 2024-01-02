@@ -18,7 +18,7 @@ async function createProposal(title, abstract, background, options) {
       throw new Error('Ethereum address or private key not provided in environment variables');
     }
 
-    const provider = new ethers.providers.JsonRpcProvider('https://rpc.ankr.com/eth_goerli'); // Replace with your RPC endpoint
+    const provider = new ethers.providers.JsonRpcProvider('https://rpc.ankr.com/eth_goerli');
 
     const wallet = new ethers.Wallet(ethPrivateKey, provider);
 
