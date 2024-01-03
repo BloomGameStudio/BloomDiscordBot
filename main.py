@@ -5,7 +5,7 @@ from discord.ext import commands
 from gov.commands import setup_gov_commands
 from emotes.commands import setup_contrbitutor_commands
 from shared.constants import CONTRIBUTORS_FILE_PATH, new_proposal_emoji
-from shared.event_operations import handle_message, handle_reaction
+from shared.events import setup_shared_events
 from gov.proposals import proposals
 
 def main():
@@ -27,20 +27,8 @@ def main():
     # Setup the emotes discord commands, and events
     setup_contrbitutor_commands(bot, contributors, emoji_id_mapping)
 
-    # Setup the shared message event handling
-    def setup_events(bot: commands.Bot, contributors, emoji_id_mapping, proposals):
-        @bot.event
-        async def on_message(message):
-            await handle_message(bot, message, contributors, emoji_id_mapping, proposals)
-
-    def setup_reaction_events(bot: commands.Bot, contributors, emoji_id_mapping, proposals, new_proposal_emoji):
-        @bot.event
-        async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
-            await handle_reaction(bot, reaction, user, contributors, emoji_id_mapping, proposals, new_proposal_emoji)
-
-    # Call the setup functions
-    setup_events(bot, contributors, emoji_id_mapping, proposals)
-    setup_reaction_events(bot, contributors, emoji_id_mapping, proposals, new_proposal_emoji)
+    # Setup the shared events
+    setup_shared_events(bot, contributors, emoji_id_mapping, proposals, new_proposal_emoji)
 
     # Run the bot
     bot.run(os.getenv("DISCORD_BOT_TOKEN"))
