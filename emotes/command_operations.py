@@ -1,7 +1,7 @@
 import asyncio
 import json
 import discord
-from constants import CONTRIBUTORS_FILE_PATH
+from shared.constants import CONTRIBUTORS_FILE_PATH
 
 def add_contributor_to_list(uid, emoji_id, contributors, emoji_id_mapping):    
     new_contributor = {"uid": uid}

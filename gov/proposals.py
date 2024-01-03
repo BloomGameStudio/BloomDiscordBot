@@ -2,7 +2,7 @@ import textwrap
 import asyncio
 import subprocess
 import config.config as cfg
-from constants import GOVERNANCE_BUDGET_CHANNEL_ID, GOVERNANCE_CHANNEL_ID
+from shared.constants import GOVERNANCE_BUDGET_CHANNEL_ID, GOVERNANCE_CHANNEL_ID
 
 proposals = []
 
