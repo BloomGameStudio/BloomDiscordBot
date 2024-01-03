@@ -1,8 +1,9 @@
-import os
-
 # Constants used throughout the bot
 # set the GUILD_ID and GENERAL_CHANNEL_ID to the server and channel you want the bot to post events to
 GUILD_ID = 1119110120522133537
 GENERAL_CHANNEL_ID = 1176395644261367828
+GOVERNANCE_CHANNEL_ID = 1181503487440334938
+GOVERNANCE_TALK_CHANNEL_ID = 1176395644261367828
+GOVERNANCE_BUDGET_CHANNEL_ID = 1179949022287495198
+new_proposal_emoji = "💡"
 FILE_PATH = './events/posted_events.json'
-DISCORD_BOT_TOKEN = os.getenv('DISCORD_BOT_TOKEN')
