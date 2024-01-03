@@ -1,5 +1,6 @@
-import os
-
-# Constants used throughout the bot
+# Description: Constants used in the bot
+GOVERNANCE_CHANNEL_ID = 1181503487440334938
+GOVERNANCE_TALK_CHANNEL_ID = 1176395644261367828
+GOVERNANCE_BUDGET_CHANNEL_ID = 1179949022287495198
+new_proposal_emoji = "💡"
 FILE_PATH = './emotes/contributors.json'
-DISCORD_BOT_TOKEN = os.getenv('DISCORD_BOT_TOKEN')

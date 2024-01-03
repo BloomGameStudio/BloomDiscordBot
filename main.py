@@ -1,9 +1,12 @@
 import discord
+import os
+import json
 from discord.ext import commands
+from gov.commands import setup_gov_commands
+from gov.events import setup_gov_events
 from emotes.commands import setup_contrbitutor_commands
 from emotes.events import setup_contributor_events
-from constants import DISCORD_BOT_TOKEN, FILE_PATH
-import json
+from constants import FILE_PATH
 
 def main():
     # Load contributors and emoji ID mapping from contributors.json
@@ -18,12 +21,17 @@ def main():
     intents.reactions = True
     bot = commands.Bot(command_prefix="$", intents=intents)
     
+    # Setup the governance discord commands, and events
+    setup_gov_commands(bot)
+    setup_gov_events(bot)
+    
     # Setup the emotes discord commands, and events
     setup_contrbitutor_commands(bot, contributors, emoji_id_mapping)
     setup_contributor_events(bot, contributors, emoji_id_mapping)
 
     # Run the bot
-    bot.run(DISCORD_BOT_TOKEN)
+    bot.run(os.getenv("DISCORD_BOT_TOKEN")
+    )
 
 if __name__ == "__main__":
     main()
