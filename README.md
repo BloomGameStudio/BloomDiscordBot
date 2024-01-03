@@ -1,13 +1,17 @@
 # BloomDiscordBot
 
+# Help:
+
+You can type ```$bot_help``` to get details about what commands can be used, along with a brief description of them
+
 # Governance
 
 **Creating proposals:**
 
 Proposals can be drafted by utilizing various commands. 
-The drafts will automatically be posted so that you can view / make changes to it prior to posting it.
+Upon completing a draft, it will automatically be posted so that you can view / make changes to it prior to publishing it.
 
-When you decide to post the draft, you can request the bot to do this.
+When you decide to publish the draft, you can request the bot to do this.
 
 # Commands
 
@@ -29,12 +33,79 @@ Would you like to work on an existing draft or a new one? existing drafts are:
 💡 New
 ```
 
-You are then required to react to the message with 💡 to start creating a new draft. You will be prompted to create a title, select a type of proposal (general, or budget) abstract, and finally a background for the proposal.
+**Example:**
+💡 (react to message)
 
+**Response:**
+
+```
+What is the title of this draft?
+```
+
+**Example:**
+
+```
+Test Budget Draft
+```
+
+**Response:**
+
+```
+Is this budget or general?
+```
+
+**Example:**
+
+```
+budget
+```
+
+**Response:**
+
+```
+Great! What is the abstract?
+```
+
+**Example:**
+
+```
+This is an example abstract
+```
+
+**Response:**
+
+```
+Can you provide some background?
+```
+
+**Example:**
+
+```
+Example background information about the proposal
+```
+
+**Response:**
+
+```
+Bloom Budget Proposal Draft: Test Budget Draft
+
+Abstract
+This is an example abstract
+
+Background
+Example background information about the proposal
+
+ :inevitable_bloom: Yes
+ :bulby_sore: Reassess
+ :pepe_angel: Abstain
+ 
+If you wish to publish your draft proposal, please use command ``$publish_draft``
+
+```
 
 **Edit Draft**
 
-You will use the same command as before ($vote_draft / $v). A list of drafts if they exist will appear as a response from the bot. You are required to react to the draft you wish to edit with the 📝 emoji.
+You will use the same command as before ```$vote_draft / $v``` A list of drafts if they exist will appear as a response from the bot. You are required to react to the draft you wish to edit with the 📝 emoji.
 
 **Example:**
 
@@ -48,7 +119,15 @@ Would you like to work on an existing draft or a new one? existing drafts are:
 💡 New
 ```
 
+**Example:**
+
+```
+📝 (react to message)
+```
+
 Once you react with the 📝 emoji, the draft you have chosen to edits details will be displayed in a response from the bot.
+
+**Response:**
 
 ```
 You are editing: Test draft
@@ -58,7 +137,7 @@ Abstract: test draft abstract
 Background: test draft background
 ```
 
-You may choose from the following options to edit the title, abstract, and background respectively:
+You may choose from the following options to edit the title, abstract, and background:
 
 ```
 title
@@ -70,6 +149,7 @@ background
 
 ```
 title
+
 ```
 
 **Response:**
@@ -78,13 +158,28 @@ title
 What will be the new title?
 ```
 
-After entering the amended title, you will get the following response:
+**Example:**
+
+```
+new title
+
+```
+
+**Response:**
 
 ```
 You can edit further by repeating the previous step. If you are finished type 'save' without the single quotes
 ```
 
 To save the draft, type save. The bot will response with the new draft details:
+
+**Example:**
+
+```
+save
+```
+
+**Response**
 
 ```
 Topic/Vote 0: new title
@@ -134,4 +229,76 @@ new draft background
  :pepe_angel: Abstain
 
 Vote will conclude in 48h from now.
+```
+
+If qurom is reached:
+
+**Response:**
+
+```
+Vote for 'Bloom Budget Proposal (BBP) #12: Test' has concluded:
+
+The vote passes! :tada:
+
+Yes: 1
+Reassess: 0
+Abstain: 0
+```
+
+
+# Events:
+
+When a bloomer creates an event within Blooms Discord server, there will initially be a 30 minute delay from the time of creation to when the details of the event are posted in Discord. This will allow the bloomer time to make changes to the details, starting time, and so on.
+
+There is a scheduled task that will identify events starting within the next 24 hours. If any are detected those who have expressed interest are informed of the events details in a Discord message.
+
+Events can be deleted through a command, detailed below.
+
+# Commands:
+
+The following commands can be used to delete, and list events.
+All commands start with: $
+
+**List Events:**
+
+```
+$list_events
+```
+
+**Example:**
+
+```
+$list_events
+```
+
+**Response:**
+
+```
+🗓️ All Events🗓️ 
+
+🌺 Scrutinizer Game night🌺 
+event_id: 1180231420476670043
+Description: 
+
+🌺 Modular Mesh Architecture🌺 
+event_id: 1184322631692980325
+Description:
+```
+
+**Delete Events:**
+
+```
+$delete_event <event_id>
+```
+
+**Example**
+
+```
+$delete_event 1179242504395165748
+```
+
+**Response**
+
+```
+Event with ID 1179242504395165748 has been deleted.
 ```
