@@ -9,7 +9,7 @@ function removeMarkdown(text) {
   return text.replace(markdownRegex, '');
 }
 
-async function createProposal(title, abstract, background, options) {
+async function createProposal(title, abstract, background, choices) {
   try {
     const ethAddress = process.env.ETH_ADDRESS;
     const ethPrivateKey = process.env.ETH_PRIVATE_KEY;
@@ -36,7 +36,7 @@ async function createProposal(title, abstract, background, options) {
       type: 'single-choice', // define the voting system
       title: removeMarkdown(title),
       body: `Abstract:\n ${removeMarkdown(abstract)}\n\n Background:\n ${removeMarkdown(background)}`,
-      choices: options.map(removeMarkdown),
+      choices: choices.map(removeMarkdown),
       start: currentTime,
       end: currentTime + oneHourInSeconds, // End time is one hour later as an example
       snapshot: await provider.getBlockNumber(), // Current block number as snapshot
