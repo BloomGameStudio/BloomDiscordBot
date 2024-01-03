@@ -32,7 +32,7 @@ async def publish_draft(draft, client):
         channel_id = int(GOVERNANCE_CHANNEL_ID)
         current_governance_id = get_next_governance_id()
         cfg.update_id_values(current_governance_id, 'governance')  # Update the governance ID in the config file
-        title = f"**Bloom Improvement Proposal (BIP) #{current_governance_id}: {draft['name']}**"
+        title = f"**Bloom Governance Proposal (BGP) #{current_governance_id}: {draft['name']}**"
 
     channel = client.get_channel(channel_id)
 
