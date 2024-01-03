@@ -24,7 +24,7 @@ def main():
     setup_gov_events(bot)
 
     # Run the bot
-    bot.run(os.getenv("DISCORD_BOT_TOKEN")
+    bot.run(os.getenv("DISCORD_BOT_TOKEN"))
 
 if __name__ == "__main__":
     main()
