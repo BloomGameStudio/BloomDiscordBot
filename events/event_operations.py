@@ -2,14 +2,15 @@ import json
 import requests
 import logging
 import asyncio
-from constants import FILE_PATH, GUILD_ID, GENERAL_CHANNEL_ID, DISCORD_BOT_TOKEN
+import os
+from constants import POSTED_EVENTS_FILE_PATH, GUILD_ID, GENERAL_CHANNEL_ID
 from datetime import datetime, timezone
 
 # Load the stored events from the JSON file
 def load_posted_events():
     try:
-        logging.info(f"Loading events from: {FILE_PATH}")
-        with open(FILE_PATH, "r") as file:
+        logging.info(f"Loading events from: {POSTED_EVENTS_FILE_PATH}")
+        with open(POSTED_EVENTS_FILE_PATH, "r") as file:
             return json.load(file)
     except FileNotFoundError:
         return []
@@ -17,9 +18,9 @@ def load_posted_events():
 # Save the posted events to the JSON file
 def save_posted_events(posted_events):
     try:
-        logging.info(f"Saving events to: {FILE_PATH}")
+        logging.info(f"Saving events to: {POSTED_EVENTS_FILE_PATH}")
 
-        with open(FILE_PATH, "w") as file:
+        with open(POSTED_EVENTS_FILE_PATH, "w") as file:
             json.dump(posted_events, file)
             
     except Exception as e:
@@ -54,7 +55,7 @@ def get_guild_scheduled_event_users(scheduled_event_id, limit=100, with_member=F
     }
 
     headers = {
-        'Authorization': f'Bot {DISCORD_BOT_TOKEN}'
+        'Authorization': f'Bot {os.getenv("DISCORD_BOT_TOKEN")}'
     }
 
     response = requests.get(url, params=params, headers=headers)
