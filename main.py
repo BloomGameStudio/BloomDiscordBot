@@ -6,11 +6,11 @@ from gov.commands import setup_gov_commands
 from gov.events import setup_gov_events
 from emotes.commands import setup_contrbitutor_commands
 from emotes.events import setup_contributor_events
-from constants import FILE_PATH
+from constants import CONTRIBUTORS_FILE_PATH
 
 def main():
     # Load contributors and emoji ID mapping from contributors.json
-    with open(FILE_PATH, 'r') as json_file:
+    with open(CONTRIBUTORS_FILE_PATH, 'r') as json_file:
         data = json.load(json_file)
         contributors = data["contributors"]
         emoji_id_mapping = {emoji: contributor for emoji, contributor in data["emojiIdMapping"].items()}

@@ -1,7 +1,7 @@
 import asyncio
 import json
 import discord
-from constants import FILE_PATH
+from constants import CONTRIBUTORS_FILE_PATH
 
 def add_contributor_to_list(uid, emoji_id, contributors, emoji_id_mapping):    
     new_contributor = {"uid": uid}
@@ -26,7 +26,7 @@ def update_json_file(contributors, emoji_id_mapping):
         if uid in emoji_names:
             contributor['note'] = emoji_names[uid]
 
-    with open(FILE_PATH, 'w') as json_file:
+    with open(CONTRIBUTORS_FILE_PATH, 'w') as json_file:
         json.dump({"contributors": contributors or [], "emojiIdMapping": emoji_id_mapping or {}}, json_file, indent=4)
 
 async def list_contributors(ctx, emoji_id_mapping):
