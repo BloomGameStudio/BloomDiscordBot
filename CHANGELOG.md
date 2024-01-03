@@ -14,6 +14,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - This CHANGELOG file.
 
+- $bot_help command to provide details about useable comamnds.
+
+- Functionality to list, and delete existing events.
+
+- schedule task that identifies events scheduled to start within the next 24 hours
+
+- Tag interested contributors that an event is started within hte next 24 hours
+
+- Delay between event creation events by 30 minutes to allow for editing of event details before posting to Discord. 
+- 
 - Governance bot to create, edit, and submit proposals to respective governance channels in Discord.
 
 - Restricting governance proposal drafting to one channel in Discord.

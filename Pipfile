@@ -5,7 +5,9 @@ name = "pypi"
 
 [packages]
 "discord.py" = "*"
-configparser = "*"
+"pytz" = "*"
+"requests" = "*"
+"configparser" = "*"
 
 [dev-packages]
 

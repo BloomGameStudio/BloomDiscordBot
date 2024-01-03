@@ -245,29 +245,85 @@ Reassess: 0
 Abstain: 0
 ```
 
-# Emotes:
+# Events:
 
-When a mapped contributors Emoji is used in Blooms Discord server (as a message, or reaction), the contributor will be DM'd advising they have been mentioned in a chat.
-A link to the message they have been mentioned in will be included. 
+When a bloomer creates an event within Blooms Discord server, there will initially be a 30 minute delay from the time of creation to when the details of the event are posted in Discord. This will allow the bloomer time to make changes to the details, starting time, and so on.
+
+There is a scheduled task that will identify events starting within the next 24 hours. If any are detected those who have expressed interest are informed of the events details in a Discord message.
+
+Events can be deleted through a command, detailed below.
 
 # Commands:
 
-The following commands can be used to manage, and list contributors. All commands 
-start with $
+The following commands can be used to delete, and list events.
+All commands start with: $
 
-**Remove Contributor:** 
+**List Events:**
 
 ```
-$remove_contributor @contributor 
+$list_events
 ```
 
 **Example:**
 
 ```
-$removecontributor @contributor
+$list_events
 ```
 
 **Response:**
+
+```
+🗓️ All Events🗓️ 
+
+🌺 Scrutinizer Game night🌺 
+event_id: 1180231420476670043
+Description: 
+
+🌺 Modular Mesh Architecture🌺 
+event_id: 1184322631692980325
+Description:
+```
+
+**Delete Events:**
+
+```
+$delete_event <event_id>
+```
+
+**Example**
+
+```
+$delete_event 1179242504395165748
+```
+
+**Response**
+
+```
+Event with ID 1179242504395165748 has been deleted.
+```
+
+# Emotes:
+
+When a mapped contributors Emoji is used in Blooms Discord server (as a message, or reaction), the contributor will be DM'd advising they have been mentioned in a chat. A link to the message they have been mentioned in will be included.
+
+# Commands:
+
+The following commands can be used to manage, and list contributors. All commands start with $
+
+**Remove COntributor:**
+
+```
+$remove_contributor @contributor
+```
+
+**Example:**
+
+```
+$remove_contributor @sarahtonein
+```
+
+**Response:**
+
 ```
 Contributor Sarahtonein removed successfully!
 ```
@@ -303,7 +359,6 @@ If you are adding yourself, simply react to this post with your emoji
 
 ```
 Contributor Sarahtonein added successfully!
-
 ```
 
 **List Contributors:**

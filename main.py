@@ -3,10 +3,13 @@ import os
 import json
 from discord.ext import commands
 from gov.commands import setup_gov_commands
+from gov.proposals import proposals
 from emotes.commands import setup_contrbitutor_commands
+from events.commands import setup_event_commands
+from events.events import setup_event_events
+from events.event_operations import load_posted_events
 from shared.constants import CONTRIBUTORS_FILE_PATH, new_proposal_emoji
 from shared.events import setup_shared_events
-from gov.proposals import proposals
 
 def main():
     # Load contributors and emoji ID mapping from contributors.json
@@ -29,6 +32,11 @@ def main():
 
     # Setup the shared events
     setup_shared_events(bot, contributors, emoji_id_mapping, proposals, new_proposal_emoji)
+    bot.posted_events = load_posted_events()
+
+    # Setup the event discord commands, and events
+    setup_event_commands(bot)
+    setup_event_events(bot)
 
     # Run the bot
     bot.run(os.getenv("DISCORD_BOT_TOKEN"))
