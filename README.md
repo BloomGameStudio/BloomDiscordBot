@@ -245,7 +245,6 @@ Reassess: 0
 Abstain: 0
 ```
 
-
 # Events:
 
 When a bloomer creates an event within Blooms Discord server, there will initially be a 30 minute delay from the time of creation to when the details of the event are posted in Discord. This will allow the bloomer time to make changes to the details, starting time, and so on.
@@ -301,4 +300,88 @@ $delete_event 1179242504395165748
 
 ```
 Event with ID 1179242504395165748 has been deleted.
+```
+
+# Emotes:
+
+When a mapped contributors Emoji is used in Blooms Discord server (as a message, or reaction), the contributor will be DM'd advising they have been mentioned in a chat. A link to the message they have been mentioned in will be included.
+
+# Commands:
+
+The following commands can be used to manage, and list contributors. All commands start with $
+
+**Remove COntributor:**
+
+```
+$remove_contributor @contributor
+```
+
+**Example:**
+
+```
+$remove_contributor @sarahtonein
+```
+
+**Response:**
+
+```
+Contributor Sarahtonein removed successfully!
+```
+
+**Add Contributor:**
+
+```
+$add_contributor
+```
+
+**Example:**
+
+```
+$add_contributor
+```
+
+**Response:**
+
+```
+ To add a contributor, reply to this message by tagging them with their emoji
+    
+ **Example:** `@user <:emoji:123456789>`
+If you are adding yourself, simply react to this post with your emoji
+```
+
+**Example:**
+
+```
+@sarahtonein <:sarahtonein>
+```
+
+**Response:**
+
+```
+Contributor Sarahtonein added successfully!
+```
+
+**List Contributors:**
+
+```
+$contributors
+```
+
+**Example:**
+
+```
+$contributors
+```
+
+**Response:**
+
+```
+:artifacts: List of Contributors :artifacts:
+:gumbo:
+:lap:
+:balu:
+:pizzacat:
+:spag:
+:baguette:
+:breeze:
 ```

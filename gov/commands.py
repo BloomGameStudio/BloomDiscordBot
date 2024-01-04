@@ -1,6 +1,6 @@
 from .command_operations import handle_votedraft, handle_publishdraft
 from .proposals import proposals
-from constants import new_proposal_emoji
+from shared.constants import new_proposal_emoji
 
 """
 When the bot is initiated the command list below will be loaded so that they can be called.

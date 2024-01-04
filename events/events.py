@@ -2,7 +2,7 @@ import logging
 from discord.ext import commands
 from events.event_operations import notify_new_event
 from events.tasks import check_events
-from constants import GUILD_ID
+from shared.constants import GUILD_ID
 
 """
 The bot listens for the on_ready event and then calls check_events in tasks.py

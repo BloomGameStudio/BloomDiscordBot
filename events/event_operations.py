@@ -3,7 +3,7 @@ import requests
 import logging
 import asyncio
 import os
-from constants import POSTED_EVENTS_FILE_PATH, GUILD_ID, GENERAL_CHANNEL_ID
+from shared.constants import POSTED_EVENTS_FILE_PATH, GUILD_ID, GENERAL_CHANNEL_ID
 from datetime import datetime, timezone
 
 # Load the stored events from the JSON file

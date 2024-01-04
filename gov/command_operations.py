@@ -1,6 +1,5 @@
 from .proposals import publish_draft
-from constants import GOVERNANCE_TALK_CHANNEL_ID
-import os
+from shared.constants import GOVERNANCE_TALK_CHANNEL_ID
 
 async def handle_votedraft(ctx, proposals, new_proposal_emoji):
      #Use imported value

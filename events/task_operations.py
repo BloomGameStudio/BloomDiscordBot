@@ -1,4 +1,4 @@
-from constants import GUILD_ID
+from shared.constants import GUILD_ID
 
 """
 When the bot is initiated the on_ready event will be loaded which starts the check_events task.
