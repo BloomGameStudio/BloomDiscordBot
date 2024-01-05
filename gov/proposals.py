@@ -50,7 +50,7 @@ async def publish_draft(draft, client):
     **__Background__**
     {draft["background"]}
 
-    ** <:inevitable_bloom:1178256658741346344> Yes**
+    ** <:inevitable_bloom:1192384857691656212> Yes**
     ** <:bulby_sore:1127463114481356882> Reassess**
     ** <:pepe_angel:1161835636857241733> Abstain**
 
@@ -79,7 +79,7 @@ async def vote_timer(message_id, client, channel_id, title):
     for reaction in vote_message.reactions:
     # Check if the bot's reaction is present (not needed in this case)
     
-        if str(reaction.emoji) == "<:inevitable_bloom:1178256658741346344>":
+        if str(reaction.emoji) == "<:inevitable_bloom:1192384857691656212>":
             ongoing_votes[message_id]["yes_count"] = reaction.count
         elif str(reaction.emoji) == "<:bulby_sore:1127463114481356882>":
             ongoing_votes[message_id]["reassess_count"] = reaction.count
