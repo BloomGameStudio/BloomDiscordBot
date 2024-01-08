@@ -10,11 +10,11 @@ ongoing_votes = {}
 
 def get_next_governance_id():
     cfg.current_governance_id += 1
-    return cfg.current_governance_id
+    return cfg.current_governance_id -1 
 
 def get_next_budget_id():
     cfg.current_budget_id += 1
-    return cfg.current_budget_id
+    return cfg.current_budget_id -1
 
 def get_governance_id():
     return cfg.current_governance_id
