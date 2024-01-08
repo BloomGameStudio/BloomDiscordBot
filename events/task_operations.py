@@ -11,7 +11,7 @@ async def format_and_send_message(event, users, channel):
     user_list_string = ', '.join(user_mentions)
 
     formatted_string = (
-        f"<:inevitable_bloom:1178256658741346344> **Upcoming Events in the Next 24 Hours** <:inevitable_bloom:1178256658741346344> \n"
+        f"<:inevitable_bloom:1192384857691656212> **Upcoming Events in the Next 24 Hours** <:inevitable_bloom:1192384857691656212> \n"
         f"\n"
         f":link: **Event Link https://discord.com/events/{GUILD_ID}/{event.id} :link:**\n"
         f"\n"
