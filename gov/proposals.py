@@ -1,5 +1,4 @@
 import asyncio
-import logging
 import subprocess
 import config.config as cfg
 from shared.constants import GOVERNANCE_BUDGET_CHANNEL_ID, GOVERNANCE_CHANNEL_ID
@@ -67,14 +66,12 @@ async def publish_draft(draft, client):
         "abstain_count": 0
     }
 
-    # Call the vote_timer function with 4 positional arguments
     await vote_timer(thread_with_message.thread.id, client, channel_id, title, draft)
 
 async def vote_timer(thread_id, client, channel_id, title, draft):
-    logging.info(f"Vote timer started for thread_id: {thread_id}, channel_id: {channel_id}, title: {title}")
 
     # Sleep until the vote ends
-    await asyncio.sleep(1 * 60)
+    await asyncio.sleep(48 * 3600)
 
     # Fetch the thread again
     channel = client.get_channel(channel_id)
@@ -89,20 +86,18 @@ async def vote_timer(thread_id, client, channel_id, title, draft):
 
     for reaction in message.reactions:
         
-        if str(reaction.emoji) == "👍":
+        if str(reaction.emoji) == "<:inevitable_bloom:1192384857691656212>":
             ongoing_votes[message.id]["yes_count"] = reaction.count
         elif str(reaction.emoji) == "<:bulby_sore:1127463114481356882>":
             ongoing_votes[message.id]["reassess_count"] = reaction.count
         elif str(reaction.emoji) == "<:pepe_angel:1161835636857241733>":
             ongoing_votes[message.id]["abstain_count"] = reaction.count
 
-    logging.info(f"Vote counts for message_id: {message.id} - Yes: {ongoing_votes[message.id]['yes_count']}, Reassess: {ongoing_votes[message.id]['reassess_count']}, Abstain: {ongoing_votes[message.id]['abstain_count']}")
-
     # Check the result and post it
     result_message = f"Vote for '{title}' has concluded:\n\n"
 
-    if ongoing_votes[message.id]["yes_count"] >= 1:  # Set to quorum needed
-        result_message += "The vote passes! :tada:"
+    if ongoing_votes[message.id]["yes_count"] >= 5:  # Set to quorum needed
+        result_message += "The vote passes! :tada:, snapshot proposal will now be created"
         # Call the snapshot creation function
         subprocess.run(['node', './snapshot/wrapper.js', title, draft['abstract'], draft['background'], 'Yes', 'No', 'Abstain'], check=True)
     else:
@@ -111,8 +106,6 @@ async def vote_timer(thread_id, client, channel_id, title, draft):
     result_message += f"\n\nYes: {ongoing_votes[message.id]['yes_count']}\nReassess: {ongoing_votes[message.id]['reassess_count']}\nAbstain: {ongoing_votes[message.id]['abstain_count']}"
 
     await client.get_channel(thread_id).send(result_message)
-    logging.info(f"Result message sent to channel_id: {channel_id}")
 
     # Remove the vote from ongoing_votes
     del ongoing_votes[message.id]
-    logging.info(f"Vote for message_id: {message.id} removed from ongoing_votes")
