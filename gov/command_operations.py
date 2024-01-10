@@ -1,3 +1,4 @@
+import logging
 import discord
 from .proposals import publish_draft
 from shared.constants import GOVERNANCE_TALK_CHANNEL_ID
@@ -33,8 +34,8 @@ async def handle_publishdraft(ctx, draft_name, proposals, bot):
 
     if draft_to_publish:
         await ctx.send(f"Publishing draft: {draft_to_publish['name']}")
+        proposals.remove(draft_to_publish)
         # Pass the guild ID when calling the publish_draft function
         await publish_draft(draft_to_publish, bot, ctx.guild.id)
-        proposals.remove(draft_to_publish)
     else:
         await ctx.send(f"Draft not found: {draft_name}")
