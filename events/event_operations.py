@@ -3,7 +3,8 @@ import requests
 import logging
 import asyncio
 import os
-from shared.constants import POSTED_EVENTS_FILE_PATH, GUILD_ID, GENERAL_CHANNEL_ID
+from shared.constants import POSTED_EVENTS_FILE_PATH
+from shared.helper import get_channel_by_name
 from datetime import datetime, timezone
 
 # Load the stored events from the JSON file
@@ -27,9 +28,9 @@ def save_posted_events(posted_events):
         logging.error(f"Error saving posted events: {e}")
     
 # Format the event message and send it to the channel
-def format_event(event):
+def format_event(event, guild_id):
     # Format the event start time for Discord time
-    event_url = f"https://discord.com/events/{GUILD_ID}/{event.id}"
+    event_url = f"https://discord.com/events/{guild_id}/{event.id}"
 
     formatted_event = (
         f"\n"
@@ -44,8 +45,8 @@ def format_event(event):
 # NOTE: For some reason it doesn't appear that you can access the userIDs interested
 # in a scheduled event. It's either a count, or a boolean.
 # performing a GET request, however, does allow this.
-def get_guild_scheduled_event_users(scheduled_event_id, limit=100, with_member=False, before=None, after=None):
-    url = f"https://discord.com/api/v10/guilds/{GUILD_ID}/scheduled-events/{scheduled_event_id}/users"
+def get_guild_scheduled_event_users(guild_id, scheduled_event_id, limit=100, with_member=False, before=None, after=None):
+    url = f"https://discord.com/api/v10/guilds/{guild_id}/scheduled-events/{scheduled_event_id}/users"
 
     params = {
         'limit': limit,
@@ -67,18 +68,19 @@ def get_guild_scheduled_event_users(scheduled_event_id, limit=100, with_member=F
         return None
 
 # Notify the channel about the newly created event after a short delay
-async def notify_new_event(bot, event):
-    guild = bot.get_guild(GUILD_ID)
+async def notify_new_event(bot, event, guild_id):
+    guild = bot.get_guild(guild_id)
 
     if guild:
         # Wait for 30 mins before sending the notification
-        await asyncio.sleep(60 * 30)
+        await asyncio.sleep(1 * 30)
 
         # Fetch the event again to get the updated details
         event = await guild.fetch_scheduled_event(event.id)
-        formatted_event = format_event(event)
+        # Pass the guild ID when calling the format_event function
+        formatted_event = format_event(event, guild_id)
 
-        channel = guild.get_channel(GENERAL_CHANNEL_ID)
+        channel = get_channel_by_name(guild, "general")
 
         if channel:
             # Send the notification and capture the Message object

@@ -2,7 +2,6 @@ import logging
 from discord.ext import commands
 from events.event_operations import notify_new_event
 from events.tasks import check_events
-from shared.constants import GUILD_ID
 
 """
 The bot listens for the on_ready event and then calls check_events in tasks.py
@@ -17,15 +16,12 @@ def setup_event_events(bot: commands.Bot):
     async def on_ready():
         logging.info(f"Logged in as {bot.user.name} ({bot.user.id})")
         await bot.change_presence()
-        guild = bot.get_guild(GUILD_ID)
 
-        if guild:
-            # Start the background task to check events automatically every hour
-            check_events.start(bot)
-        else:
-            logging.error("Discord server ID not found")
+        # Start the background task to check events for each guild
+        logging.info(f"Starting background task for all guilds")
+        check_events.start(bot)
 
     @bot.event
     async def on_scheduled_event_create(event):
         logging.info(f"New scheduled event created: {event.name}")
-        await notify_new_event(bot, event)
+        await notify_new_event(bot, event, event.guild_id)
