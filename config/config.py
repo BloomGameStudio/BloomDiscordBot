@@ -1,6 +1,5 @@
 import configparser
 import logging
-from typing import Any
 
 # Load configuration
 config: configparser.ConfigParser = configparser.ConfigParser()
