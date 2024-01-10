@@ -2,7 +2,7 @@ import asyncio
 import json
 import discord
 from shared.constants import CONTRIBUTORS_FILE_PATH
-from typing import List, Dict, tuple
+from typing import List, Dict
 
 def add_contributor_to_list(uid: str, emoji_id: str, contributors: List[Dict[str, str]], emoji_id_mapping: Dict[str, str]) -> Dict[str, str]:    
     new_contributor = {"uid": uid}
