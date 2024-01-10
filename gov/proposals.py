@@ -1,6 +1,7 @@
 import asyncio
 import subprocess
 import config.config as cfg
+import discord
 from shared.constants import GOVERNANCE_BUDGET_CHANNEL_ID, GOVERNANCE_CHANNEL_ID
 
 proposals = []
@@ -21,24 +22,34 @@ def get_governance_id():
 def get_budget_id():
     return cfg.current_budget_id
 
-async def publish_draft(draft, client):
+async def publish_draft(draft, bot, guild_id):
+    guild = bot.get_guild(guild_id)
     if draft["type"].lower() == "budget":
-        channel_id = int(GOVERNANCE_BUDGET_CHANNEL_ID)
+        # Get the 'governance-budget' channel in the server (guild)
+        governance_budget_channel = discord.utils.get(guild.channels, name=GOVERNANCE_BUDGET_CHANNEL_ID)
+        if governance_budget_channel is None:
+            print("Error: 'governance-budget' channel not found.")
+            return
+        channel_id = governance_budget_channel.id
         current_budget_id = get_next_budget_id()
         cfg.update_id_values(current_budget_id, 'budget')  # Update the budget ID in the config file
         title = f"**Bloom Budget Proposal (BBP) #{current_budget_id}: {draft['name']}**"
     else:
-        channel_id = int(GOVERNANCE_CHANNEL_ID)
+        # Get the 'governance' channel in the server (guild)
+        governance_channel = discord.utils.get(guild.channels, name=GOVERNANCE_CHANNEL_ID)
+        if governance_channel is None:
+            print("Error: 'governance' channel not found.")
+            return
+        channel_id = governance_channel.id
         current_governance_id = get_next_governance_id()
         cfg.update_id_values(current_governance_id, 'governance')  # Update the governance ID in the config file
         title = f"**Bloom Governance Proposal (BGP) #{current_governance_id}: {draft['name']}**"
 
-    forum_channel = client.get_channel(channel_id)
+    forum_channel = bot.get_channel(channel_id)
 
     if not forum_channel:
         print("Error: Channel not found.")
         return
-
     # Store the content in a variable
     content = f"""
     {title}
@@ -66,15 +77,15 @@ async def publish_draft(draft, client):
         "abstain_count": 0
     }
 
-    await vote_timer(thread_with_message.thread.id, client, channel_id, title, draft)
+    await vote_timer(thread_with_message.thread.id, bot, channel_id, title, draft)
 
-async def vote_timer(thread_id, client, channel_id, title, draft):
+async def vote_timer(thread_id, bot, channel_id, title, draft):
 
     # Sleep until the vote ends
-    await asyncio.sleep(48 * 3600)
+    await asyncio.sleep(1 * 30)
 
     # Fetch the thread again
-    channel = client.get_channel(channel_id)
+    channel = bot.get_channel(channel_id)
     thread = channel.get_thread(thread_id)
 
     # Fetch the first message in the thread
@@ -105,7 +116,7 @@ async def vote_timer(thread_id, client, channel_id, title, draft):
 
     result_message += f"\n\nYes: {ongoing_votes[message.id]['yes_count']}\nReassess: {ongoing_votes[message.id]['reassess_count']}\nAbstain: {ongoing_votes[message.id]['abstain_count']}"
 
-    await client.get_channel(thread_id).send(result_message)
+    await bot.get_channel(thread_id).send(result_message)
 
     # Remove the vote from ongoing_votes
     del ongoing_votes[message.id]
