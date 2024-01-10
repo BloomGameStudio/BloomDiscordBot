@@ -1,4 +1,3 @@
-from shared.constants import GUILD_ID
 
 """
 When the bot is initiated the on_ready event will be loaded which starts the check_events task.
@@ -7,13 +6,14 @@ The formatted_string is used to format the message that will be sent to the chan
 """
 
 async def format_and_send_message(event, users, channel):
+    guild_id = event.guild.id
     user_mentions = [f"<@{user['user_id']}>" for user in users]
     user_list_string = ', '.join(user_mentions)
 
     formatted_string = (
         f"<:inevitable_bloom:1192384857691656212> **Upcoming Events in the Next 24 Hours** <:inevitable_bloom:1192384857691656212> \n"
         f"\n"
-        f":link: **Event Link https://discord.com/events/{GUILD_ID}/{event.id} :link:**\n"
+        f":link: **Event Link https://discord.com/events/{guild_id}/{event.id} :link:**\n"
         f"\n"
         f"{user_list_string}\n"
     )
