@@ -82,7 +82,7 @@ async def publish_draft(draft, bot, guild_id):
 async def vote_timer(thread_id, bot, channel_id, title, draft):
 
     # Sleep until the vote ends
-    await asyncio.sleep(1 * 30)
+    await asyncio.sleep(48 * 3600)
 
     # Fetch the thread again
     channel = bot.get_channel(channel_id)
