@@ -4,7 +4,7 @@ import logging
 import asyncio
 import os
 from shared.constants import POSTED_EVENTS_FILE_PATH, GENERAL_CHANNEL_ID
-from shared.helper import get_channel_by_name
+from shared.helpers import get_channel_by_name
 from datetime import datetime, timezone
 
 # Load the stored events from the JSON file

@@ -1,6 +1,6 @@
 import logging
 from discord.ext import tasks, commands
-from shared.helper import get_channel_by_name
+from shared.helpers import get_channel_by_name
 from events.event_operations import get_guild_scheduled_event_users, save_posted_events, fetch_upcoming_events
 from events.task_operations import format_and_send_message
 
