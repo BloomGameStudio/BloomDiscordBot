@@ -1,7 +1,9 @@
+from discord.ext import commands
+from typing import List, Dict, Union
 from .proposals import publish_draft
 from shared.constants import GOVERNANCE_TALK_CHANNEL_ID
 
-async def handle_votedraft(ctx, proposals, new_proposal_emoji):
+async def handle_votedraft(ctx: commands.Context, proposals: List[Dict[str, Union[str, int]]], new_proposal_emoji: str) -> None:
      #Use imported value
     if ctx.channel.id != int(GOVERNANCE_TALK_CHANNEL_ID):
         await ctx.send(f"This command can only be used in <#{GOVERNANCE_TALK_CHANNEL_ID}>")
@@ -15,7 +17,7 @@ async def handle_votedraft(ctx, proposals, new_proposal_emoji):
 
     await ctx.send(f"{new_proposal_emoji} New")
 
-async def handle_publishdraft(ctx, draft_name, proposals, bot):
+async def handle_publishdraft(ctx: commands.Context, draft_name: str, proposals: List[Dict[str, Union[str, int]]], bot: commands.Bot) -> None:
     draft_to_publish = next(
         (item for item in proposals if item["name"].strip() == draft_name.strip()),
         None,
