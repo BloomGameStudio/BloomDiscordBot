@@ -6,7 +6,7 @@ from events.task_operations import format_and_send_message
 
 
 @tasks.loop(minutes=60)
-async def check_events(bot: commands.Bot):
+async def check_events(bot: commands.Bot) -> None:
     guild = bot.get_guild(GUILD_ID)
 
     if guild:
