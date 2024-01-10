@@ -60,7 +60,7 @@ async def publish_draft(draft, bot, guild_id):
     **__Background__**
     {draft["background"]}
 
-    ** <:inevitable_bloom:1178256658741346344> Yes**
+    ** <:inevitable_bloom:1192384857691656212> Yes**
     ** <:bulby_sore:1127463114481356882> Reassess**
     ** <:pepe_angel:1161835636857241733> Abstain**
 
