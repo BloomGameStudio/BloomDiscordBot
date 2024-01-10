@@ -2,7 +2,7 @@ import asyncio
 import json
 import discord
 from shared.constants import CONTRIBUTORS_FILE_PATH
-from typing import List, Dict, Union, tuple, Message
+from typing import List, Dict, tuple
 
 def add_contributor_to_list(uid: str, emoji_id: str, contributors: List[Dict[str, str]], emoji_id_mapping: Dict[str, str]) -> Dict[str, str]:    
     new_contributor = {"uid": uid}
@@ -78,13 +78,13 @@ async def add_contributor(ctx: discord.ext.commands.Context, contributors: List[
     for future in pending:
         future.cancel()
 
-    result: Union[Message, tuple] = done.pop().result()
+    result: tuple = done.pop().result()
     if isinstance(result, discord.Message):
         inputs: List[str] = result.content.split()
         if len(inputs) == 2:
             uid, emoji_id = inputs
             uid = uid.strip('<@!>')
-            existing_contributor: Union[Dict[str, str], None] = next((c for c in contributors if c["uid"] == uid), None)
+            existing_contributor: [Dict[str, str], None] = next((c for c in contributors if c["uid"] == uid), None)
 
             if existing_contributor:
                 await ctx.send(f"Contributor {existing_contributor['uid']} already exists")
@@ -97,7 +97,7 @@ async def add_contributor(ctx: discord.ext.commands.Context, contributors: List[
         reaction, user = result
         emoji_id: str = str(reaction.emoji)
         uid: str = str(user.id)
-        existing_contributor: Union[Dict[str, str], None] = next((c for c in contributors if c["uid"] == uid), None)
+        existing_contributor: [Dict[str, str], None] = next((c for c in contributors if c["uid"] == uid), None)
 
         if existing_contributor:
             await ctx.send(f"Contributor {existing_contributor['uid']} already exists")

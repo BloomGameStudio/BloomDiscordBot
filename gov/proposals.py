@@ -2,7 +2,7 @@ import asyncio
 import subprocess
 import config.config as cfg
 from typing import Dict, Any, List
-from discord import Client, TextChannel, Thread, Message, Reaction
+from discord import Client
 from shared.constants import GOVERNANCE_BUDGET_CHANNEL_ID, GOVERNANCE_CHANNEL_ID
 
 proposals: List[Dict[str, Any]] = []

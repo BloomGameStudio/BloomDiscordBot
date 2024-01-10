@@ -1,5 +1,6 @@
-from typing import List, Dict, Optional
-from discord.ext import commands, Context
+from typing import List, Dict
+from discord.ext import commands
+from discord.ext.commands import Context
 from emotes.command_operations import list_contributors, remove_contributor, add_contributor
 
 """
