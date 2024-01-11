@@ -111,7 +111,7 @@ async def handle_reaction(bot, reaction, user, contributors, emoji_id_mapping, p
                     else:
                         title = f"**Bloom General Proposal Draft: {edit_proposal['name']}**"
 
-                    msg = f"""
+                    msg = textwrap.dedent(f"""
                     {title}
 
                     __**Abstract**__
@@ -124,11 +124,11 @@ async def handle_reaction(bot, reaction, user, contributors, emoji_id_mapping, p
                     ** <:bulby_sore:1127463114481356882> Reassess**
                     ** <:pepe_angel:1161835636857241733> Abstain**
 
-                    \n
+                    
                     If you wish to publish your draft proposal, please use command ``$publish_draft``.
-                    """
+                    """).strip()
 
-                    await channel.send(textwrap.dedent(msg))
+                    await channel.send(msg)
 
                     break
 
