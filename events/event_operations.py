@@ -5,9 +5,12 @@ import asyncio
 import os
 from shared.constants import POSTED_EVENTS_FILE_PATH, GUILD_ID, GENERAL_CHANNEL_ID
 from datetime import datetime, timezone
+from typing import List, Optional, Any
+from discord import Guild, ScheduledEvent
+from discord.ext.commands import Bot
 
 # Load the stored events from the JSON file
-def load_posted_events():
+def load_posted_events() -> List[int]:
     try:
         logging.info(f"Loading events from: {POSTED_EVENTS_FILE_PATH}")
         with open(POSTED_EVENTS_FILE_PATH, "r") as file:
@@ -16,7 +19,7 @@ def load_posted_events():
         return []
 
 # Save the posted events to the JSON file
-def save_posted_events(posted_events):
+def save_posted_events(posted_events: List[int]) -> None:
     try:
         logging.info(f"Saving events to: {POSTED_EVENTS_FILE_PATH}")
 
@@ -27,7 +30,7 @@ def save_posted_events(posted_events):
         logging.error(f"Error saving posted events: {e}")
     
 # Format the event message and send it to the channel
-def format_event(event):
+def format_event(event: ScheduledEvent) -> str:
     # Format the event start time for Discord time
     event_url = f"https://discord.com/events/{GUILD_ID}/{event.id}"
 
@@ -44,7 +47,7 @@ def format_event(event):
 # NOTE: For some reason it doesn't appear that you can access the userIDs interested
 # in a scheduled event. It's either a count, or a boolean.
 # performing a GET request, however, does allow this.
-def get_guild_scheduled_event_users(scheduled_event_id, limit=100, with_member=False, before=None, after=None):
+def get_guild_scheduled_event_users(scheduled_event_id: int, limit: int = 100, with_member: bool = False, before: Optional[str] = None, after: Optional[str] = None) -> Optional[List[Any]]:
     url = f"https://discord.com/api/v10/guilds/{GUILD_ID}/scheduled-events/{scheduled_event_id}/users"
 
     params = {
@@ -67,7 +70,7 @@ def get_guild_scheduled_event_users(scheduled_event_id, limit=100, with_member=F
         return None
 
 # Notify the channel about the newly created event after a short delay
-async def notify_new_event(bot, event):
+async def notify_new_event(bot: Bot, event: ScheduledEvent) -> None:
     guild = bot.get_guild(GUILD_ID)
 
     if guild:

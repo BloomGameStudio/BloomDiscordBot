@@ -1,27 +1,29 @@
 import asyncio
 import subprocess
 import config.config as cfg
+from typing import Dict, Any, List
+from discord import Client
 from shared.constants import GOVERNANCE_BUDGET_CHANNEL_ID, GOVERNANCE_CHANNEL_ID
 
-proposals = []
+proposals: List[Dict[str, Any]] = []
 
-ongoing_votes = {}
+ongoing_votes: Dict[int, Dict[str, Any]] = {}
 
-def get_next_governance_id():
+def get_next_governance_id() -> int:
     cfg.current_governance_id += 1
     return cfg.current_governance_id
 
-def get_next_budget_id():
+def get_next_budget_id() -> int:
     cfg.current_budget_id += 1
     return cfg.current_budget_id
 
-def get_governance_id():
+def get_governance_id() -> int:
     return cfg.current_governance_id
 
-def get_budget_id():
+def get_budget_id() -> int:
     return cfg.current_budget_id
 
-async def publish_draft(draft, client):
+async def publish_draft(draft: Dict[str, Any], client: Client) -> None:
     if draft["type"].lower() == "budget":
         channel_id = int(GOVERNANCE_BUDGET_CHANNEL_ID)
         current_budget_id = get_next_budget_id()
@@ -68,8 +70,7 @@ async def publish_draft(draft, client):
 
     await vote_timer(thread_with_message.thread.id, client, channel_id, title, draft)
 
-async def vote_timer(thread_id, client, channel_id, title, draft):
-
+async def vote_timer(thread_id: int, client: Client, channel_id: int, title: str, draft: Dict[str, Any]) -> None:
     # Sleep until the vote ends
     await asyncio.sleep(48 * 3600)
 
