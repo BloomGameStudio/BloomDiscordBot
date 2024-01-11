@@ -1,4 +1,3 @@
-import logging
 import discord
 from .proposals import publish_draft
 from shared.constants import GOVERNANCE_TALK_CHANNEL_ID
