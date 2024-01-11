@@ -16,12 +16,12 @@ logging.basicConfig(level=numeric_logging_level)
 # Update values when proposals are submitted.
 def update_id_values(id_value, id_type):
     config = configparser.ConfigParser()
-    config.read('config/config.ini')  # Corrected path
+    config.read('config/config.ini')
 
     if id_type.lower() == 'governance':
         config['ID_START_VALUES']['governance_id'] = str(id_value)
     elif id_type.lower() == 'budget':
         config['ID_START_VALUES']['budget_id'] = str(id_value)
 
-    with open('config/config.ini', 'w') as configfile:  # Corrected path
+    with open('config/config.ini', 'w') as configfile:
         config.write(configfile)
