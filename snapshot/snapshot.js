@@ -32,17 +32,17 @@ async function createProposal(title, abstract, background, choices) {
     const fortyeighthoursinSeconds = 48 * 3600;
 
     const proposalParams = {
-      space: 'testnet-1.eth',
-      type: 'single-choice', // define the voting system
+      space: 'bloomtest.eth', // Replace with ENS name of your space
+      type: 'weighted', // define the voting system
       title: removeMarkdown(title),
       body: `Abstract:\n ${removeMarkdown(abstract)}\n\n Background:\n ${removeMarkdown(background)}`,
       choices: choices.map(removeMarkdown),
       start: currentTime,
-      end: currentTime + fortyeighthoursinSeconds, // End time is one hour later as an example
+      end: currentTime + fortyeighthoursinSeconds,
       snapshot: await provider.getBlockNumber(), // Current block number as snapshot
       network: '1',
       plugins: JSON.stringify({}),
-      app: 'my-app' // provide the name of your project using this Snapshot.js integration
+      app: 'Bloom-Governance' // provide the name of your project using this Snapshot.js integration
     };
 
     // Submit the proposal
