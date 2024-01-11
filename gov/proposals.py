@@ -7,32 +7,25 @@ proposals = []
 
 ongoing_votes = {}
 
-def get_next_governance_id():
-    cfg.current_governance_id += 1
-    return cfg.current_governance_id
-
-def get_next_budget_id():
-    cfg.current_budget_id += 1
-    return cfg.current_budget_id
-
-def get_governance_id():
-    return cfg.current_governance_id
-
-def get_budget_id():
-    return cfg.current_budget_id
-
+# Upon publishing a draft, get the current ID and increment it by 1
+# Then update the config file with the current ID
 async def publish_draft(draft, client):
     if draft["type"].lower() == "budget":
+        id_type = 'budget'
         channel_id = int(GOVERNANCE_BUDGET_CHANNEL_ID)
-        current_budget_id = get_next_budget_id()
-        cfg.update_id_values(current_budget_id, 'budget')  # Update the budget ID in the config file
-        title = f"**Bloom Budget Proposal (BBP) #{current_budget_id}: {draft['name']}**"
     else:
+        id_type = 'governance'
         channel_id = int(GOVERNANCE_CHANNEL_ID)
-        current_governance_id = get_next_governance_id()
-        cfg.update_id_values(current_governance_id, 'governance')  # Update the governance ID in the config file
-        title = f"**Bloom Governance Proposal (BGP) #{current_governance_id}: {draft['name']}**"
 
+    if id_type == 'budget':
+        cfg.current_budget_id += 1
+        cfg.update_id_values(cfg.current_budget_id, id_type)  # Update the budget ID in the config file
+        title = f"**Bloom Budget Proposal (BBP) #{cfg.current_budget_id}: {draft['name']}**"
+    else:
+        cfg.current_governance_id += 1
+        cfg.update_id_values(cfg.current_governance_id, id_type)  # Update the governance ID in the config file
+        title = f"**Bloom Governance Proposal (BGP) #{cfg.current_governance_id}: {draft['name']}**"
+    
     forum_channel = client.get_channel(channel_id)
 
     if not forum_channel:
