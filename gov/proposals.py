@@ -7,7 +7,7 @@ proposals = []
 
 ongoing_votes = {}
 
-# Upon publishing a draft, get the current ID and increment it by 1
+# Upon publishing a draft, increment the current ID by 1
 # Then update the config file with the current ID
 async def publish_draft(draft, client):
     if draft["type"].lower() == "budget":
