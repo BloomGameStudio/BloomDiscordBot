@@ -1,5 +1,6 @@
 import asyncio
 import subprocess
+import textwrap
 import config.config as cfg
 import discord
 from shared.constants import GOVERNANCE_BUDGET_CHANNEL_ID, GOVERNANCE_CHANNEL_ID
@@ -33,7 +34,7 @@ async def publish_draft(draft, bot, guild_id):
         channel_id = governance_budget_channel.id
         current_budget_id = get_next_budget_id()
         cfg.update_id_values(current_budget_id, 'budget')  # Update the budget ID in the config file
-        title = f"**Bloom Budget Proposal (BBP) #{current_budget_id}: {draft['name']}**"
+        title = f"Bloom Budget Proposal (BBP) #{current_budget_id}: {draft['name']}"
     else:
         # Get the 'governance' channel in the server (guild)
         governance_channel = discord.utils.get(guild.channels, name=GOVERNANCE_CHANNEL_ID)
@@ -43,7 +44,7 @@ async def publish_draft(draft, bot, guild_id):
         channel_id = governance_channel.id
         current_governance_id = get_next_governance_id()
         cfg.update_id_values(current_governance_id, 'governance')  # Update the governance ID in the config file
-        title = f"**Bloom Governance Proposal (BGP) #{current_governance_id}: {draft['name']}**"
+        title = f"Bloom Governance Proposal (BGP) #{current_governance_id}: {draft['name']}"
 
     forum_channel = bot.get_channel(channel_id)
 
@@ -51,8 +52,8 @@ async def publish_draft(draft, bot, guild_id):
         print("Error: Channel not found.")
         return
     # Store the content in a variable
-    content = f"""
-    {title}
+    content = textwrap.dedent(f"""
+    **{title}**
 
     __**Abstract**__
     {draft["abstract"]}
@@ -65,7 +66,7 @@ async def publish_draft(draft, bot, guild_id):
     ** <:pepe_angel:1161835636857241733> Abstain**
 
     Vote will conclude in 48h from now.
-    """
+    """).strip()
 
  # Create the thread with the initial message
     thread_with_message = await forum_channel.create_thread(name=title, content=content)
@@ -105,7 +106,7 @@ async def vote_timer(thread_id, bot, channel_id, title, draft):
             ongoing_votes[message.id]["abstain_count"] = reaction.count
 
     # Check the result and post it
-    result_message = f"Vote for '{title}' has concluded:\n\n"
+    result_message = f"Vote for '**{title}**' has concluded:\n\n"
 
     if ongoing_votes[message.id]["yes_count"] >= 5:  # Set to quorum needed
         result_message += "The vote passes! :tada:, snapshot proposal will now be created"
