@@ -150,7 +150,7 @@ async def handle_reaction(bot: commands.Bot, reaction: Reaction, user: User, con
         proposal["name"] = name.content
         proposals.append(proposal)
 
-        await channel.send("Is this budget or general?")
+        await channel.send("Is this budget or governance?")
 
         type = await bot.wait_for("message", check=check)
         proposal["type"] = type.content
@@ -166,10 +166,10 @@ async def handle_reaction(bot: commands.Bot, reaction: Reaction, user: User, con
         proposal["background"] = background.content
 
         if proposal["type"].lower() == "budget":
-            title = f"**Bloom Budget Proposal Draft: {name.content}**"
+            title = f"**Bloom Budget Proposal (BBP) Draft: {name.content}**"
        
         else:
-            title = f"**Topic/Vote: {name.content}**"
+            title = f"**Bloom Governance Proposal (BGP) Draft: {name.content}**"
 
         msg = f"""
         {title}
