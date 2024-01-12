@@ -8,3 +8,7 @@ GOVERNANCE_BUDGET_CHANNEL_ID = 1126294949286133870
 new_proposal_emoji = "💡"
 CONTRIBUTORS_FILE_PATH = './emotes/contributors.json'
 POSTED_EVENTS_FILE_PATH = './events/posted_events.json'
+
+# Recfator constants
+SYNC_COMMANDS = True
+USE_API = True
