@@ -59,7 +59,7 @@ async def main():
     print("Booting up the bot on a separate thread...")
     # Run the bot
 
-    await bot.start("ODgwNTg5MDk4OTc5NTU3Mzg3.GhNJyr.cpuvJ-AzOL4WgZbZsur7P01b4n_hk7LREHlOMk")
+    await bot.start("BOT_TOKEN")
     
     print("Bot should be good to go.")
 
