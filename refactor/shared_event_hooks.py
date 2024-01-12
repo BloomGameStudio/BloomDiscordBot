@@ -100,6 +100,8 @@ class SharedEventHookCog(commands.Cog):
                     print(f"{'dm_user', e}")
         return custom_emojis
 
+    # More or less the same thing as message scanning but handles reactions.
+    # Could probably be combined with the message method but I wasn't thinking of how correctly.
     async def scan_reaction_and_dm(self, reaction: discord.Reaction, user: discord.User):
         if user == self.bot.user:
             return
