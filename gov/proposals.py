@@ -1,15 +1,17 @@
 import asyncio
 import subprocess
 import config.config as cfg
+from typing import Dict, Any, List
+from discord import Client
 from shared.constants import GOVERNANCE_BUDGET_CHANNEL_ID, GOVERNANCE_CHANNEL_ID
 
-proposals = []
+proposals: List[Dict[str, Any]] = []
 
-ongoing_votes = {}
+ongoing_votes: Dict[int, Dict[str, Any]] = {}
 
 # Upon publishing a draft, increment the current ID by 1
 # Then update the config file with the current ID
-async def publish_draft(draft, client):
+async def publish_draft(draft: Dict[str, Any], client: Client) -> None:
     if draft["type"].lower() == "budget":
         id_type = 'budget'
         channel_id = int(GOVERNANCE_BUDGET_CHANNEL_ID)
@@ -20,11 +22,11 @@ async def publish_draft(draft, client):
     if id_type == 'budget':
         cfg.current_budget_id += 1
         cfg.update_id_values(cfg.current_budget_id, id_type)  # Update the budget ID in the config file
-        title = f"**Bloom Budget Proposal (BBP) #{cfg.current_budget_id}: {draft['name']}**"
+        title = f"Bloom Budget Proposal (BBP) #{cfg.current_budget_id}: {draft['name']}"
     else:
         cfg.current_governance_id += 1
         cfg.update_id_values(cfg.current_governance_id, id_type)  # Update the governance ID in the config file
-        title = f"**Bloom Governance Proposal (BGP) #{cfg.current_governance_id}: {draft['name']}**"
+        title = f"Bloom Governance Proposal (BGP) #{cfg.current_governance_id}: {draft['name']}"
     
     forum_channel = client.get_channel(channel_id)
 
@@ -34,7 +36,7 @@ async def publish_draft(draft, client):
 
     # Store the content in a variable
     content = f"""
-    {title}
+    **{title}**
 
     __**Abstract**__
     {draft["abstract"]}
@@ -42,7 +44,7 @@ async def publish_draft(draft, client):
     **__Background__**
     {draft["background"]}
 
-    ** <:inevitable_bloom:1178256658741346344> Yes**
+    ** <:inevitable_bloom:1192384857691656212> Yes**
     ** <:bulby_sore:1127463114481356882> Reassess**
     ** <:pepe_angel:1161835636857241733> Abstain**
 
@@ -61,8 +63,7 @@ async def publish_draft(draft, client):
 
     await vote_timer(thread_with_message.thread.id, client, channel_id, title, draft)
 
-async def vote_timer(thread_id, client, channel_id, title, draft):
-
+async def vote_timer(thread_id: int, client: Client, channel_id: int, title: str, draft: Dict[str, Any]) -> None:
     # Sleep until the vote ends
     await asyncio.sleep(48 * 3600)
 

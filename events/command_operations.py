@@ -1,4 +1,6 @@
-async def list_events_operation(guild):
+from discord import Guild
+
+async def list_events_operation(guild: Guild) -> str:
     event_list = guild.scheduled_events
 
     # Extracting event information
