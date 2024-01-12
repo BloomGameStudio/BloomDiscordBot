@@ -1,5 +1,6 @@
 import asyncio
 import subprocess
+import textwrap
 import config.config as cfg
 from typing import Dict, Any, List, Tuple
 from discord import Client
@@ -40,7 +41,7 @@ async def publish_draft(draft: Dict[str, Any], client: Client) -> None:
         return
     
     # Store the content in a variable
-    content = f"""
+    content = textwrap.dedent(f"""
     **{title}**
 
     __**Abstract**__
@@ -49,12 +50,12 @@ async def publish_draft(draft: Dict[str, Any], client: Client) -> None:
     **__Background__**
     {draft["background"]}
 
-    ** <:inevitable_bloom:1192384857691656212> Yes**
-    ** <:bulby_sore:1127463114481356882> Reassess**
-    ** <:pepe_angel:1161835636857241733> Abstain**
+    **<:inevitable_bloom:1192384857691656212> Yes**
+    **<:bulby_sore:1127463114481356882> Reassess**
+    **<:pepe_angel:1161835636857241733> Abstain**
 
     Vote will conclude in 48h from now.
-    """
+    """)
 
     thread_with_message = await forum_channel.create_thread(name=title, content=content)
     
