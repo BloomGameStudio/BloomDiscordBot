@@ -1,7 +1,7 @@
 import asyncio
 import subprocess
 import config.config as cfg
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Tuple
 from discord import Client
 from shared.constants import GOVERNANCE_BUDGET_CHANNEL_ID, GOVERNANCE_CHANNEL_ID
 
@@ -9,31 +9,36 @@ proposals: List[Dict[str, Any]] = []
 
 ongoing_votes: Dict[int, Dict[str, Any]] = {}
 
-# Upon publishing a draft, increment the current ID by 1
-# Then update the config file with the current ID
-async def publish_draft(draft: Dict[str, Any], client: Client) -> None:
-    if draft["type"].lower() == "budget":
+# prepare the draft by setting the type, channel ID, and title based on the draft type
+async def prepare_draft(draft: Dict[str, Any]) -> Tuple[str, int, str]:
+    draft_type = draft["type"].lower()
+    if draft_type not in ["budget", "governance"]:
+        raise ValueError(f"Invalid draft type: {draft_type}")
+
+    if draft_type == "budget":
         id_type = 'budget'
         channel_id = int(GOVERNANCE_BUDGET_CHANNEL_ID)
+        cfg.current_budget_id += 1
+        cfg.update_id_values(cfg.current_budget_id, id_type) # Update the governance ID in the config file
+        title = f"Bloom Budget Proposal (BBP) #{cfg.current_budget_id}: {draft['name']}"
     else:
         id_type = 'governance'
         channel_id = int(GOVERNANCE_CHANNEL_ID)
-
-    if id_type == 'budget':
-        cfg.current_budget_id += 1
-        cfg.update_id_values(cfg.current_budget_id, id_type)  # Update the budget ID in the config file
-        title = f"Bloom Budget Proposal (BBP) #{cfg.current_budget_id}: {draft['name']}"
-    else:
         cfg.current_governance_id += 1
-        cfg.update_id_values(cfg.current_governance_id, id_type)  # Update the governance ID in the config file
+        cfg.update_id_values(cfg.current_governance_id, id_type) # Update the governance ID in the config file
         title = f"Bloom Governance Proposal (BGP) #{cfg.current_governance_id}: {draft['name']}"
-    
-    forum_channel = client.get_channel(channel_id)
 
+    return id_type, channel_id, title
+
+# publish the draft by creating a thread with the prepared content and starting a vote timer
+async def publish_draft(draft: Dict[str, Any], client: Client) -> None:
+    id_type, channel_id, title = await prepare_draft(draft)
+
+    forum_channel = client.get_channel(channel_id)
     if not forum_channel:
         print("Error: Channel not found.")
         return
-
+    
     # Store the content in a variable
     content = f"""
     **{title}**
@@ -51,12 +56,11 @@ async def publish_draft(draft: Dict[str, Any], client: Client) -> None:
     Vote will conclude in 48h from now.
     """
 
- # Create the thread with the initial message
     thread_with_message = await forum_channel.create_thread(name=title, content=content)
     
     ongoing_votes[thread_with_message.thread.id] = {
-        "draft": draft,  # Store the draft info
-        "yes_count": 0,  # Initialize counts
+        "draft": draft, # Store the draft info
+        "yes_count": 0, # Initialize counts
         "reassess_count": 0,
         "abstain_count": 0
     }
