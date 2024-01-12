@@ -75,12 +75,8 @@ async def vote_timer(thread_id: int, client: Client, channel_id: int, title: str
     channel = client.get_channel(channel_id)
     thread = channel.get_thread(thread_id)
 
-    # Fetch the first message in the thread
-    messages = []
-    async for message in thread.history(limit=1):
-        messages.append(message)
-
-    message = messages[0]
+    # Fetch the initial message in the thread using the thread ID
+    message = await thread.fetch_message(thread_id)
 
     for reaction in message.reactions:
         
