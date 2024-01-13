@@ -10,19 +10,20 @@ from events.events import setup_event_events
 from events.event_operations import load_posted_events
 from shared.constants import CONTRIBUTORS_FILE_PATH, new_proposal_emoji
 from shared.events import setup_shared_events
+from typing import Dict, Any, List
 
 def main():
     # Load contributors and emoji ID mapping from contributors.json
     with open(CONTRIBUTORS_FILE_PATH, 'r') as json_file:
-        data = json.load(json_file)
-        contributors = data["contributors"]
-        emoji_id_mapping = {emoji: contributor for emoji, contributor in data["emojiIdMapping"].items()}
+        data: Dict[str, Any] = json.load(json_file)
+        contributors: List[str] = data["contributors"]
+        emoji_id_mapping: Dict[str, str] = {emoji: contributor for emoji, contributor in data["emojiIdMapping"].items()}
 
     # Discord Config
-    intents = discord.Intents.default()
+    intents: discord.Intents = discord.Intents.default()
     intents.message_content = True
     intents.reactions = True
-    bot = commands.Bot(command_prefix="$", intents=intents)
+    bot: commands.Bot = commands.Bot(command_prefix="$", intents=intents)
     
     # Setup the governance discord commands, and events
     setup_gov_commands(bot)

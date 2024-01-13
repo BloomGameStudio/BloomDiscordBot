@@ -1,9 +1,12 @@
-from emotes.command_operations import send_dm_once
 import discord
 import logging
 import textwrap
+from typing import List, Dict, Union
+from discord.ext import commands
+from discord import Message, Reaction, User
+from emotes.command_operations import send_dm_once
 
-async def handle_message(bot, message, contributors, emoji_id_mapping, proposals):
+async def handle_message(bot: commands.Bot, message: Message, contributors: List[Dict[str, Union[str, int]]], emoji_id_mapping: Dict[str, int], proposals: List[Dict[str, Union[str, int]]]) -> None:
     fmt_proposals = ""
 
     # Loop over proposals and convert them to str with every proposal name being on a newline
@@ -33,7 +36,7 @@ async def handle_message(bot, message, contributors, emoji_id_mapping, proposals
 
     await bot.process_commands(message)
 
-async def handle_reaction(bot, reaction, user, contributors, emoji_id_mapping, proposals, new_proposal_emoji):
+async def handle_reaction(bot: commands.Bot, reaction: Reaction, user: User, contributors: List[Dict[str, Union[str, int]]], emoji_id_mapping: Dict[str, int], proposals: List[Dict[str, Union[str, int]]], new_proposal_emoji: str) -> None:
     if user == bot.user:
         return
 
@@ -120,7 +123,7 @@ async def handle_reaction(bot, reaction, user, contributors, emoji_id_mapping, p
                     **__Background__**
                     {edit_proposal["background"]}
 
-                    ** <:inevitable_bloom:1178256658741346344> Yes**
+                    ** <:inevitable_bloom:1192384857691656212> Yes**
                     ** <:bulby_sore:1127463114481356882> Reassess**
                     ** <:pepe_angel:1161835636857241733> Abstain**
 
@@ -177,7 +180,7 @@ async def handle_reaction(bot, reaction, user, contributors, emoji_id_mapping, p
         **__Background__**
         {background.content}
 
-        ** <:inevitable_bloom:1178256658741346344> Yes**
+        ** <:inevitable_bloom:1192384857691656212> Yes**
         ** <:bulby_sore:1127463114481356882> Reassess**
         ** <:pepe_angel:1161835636857241733> Abstain**
 
