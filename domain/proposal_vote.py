@@ -4,6 +4,9 @@ from tortoise.contrib.pydantic import pydantic_model_creator
 
 from enum import Enum, IntEnum
 
+"""
+ProposalVote is currently unused and is a place-holder for publish votes.
+"""
 class ProposalVote(Model):
     id = fields.IntField(pk=True)
     member_id = fields.BigIntField()

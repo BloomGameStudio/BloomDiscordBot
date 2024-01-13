@@ -9,6 +9,14 @@ from domain.contributor_mention import ContributorMention
 from shared.constants import GUILD_ID
 from shared.constants import SYNC_COMMANDS
 
+"""
+Handles all event hooks for the discord bot application.
+
+on_ready is used to initialize the application.
+on_message is used to scan all incoming messages for contributor emojis.
+on_reaction_add is used to scan all incoming reactions for contributor emojis.
+on_event is currently unused. 
+"""
 class SharedEventHookCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -45,14 +53,12 @@ class SharedEventHookCog(commands.Cog):
     # Handle scanning messages for emojis of the user.
     @commands.Cog.listener()
     async def on_message(self, message):
-        print(message.guild.name + " - " + message.content)
         await SharedEventHookCog.scan_message_for_emojis_and_dm(self, message)
         return
 
     # Handle scanning messages for emojis of the user.
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction: discord.Reaction, user: discord.User):
-        print(f"Ayo someone be adding reactions dawg:{reaction}")
         await SharedEventHookCog.scan_reaction_and_dm(self, reaction, user)
         return
 
@@ -65,6 +71,16 @@ class SharedEventHookCog(commands.Cog):
     # Scans a message for all emojis, and if there is a related contributor to them, alerts the contributor.
     # Lazily loads all of the contributors using an AND statement on the database query, should be relatively performant.
     async def scan_message_for_emojis_and_dm(self, message: discord.Message):
+        """
+        Scans a message for emojis and DMs relevant contributors.
+
+        Accesses the ORM dataset to scan the contributor list for matching emojis.
+
+        Parameters
+        ----------
+        message : discord.Message
+            The message to scan.
+        """
         # Get all emojis from message.
         custom_emojis = re.findall(r'<[a]?:\w*:\d*>', message.content)
         print(custom_emojis)
@@ -103,6 +119,19 @@ class SharedEventHookCog(commands.Cog):
     # More or less the same thing as message scanning but handles reactions.
     # Could probably be combined with the message method but I wasn't thinking of how correctly.
     async def scan_reaction_and_dm(self, reaction: discord.Reaction, user: discord.User):
+        """
+        Scans a reactions for emojis and DMs relevant contributors.
+
+        Accesses the ORM dataset to scan the contributor list for matching emojis.
+
+        Parameters
+        ----------
+        reaction : discord.Reaction
+            The Reaction to scan.
+        user : discord.User
+            The User to scan.
+        """
+
         if user == self.bot.user:
             return
         

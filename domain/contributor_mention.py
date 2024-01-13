@@ -4,6 +4,14 @@ from tortoise.contrib.pydantic import pydantic_model_creator
 
 from enum import Enum, IntEnum
 
+"""
+ContributorMention is the part of the domain model that allows for the tracking
+of all mentions that are tied to a certain contributor. Any time a message
+is reacted to or a message contains a specific emoji, the user will be DM'd
+and one of these objects will be created to track that event instance.
+
+This enables commands like /find_mentions.
+"""
 class ContributorMention(Model):
     id = fields.IntField(pk=True)
     channel_id = fields.BigIntField()

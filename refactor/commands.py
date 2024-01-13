@@ -18,6 +18,11 @@ from shared.constants import GUILD_ID
 from discord.ext import commands
 from tortoise.expressions import Q
 
+"""
+Contains all commands for the application.
+
+See individual commands for more information.
+"""
 class CommandsCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -28,6 +33,24 @@ class CommandsCog(commands.Cog):
     @app_commands.command(name='add_contributor', description="Add a new contributor, also allows you to re-enable old contributors.")
     @app_commands.describe(emoji_string="The emoji to use for this contributor.", contributor="The contributor to tie the emoji to.", user_note="A comment to remind us who this is.")
     async def add_contributor(self, interaction: discord.Interaction, emoji_string:str, contributor:Member, user_note:Optional[str]):
+        """
+        Adds a contributor into the database if they do not exist, else alters them.
+
+        Allows for the update of emjoi and user_note + will reactivate an existing contributor who has been removed.
+        If it does not find a contributor it will attempt to create a new entry.If the user who runs this is not a 
+        contributor, it will fail.
+
+        Parameters
+        ----------
+        interaction : discord.interaction
+            The interaction from the discord event.
+        emoji_string : string
+            The emoji to use for the contributor.
+        contributor : discord.Member
+            The user that was selected to be added in as a contributor.
+        user_note : string
+            Optional string for adding in comments.
+        """
         # Fetch contributor by the user who did the interaction.
         contributor_object = await Contributor.filter(member_id=interaction.user.id).first()
 
@@ -73,6 +96,26 @@ class CommandsCog(commands.Cog):
     @app_commands.command(name='remove_contributor')
     @app_commands.describe(emoji_string="The emoji to look up the contributor with.", contributor="The mention of the contributor to move.")
     async def remove_contributor(self, interaction: discord.Interaction, emoji_string:Optional[str], contributor:Optional[Member]):
+        """
+        Archives a contributor in the database if they exist, else fails.
+
+        Archived contributors will have their "active" flag set to false, which will prevent them from recieving DMs.
+        If both emoji and member are provided as inputs it will find using emoji first. If the user who runs this is 
+        not a contributor, it will fail.
+
+        Parameters
+        ----------
+        interaction : discord.interaction
+            The interaction from the discord event.
+        emoji_string : string
+            The emoji to find the contributor by.
+        contributor : discord.Member
+            The mention to find the contributor by.
+        """
+
+        if (emoji_string is None and contributor is None):
+            await interaction.response.send_message("You must provide either an emoji or a discord user.")
+
         # Fetch contributor by the user who did the interaction.
         contributor_object = await Contributor.filter(member_id=interaction.user.id).first()
          
@@ -85,7 +128,7 @@ class CommandsCog(commands.Cog):
         contributor_object = None
         if (emoji_string is not None):
             contributor_object = Contributor.filter(emoji_string=emoji_string).first()
-        elif (contributor is not None):
+        if (contributor is not None and contributor_object is None):
             contributor_object = Contributor.filter(member_id=contributor.id).first()
 
         if (contributor_object is None):
@@ -107,6 +150,20 @@ class CommandsCog(commands.Cog):
     @app_commands.command(name='list_contributors')
     @app_commands.describe(active_only="If true only fetches active contributors, else fetches all.")
     async def list_contributors(self, interaction: discord.Interaction,  active_only:Optional[bool]):
+        """
+        Fetches and displays a list of contributors.
+
+        If the active flag is provided and is False it will return a full list of contributors even removed ones.
+        By default this is true. 
+
+        Parameters
+        ----------
+        interaction : discord.interaction
+            The interaction from the discord event.
+        active_only : bool
+            Wether or not to also display inactive contributors.
+        """
+
         # Find contributors by their active flag.
         contributor_objects = await Contributor.filter(active=(active_only if active_only is not None else True))
 
@@ -131,6 +188,19 @@ class CommandsCog(commands.Cog):
     @app_commands.command(name='find_mentions')
     @app_commands.describe(n="Finds the most recent n mentions for you, as a contributor.")
     async def find_mentions(self, interaction: discord.Interaction, n:Optional[int]):
+        """
+        Fetches and displays a list of recent mentions that have occured for yourself as a contributor.
+
+        If the user who runs this is not a contributor, it will fail.
+
+        Parameters
+        ----------
+        interaction : discord.interaction
+            The interaction from the discord event.
+        n : int
+            The maximum number of records to fetch.
+        """
+        
         # Find contributor object by the member_id of the person who ran the command.
         contributor_object = await Contributor.filter(member_id=interaction.user.id).first()
 
@@ -170,6 +240,22 @@ class CommandsCog(commands.Cog):
     @app_commands.command(name='find_proposal')
     @app_commands.describe(query="The string to search for amongst proposals.",proposal_id="Pull up a specific proposal by ID (useful when search matches many).")
     async def find_proposal(self, interaction: discord.Interaction, query:str, proposal_id:Optional[int]):
+        """
+        Fetches and displays a list of recent proposals either directly by single ID or by loosey query search.
+
+        If the user provides an ID that exists in the database a single record will be returned matching that ID.
+        If they provide a query a search will be performed and records matching the query will be returned.
+        If both are provided ID will be used over query.
+
+        Parameters
+        ----------
+        interaction : discord.interaction
+            The interaction from the discord event.
+        query : str
+            The search query to search in all proposals for.
+        proposal_id : int
+            The ID to pull up a proposal by.
+        """
         try:
             proposal_objects = []
             if (proposal_id is None):
@@ -219,6 +305,18 @@ class CommandsCog(commands.Cog):
     @app_commands.command(name='create_proposal')
     @app_commands.describe(draft="Is this proposal a draft? Default yes.")
     async def create_proposal(self, interaction: discord.Interaction, draft:Optional[bool]):
+        """
+        Creates a new proposal making heavy use of the ProposalModal class.
+
+        See ProposalModal.py
+
+        Parameters
+        ----------
+        interaction : discord.interaction
+            The interaction from the discord event.
+        draft : bool
+            Currently unused, draft is forced to true, all things created are drafts until published.
+        """
         # Esentially just pops open the ProposalModal object and passes None for the proposal.
         # Passing none for the proposal allows the modal to know that it is creating not editing.
         try:
@@ -234,6 +332,16 @@ class CommandsCog(commands.Cog):
             
     @app_commands.command(name='my_proposals', description="Get a list of all proposals you have made.")
     async def my_proposals(self, interaction: discord.Interaction):
+        """
+        Returns an interactable list of your own proposals by the user who ran the command.
+
+        The list of proposals returned is owned by whatever member_id ran the interaction.
+
+        Parameters
+        ----------
+        interaction : discord.interaction
+            The interaction from the discord event.
+        """
         try:
             # Fetch proposals by interaction member_id
             proposal_objects = await Proposal.filter(member_id=interaction.user.id)

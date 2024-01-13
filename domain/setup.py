@@ -3,6 +3,10 @@ import asyncio
 
 from contributor import Contributor
 
+"""
+Setup.py is the main schema generation tool for the initial database setup.
+This can be run one time to generate the initial schema.
+"""
 async def init(make_contributors):
     await Tortoise.init(
         db_url='sqlite://db.sqlite3',
@@ -28,7 +32,9 @@ async def init(make_contributors):
     quit()
     
 
-# Not really needed, just an example of how awesome this is.
+"""
+Initializes the base contributor data that existed.
+"""
 async def init_contributors():
     await Contributor.create(member_id=353572599957291010,user_note="balu",guild_id=0,emoji_id=1110862230343397387,emoji_string="<:balu:1110862230343397387>")
     await Contributor.create(member_id=368617749041381388,user_note="gumbo",guild_id=0,emoji_id=1145946572589383731,emoji_string="<:gumbo:1145946572589383731>")

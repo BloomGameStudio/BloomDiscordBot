@@ -4,8 +4,14 @@ from domain.proposal import Proposal
 import traceback
 from discord import Embed
 
-# Modal class that handles the creation and editing of a proposal object.
-# Inherits ui.Modal object and extends it.
+"""
+Proposal Modal is a CRUD interface for Proposal objects meant to be 
+called from the discord interfaces. The proposal modal either takes
+in a proposal object from the ORM domain or None (null). If there
+is an object passed, it will treat it as an edit. If there is no 
+object passed it will treat it as a creation. This spawns a message
+upon completion and can be send in response to any interaction.
+"""
 class ProposalModal(ui.Modal, title="Create/Edit Proposal"):
     # The proposal object that is to be created or edited.
     proposal = None

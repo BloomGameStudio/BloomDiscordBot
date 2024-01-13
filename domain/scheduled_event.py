@@ -4,6 +4,10 @@ from tortoise.contrib.pydantic import pydantic_model_creator
 
 from enum import Enum, IntEnum
 
+
+"""
+Currently unused placeholder for Event logging and interactions.
+"""
 class ScheduledEvent(Model):
     id = fields.IntField(pk=True)
     guild_id = fields.BigIntField()
