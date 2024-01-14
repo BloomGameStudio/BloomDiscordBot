@@ -123,9 +123,9 @@ async def handle_reaction(bot: commands.Bot, reaction: Reaction, user: User, con
                     **__Background__**
                     {edit_proposal["background"]}
 
-                    ** <:inevitable_bloom:1192384857691656212> Yes**
-                    ** <:bulby_sore:1127463114481356882> Reassess**
-                    ** <:pepe_angel:1161835636857241733> Abstain**
+                    ** 👍 Yes**
+                    ** 👎 Reassess**
+                    ** ❌ Abstain**
 
                     \n
                     If you wish to publish your draft proposal, please use command ``$publish_draft``.
@@ -180,9 +180,9 @@ async def handle_reaction(bot: commands.Bot, reaction: Reaction, user: User, con
         **__Background__**
         {background.content}
 
-        ** <:inevitable_bloom:1192384857691656212> Yes**
-        ** <:bulby_sore:1127463114481356882> Reassess**
-        ** <:pepe_angel:1161835636857241733> Abstain**
+        ** 👍 Yes**
+        ** 👎 Reassess**
+        ** ❌ Abstain**
 
     
         If you wish to publish your draft proposal, please use command ``$publish_draft``

@@ -34,7 +34,7 @@ async def list_contributors(ctx: discord.ext.commands.Context, emoji_id_mapping:
     emoji_mapping_list = [emoji for emoji in emoji_id_mapping.keys()]
     emoji_mapping_text = "\n".join(emoji_mapping_list)
     message = (
-        f"<:artifacts:1113725319011110943> **List of Contributors** <:artifacts:1113725319011110943>\n"
+        f" :fire: **List of Contributors** :fire: \n"
         f"{emoji_mapping_text}"
     )
     await ctx.send(message)

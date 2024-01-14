@@ -50,9 +50,9 @@ async def publish_draft(draft: Dict[str, Any], client: Client) -> None:
     **__Background__**
     {draft["background"]}
 
-    **<:inevitable_bloom:1192384857691656212> Yes**
-    **<:bulby_sore:1127463114481356882> Reassess**
-    **<:pepe_angel:1161835636857241733> Abstain**
+    **👍 Yes**
+    **👎 Reassess**
+    **❌ Abstain**
 
     Vote will conclude in 48h from now.
     """)
@@ -81,11 +81,11 @@ async def vote_timer(thread_id: int, client: Client, channel_id: int, title: str
 
     for reaction in message.reactions:
         
-        if str(reaction.emoji) == "<:inevitable_bloom:1192384857691656212>":
+        if str(reaction.emoji) == "👍":
             ongoing_votes[message.id]["yes_count"] = reaction.count
-        elif str(reaction.emoji) == "<:bulby_sore:1127463114481356882>":
+        elif str(reaction.emoji) == "👎":
             ongoing_votes[message.id]["reassess_count"] = reaction.count
-        elif str(reaction.emoji) == "<:pepe_angel:1161835636857241733>":
+        elif str(reaction.emoji) == "❌":
             ongoing_votes[message.id]["abstain_count"] = reaction.count
 
     # Check the result and post it
