@@ -3,9 +3,13 @@ from discord.ext import tasks, commands
 from events.event_operations import get_guild_scheduled_event_users, save_posted_events, fetch_upcoming_events
 from events.task_operations import format_and_send_message
 from shared.helpers import get_channel_by_name
+from shared.constants import GENERAL_CHANNEL_ID
 
 @tasks.loop(minutes=60)
 async def check_events(bot: commands.Bot) -> None:
+    if not bot.guilds:
+        logging.warning("Guild not found")
+
     for guild in bot.guilds:
         upcoming_events = await fetch_upcoming_events(guild)
 
@@ -13,7 +17,7 @@ async def check_events(bot: commands.Bot) -> None:
             logging.info(f"No upcoming events in the next 24 hours for guild {guild.id}.")
             continue
 
-        channel = get_channel_by_name(guild, "general")
+        channel = get_channel_by_name(guild, GENERAL_CHANNEL_ID)
 
         # Check if it's the initial run or not
         if not bot.posted_events:
@@ -31,7 +35,7 @@ async def check_events(bot: commands.Bot) -> None:
             if new_events:
                 for event in new_events:
                     # Fetch subscribed users for each event
-                    users = get_guild_scheduled_event_users(event.id)
+                    users = get_guild_scheduled_event_users(guild.id, event.id)
                     await format_and_send_message(event, users, channel)
 
                 # Update the bot.posted_events list only for newly posted events
@@ -39,6 +43,3 @@ async def check_events(bot: commands.Bot) -> None:
                 save_posted_events(bot.posted_events)
             else:
                 logging.info(f"No new upcoming events in the next 24 hours for guild {guild.id}.")
-    #else:
-    #    logging.warning("Guild not found")
-

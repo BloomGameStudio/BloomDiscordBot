@@ -6,6 +6,7 @@ When the bot is initiated the on_ready event will be loaded which starts the che
 This task runs every hour to check for upcoming events within the next 24 hours.
 The formatted_string is used to format the message that will be sent to the channel.
 """
+
 async def format_and_send_message(event: ScheduledEvent, users: List[Dict[str, Union[str, int]]], channel: TextChannel) -> None:
     guild_id = event.guild.id
     user_mentions = [f"<@{user['user_id']}>" for user in users]
