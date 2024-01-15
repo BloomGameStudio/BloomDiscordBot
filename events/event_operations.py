@@ -7,7 +7,7 @@ from shared.constants import POSTED_EVENTS_FILE_PATH, GENERAL_CHANNEL_ID
 from shared.helpers import get_channel_by_name
 from datetime import datetime, timezone
 from typing import List, Optional, Any
-from discord import Guild, ScheduledEvent
+from discord import ScheduledEvent
 from discord.ext.commands import Bot
 
 # Load the stored events from the JSON file
@@ -91,7 +91,7 @@ async def notify_new_event(bot: Bot, event: ScheduledEvent, guild_id: int) -> No
         else:
             logging.info(f"Event channel not found for guild.")
     else:
-        logging.info(f"Guild not found with ID")
+        logging.info(f"Guild not found")
 
 # Fetch all upcoming events within the next 24 hours this is called by tasks.py
 async def fetch_upcoming_events(guild):
