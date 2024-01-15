@@ -4,6 +4,8 @@ import textwrap
 import config.config as cfg
 from typing import Dict, Any, List, Tuple
 from discord import Client
+from discord.ext.commands import Bot
+import discord
 from shared.constants import GOVERNANCE_BUDGET_CHANNEL_ID, GOVERNANCE_CHANNEL_ID
 
 proposals: List[Dict[str, Any]] = []
@@ -11,31 +13,31 @@ proposals: List[Dict[str, Any]] = []
 ongoing_votes: Dict[int, Dict[str, Any]] = {}
 
 # prepare the draft by setting the type, channel ID, and title based on the draft type
-async def prepare_draft(draft: Dict[str, Any]) -> Tuple[str, int, str]:
+async def prepare_draft(draft: Dict[str, Any], guild: discord.Guild) -> Tuple[str, str, str]:
     draft_type = draft["type"].lower()
     if draft_type not in ["budget", "governance"]:
         raise ValueError(f"Invalid draft type: {draft_type}")
 
     if draft_type == "budget":
         id_type = 'budget'
-        channel_id = int(GOVERNANCE_BUDGET_CHANNEL_ID)
+        channel_name = GOVERNANCE_BUDGET_CHANNEL_ID
         cfg.current_budget_id += 1
         cfg.update_id_values(cfg.current_budget_id, id_type) # Update the governance ID in the config file
         title = f"Bloom Budget Proposal (BBP) #{cfg.current_budget_id}: {draft['name']}"
     else:
         id_type = 'governance'
-        channel_id = int(GOVERNANCE_CHANNEL_ID)
+        channel_name = GOVERNANCE_CHANNEL_ID
         cfg.current_governance_id += 1
         cfg.update_id_values(cfg.current_governance_id, id_type) # Update the governance ID in the config file
         title = f"Bloom Governance Proposal (BGP) #{cfg.current_governance_id}: {draft['name']}"
 
-    return id_type, channel_id, title
+    return id_type, channel_name, title
 
 # publish the draft by creating a thread with the prepared content and starting a vote timer
-async def publish_draft(draft: Dict[str, Any], client: Client) -> None:
-    id_type, channel_id, title = await prepare_draft(draft)
+async def publish_draft(draft: Dict[str, Any], client: Client, guild_id: int) -> None:
+    id_type, channel_name, title = await prepare_draft(draft, client.get_guild(guild_id))
 
-    forum_channel = client.get_channel(channel_id)
+    forum_channel = discord.utils.get(client.get_guild(guild_id).channels, name=channel_name)
     if not forum_channel:
         print("Error: Channel not found.")
         return
@@ -50,9 +52,9 @@ async def publish_draft(draft: Dict[str, Any], client: Client) -> None:
     **__Background__**
     {draft["background"]}
 
-    **👍 Yes**
-    **👎 Reassess**
-    **❌ Abstain**
+    **<:inevitable_bloom:1192384857691656212> Yes**
+    **<:bulby_sore:1127463114481356882> Reassess**
+    **<:pepe_angel:1161835636857241733> Abstain**
 
     Vote will conclude in 48h from now.
     """)
@@ -66,14 +68,14 @@ async def publish_draft(draft: Dict[str, Any], client: Client) -> None:
         "abstain_count": 0
     }
 
-    await vote_timer(thread_with_message.thread.id, client, channel_id, title, draft)
+    await vote_timer(thread_with_message.thread.id, client, channel_name, title, draft)
 
-async def vote_timer(thread_id: int, client: Client, channel_id: int, title: str, draft: Dict[str, Any]) -> None:
+async def vote_timer(thread_id: int, bot: Bot, channel_name: str, title: str, draft: Dict[str, Any]) -> None:
     # Sleep until the vote ends
     await asyncio.sleep(48 * 3600)
 
-    # Fetch the thread again
-    channel = client.get_channel(channel_id)
+    # Fetch the channel by name
+    channel = discord.utils.get(bot.guilds[0].channels, name=channel_name)
     thread = channel.get_thread(thread_id)
 
     # Fetch the initial message in the thread using the thread ID
@@ -100,7 +102,7 @@ async def vote_timer(thread_id: int, client: Client, channel_id: int, title: str
 
     result_message += f"\n\nYes: {ongoing_votes[message.id]['yes_count']}\nReassess: {ongoing_votes[message.id]['reassess_count']}\nAbstain: {ongoing_votes[message.id]['abstain_count']}"
 
-    await client.get_channel(thread_id).send(result_message)
+    await bot.get_channel(thread_id).send(result_message)
 
     # Remove the vote from ongoing_votes
     del ongoing_votes[message.id]

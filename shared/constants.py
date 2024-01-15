@@ -1,10 +1,9 @@
 # Constants used throughout the bot
-# set the GUILD_ID and GENERAL_CHANNEL_ID to the server and channel you want the bot to post events to
-GUILD_ID = 1152979839737925705
-GENERAL_CHANNEL_ID = 1152979839737925713
-GOVERNANCE_CHANNEL_ID = 1191283932096905307
-GOVERNANCE_BUDGET_CHANNEL_ID = 1191283982768287795
-GOVERNANCE_TALK_CHANNEL_ID = 1174420268568031252
+# Ensure the servers you run the bot in contain the required channel names
+GENERAL_CHANNEL_ID = 'home'
+GOVERNANCE_CHANNEL_ID = 'improvement-props'
+GOVERNANCE_BUDGET_CHANNEL_ID = 'budgetary-props'
+GOVERNANCE_TALK_CHANNEL_ID = 'governance'
 new_proposal_emoji = "💡"
 CONTRIBUTORS_FILE_PATH = './emotes/contributors.json'
 POSTED_EVENTS_FILE_PATH = './events/posted_events.json'
