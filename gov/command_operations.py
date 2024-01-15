@@ -25,7 +25,7 @@ async def handle_publishdraft(ctx: commands.Context, draft_name: str, proposals:
 
     if draft_to_publish:
         await ctx.send(f"Publishing draft: {draft_to_publish['name']}")
-        await publish_draft(draft_to_publish, bot)
         proposals.remove(draft_to_publish)
+        await publish_draft(draft_to_publish, bot)
     else:
         await ctx.send(f"Draft not found: {draft_name}")

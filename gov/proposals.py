@@ -1,7 +1,8 @@
 import asyncio
 import subprocess
+import textwrap
 import config.config as cfg
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Tuple
 from discord import Client
 from shared.constants import GOVERNANCE_BUDGET_CHANNEL_ID, GOVERNANCE_CHANNEL_ID
 
@@ -9,41 +10,39 @@ proposals: List[Dict[str, Any]] = []
 
 ongoing_votes: Dict[int, Dict[str, Any]] = {}
 
-def get_next_governance_id() -> int:
-    cfg.current_governance_id += 1
-    return cfg.current_governance_id
+# prepare the draft by setting the type, channel ID, and title based on the draft type
+async def prepare_draft(draft: Dict[str, Any]) -> Tuple[str, int, str]:
+    draft_type = draft["type"].lower()
+    if draft_type not in ["budget", "governance"]:
+        raise ValueError(f"Invalid draft type: {draft_type}")
 
-def get_next_budget_id() -> int:
-    cfg.current_budget_id += 1
-    return cfg.current_budget_id
-
-def get_governance_id() -> int:
-    return cfg.current_governance_id
-
-def get_budget_id() -> int:
-    return cfg.current_budget_id
-
-async def publish_draft(draft: Dict[str, Any], client: Client) -> None:
-    if draft["type"].lower() == "budget":
+    if draft_type == "budget":
+        id_type = 'budget'
         channel_id = int(GOVERNANCE_BUDGET_CHANNEL_ID)
-        current_budget_id = get_next_budget_id()
-        cfg.update_id_values(current_budget_id, 'budget')  # Update the budget ID in the config file
-        title = f"**Bloom Budget Proposal (BBP) #{current_budget_id}: {draft['name']}**"
+        cfg.current_budget_id += 1
+        cfg.update_id_values(cfg.current_budget_id, id_type) # Update the governance ID in the config file
+        title = f"Bloom Budget Proposal (BBP) #{cfg.current_budget_id}: {draft['name']}"
     else:
+        id_type = 'governance'
         channel_id = int(GOVERNANCE_CHANNEL_ID)
-        current_governance_id = get_next_governance_id()
-        cfg.update_id_values(current_governance_id, 'governance')  # Update the governance ID in the config file
-        title = f"**Bloom Governance Proposal (BGP) #{current_governance_id}: {draft['name']}**"
+        cfg.current_governance_id += 1
+        cfg.update_id_values(cfg.current_governance_id, id_type) # Update the governance ID in the config file
+        title = f"Bloom Governance Proposal (BGP) #{cfg.current_governance_id}: {draft['name']}"
+
+    return id_type, channel_id, title
+
+# publish the draft by creating a thread with the prepared content and starting a vote timer
+async def publish_draft(draft: Dict[str, Any], client: Client) -> None:
+    id_type, channel_id, title = await prepare_draft(draft)
 
     forum_channel = client.get_channel(channel_id)
-
     if not forum_channel:
         print("Error: Channel not found.")
         return
-
+    
     # Store the content in a variable
-    content = f"""
-    {title}
+    content = textwrap.dedent(f"""
+    **{title}**
 
     __**Abstract**__
     {draft["abstract"]}
@@ -51,19 +50,18 @@ async def publish_draft(draft: Dict[str, Any], client: Client) -> None:
     **__Background__**
     {draft["background"]}
 
-    ** <:inevitable_bloom:1178256658741346344> Yes**
-    ** <:bulby_sore:1127463114481356882> Reassess**
-    ** <:pepe_angel:1161835636857241733> Abstain**
+    **👍 Yes**
+    **👎 Reassess**
+    **❌ Abstain**
 
     Vote will conclude in 48h from now.
-    """
+    """)
 
- # Create the thread with the initial message
     thread_with_message = await forum_channel.create_thread(name=title, content=content)
     
     ongoing_votes[thread_with_message.thread.id] = {
-        "draft": draft,  # Store the draft info
-        "yes_count": 0,  # Initialize counts
+        "draft": draft, # Store the draft info
+        "yes_count": 0, # Initialize counts
         "reassess_count": 0,
         "abstain_count": 0
     }
@@ -78,20 +76,16 @@ async def vote_timer(thread_id: int, client: Client, channel_id: int, title: str
     channel = client.get_channel(channel_id)
     thread = channel.get_thread(thread_id)
 
-    # Fetch the first message in the thread
-    messages = []
-    async for message in thread.history(limit=1):
-        messages.append(message)
-
-    message = messages[0]
+    # Fetch the initial message in the thread using the thread ID
+    message = await thread.fetch_message(thread_id)
 
     for reaction in message.reactions:
         
-        if str(reaction.emoji) == "<:inevitable_bloom:1192384857691656212>":
+        if str(reaction.emoji) == "👍":
             ongoing_votes[message.id]["yes_count"] = reaction.count
-        elif str(reaction.emoji) == "<:bulby_sore:1127463114481356882>":
+        elif str(reaction.emoji) == "👎":
             ongoing_votes[message.id]["reassess_count"] = reaction.count
-        elif str(reaction.emoji) == "<:pepe_angel:1161835636857241733>":
+        elif str(reaction.emoji) == "❌":
             ongoing_votes[message.id]["abstain_count"] = reaction.count
 
     # Check the result and post it
