@@ -3,7 +3,6 @@ import subprocess
 import textwrap
 import config.config as cfg
 from typing import Dict, Any, List, Tuple
-from discord import Client
 from discord.ext.commands import Bot
 import discord
 from shared.constants import GOVERNANCE_BUDGET_CHANNEL_ID, GOVERNANCE_CHANNEL_ID
@@ -13,7 +12,7 @@ proposals: List[Dict[str, Any]] = []
 ongoing_votes: Dict[int, Dict[str, Any]] = {}
 
 # prepare the draft by setting the type, channel ID, and title based on the draft type
-async def prepare_draft(draft: Dict[str, Any], guild: discord.Guild) -> Tuple[str, str, str]:
+async def prepare_draft(draft: Dict[str, Any]) -> Tuple[str, str, str]:
     draft_type = draft["type"].lower()
     if draft_type not in ["budget", "governance"]:
         raise ValueError(f"Invalid draft type: {draft_type}")
@@ -34,10 +33,10 @@ async def prepare_draft(draft: Dict[str, Any], guild: discord.Guild) -> Tuple[st
     return id_type, channel_name, title
 
 # publish the draft by creating a thread with the prepared content and starting a vote timer
-async def publish_draft(draft: Dict[str, Any], client: Client, guild_id: int) -> None:
-    id_type, channel_name, title = await prepare_draft(draft, client.get_guild(guild_id))
+async def publish_draft(draft: Dict[str, Any], bot: Bot, guild_id: int) -> None:
+    id_type, channel_name, title = await prepare_draft(draft)
 
-    forum_channel = discord.utils.get(client.get_guild(guild_id).channels, name=channel_name)
+    forum_channel = discord.utils.get(bot.get_guild(guild_id).channels, name=channel_name)
     if not forum_channel:
         print("Error: Channel not found.")
         return
@@ -52,9 +51,11 @@ async def publish_draft(draft: Dict[str, Any], client: Client, guild_id: int) ->
     **__Background__**
     {draft["background"]}
 
-    **<:inevitable_bloom:1192384857691656212> Yes**
-    **<:bulby_sore:1127463114481356882> Reassess**
-    **<:pepe_angel:1161835636857241733> Abstain**
+    **👍 Yes**
+
+    **👎 Reassess**
+
+    **❌ Abstain**
 
     Vote will conclude in 48h from now.
     """)
@@ -68,14 +69,20 @@ async def publish_draft(draft: Dict[str, Any], client: Client, guild_id: int) ->
         "abstain_count": 0
     }
 
-    await vote_timer(thread_with_message.thread.id, client, channel_name, title, draft)
+    await vote_timer(thread_with_message.thread.id, bot, guild_id, channel_name, title, draft)
 
-async def vote_timer(thread_id: int, bot: Bot, channel_name: str, title: str, draft: Dict[str, Any]) -> None:
+async def vote_timer(thread_id: int, bot: Bot, guild_id: int, channel_name: str, title: str, draft: Dict[str, Any]) -> None:
     # Sleep until the vote ends
     await asyncio.sleep(48 * 3600)
 
+    # Fetch the guild using the guild_id
+    guild = bot.get_guild(guild_id)
+    if not guild:
+        print(f"Error: Guild with id {guild_id} not found.")
+        return
+
     # Fetch the channel by name
-    channel = discord.utils.get(bot.guilds[0].channels, name=channel_name)
+    channel = discord.utils.get(guild.channels, name=channel_name)
     thread = channel.get_thread(thread_id)
 
     # Fetch the initial message in the thread using the thread ID
