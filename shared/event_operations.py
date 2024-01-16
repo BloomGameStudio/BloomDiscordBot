@@ -6,26 +6,24 @@ from discord.ext import commands
 from discord import Message, Reaction, User
 from emotes.command_operations import send_dm_once
 
-async def handle_message(bot: commands.Bot, message: Message, contributors: List[Dict[str, Union[str, int]]], emoji_id_mapping: Dict[str, int], proposals: List[Dict[str, Union[str, int]]]) -> None:
-    fmt_proposals = ""
+async def handle_message(bot: commands.Bot, message: Message, contributors: List[Dict[str, Union[str, int]]], emoji_dicts: Dict[str, Dict[str, int]], proposals: List[Dict[str, Union[str, int]]]) -> None:
+    server_name = message.guild.name
+    contributors = contributors.get(server_name)
+    if contributors is None:
+        logging.warning(f'No contributors found for server: {server_name}')
+        return
 
-    # Loop over proposals and convert them to str with every proposal name being on a newline
+    fmt_proposals = ""
     for proposal in proposals:
         fmt_proposals += f"📝 {proposal['name']}\n"
 
     if message.author == bot.user:
         return
 
-    for emoji_id, contributor_uid in emoji_id_mapping.items():
-        contributor = None
-        for c in contributors:
-            if c["uid"] == contributor_uid:
-                contributor = c
-                break
-
+    for emoji_id, contributor_uid in emoji_dicts.items():
+        contributor = next((c for c in contributors if c["uid"] == contributor_uid), None)
         if emoji_id in message.content:
             logging.info('Emoji Found in message! %s', emoji_id)
-
             if contributor:
                 try:
                     logging.info(f'Messaging the user, {contributor["uid"]}')
@@ -36,21 +34,18 @@ async def handle_message(bot: commands.Bot, message: Message, contributors: List
 
     await bot.process_commands(message)
 
-async def handle_reaction(bot: commands.Bot, reaction: Reaction, user: User, contributors: List[Dict[str, Union[str, int]]], emoji_id_mapping: Dict[str, int], proposals: List[Dict[str, Union[str, int]]], new_proposal_emoji: str) -> None:
+async def handle_reaction(bot: commands.Bot, reaction: Reaction, user: User, contributors: List[Dict[str, Union[str, int]]], emoji_dicts: Dict[str, Dict[str, int]], proposals: List[Dict[str, Union[str, int]]], new_proposal_emoji: str) -> None:
+    server_name = reaction.message.guild.name
+    contributors = contributors.get(server_name)
+    if contributors is None:
+        logging.warning(f'No contributors found for server: {server_name}')
+        return
     if user == bot.user:
         return
 
-    contributor_emoji = next(
-        (emoji_id for emoji_id, contributor_uid in emoji_id_mapping.items() if str(reaction.emoji) == emoji_id),
-        None
-    )
-
+    contributor_emoji = next((emoji_id for emoji_id, contributor_uid in emoji_dicts.items() if str(reaction.emoji) == emoji_id), None)
     if contributor_emoji:
-        contributor = next(
-            (c for c in contributors if c["uid"] == emoji_id_mapping[contributor_emoji]),
-            None
-        )
-
+        contributor = next((c for c in contributors if c["uid"] == emoji_dicts[contributor_emoji]), None)
         if contributor:
             message_link = reaction.message.jump_url
             logging.info("Emoji react found, DMing contributor")
