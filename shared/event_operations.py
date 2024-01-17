@@ -6,19 +6,21 @@ from discord.ext import commands
 from discord import Message, Reaction, User
 from emotes.command_operations import send_dm_once
 
-async def handle_message(bot: commands.Bot, message: Message, contributors: List[Dict[str, Union[str, int]]], emoji_dicts: Dict[str, Dict[str, int]], proposals: List[Dict[str, Union[str, int]]]) -> None:
-    server_name = message.guild.name
-    contributors = contributors.get(server_name)
-    if contributors is None:
-        logging.warning(f'No contributors found for server: {server_name}')
+async def handle_message(bot: commands.Bot, message: Message, data: Dict[str, Dict[str, Union[List[Dict[str, str]], Dict[str, str]]]], proposals: List[Dict[str, Union[str, int]]]) -> None:
+    if message.author == bot.user:
         return
+    server_name = message.guild.name
+    server_data = data['servers'].get(server_name)
+    if server_data is None:
+        logging.warning(f'No data found for server: {server_name}')
+        return
+    
+    contributors = server_data['contributors']
+    emoji_dicts = server_data['emoji_dictionary']
 
     fmt_proposals = ""
     for proposal in proposals:
         fmt_proposals += f"📝 {proposal['name']}\n"
-
-    if message.author == bot.user:
-        return
 
     for emoji_id, contributor_uid in emoji_dicts.items():
         contributor = next((c for c in contributors if c["uid"] == contributor_uid), None)
@@ -34,14 +36,17 @@ async def handle_message(bot: commands.Bot, message: Message, contributors: List
 
     await bot.process_commands(message)
 
-async def handle_reaction(bot: commands.Bot, reaction: Reaction, user: User, contributors: List[Dict[str, Union[str, int]]], emoji_dicts: Dict[str, Dict[str, int]], proposals: List[Dict[str, Union[str, int]]], new_proposal_emoji: str) -> None:
+async def handle_reaction(bot: commands.Bot, reaction: Reaction, user: User, data: Dict[str, Dict[str, Union[List[Dict[str, str]], Dict[str, str]]]], proposals: List[Dict[str, Union[str, int]]], new_proposal_emoji: str) -> None:
     server_name = reaction.message.guild.name
-    contributors = contributors.get(server_name)
-    if contributors is None:
-        logging.warning(f'No contributors found for server: {server_name}')
+    server_data = data['servers'].get(server_name)
+    if server_data is None:
+        logging.warning(f'No data found for server: {server_name}')
         return
     if user == bot.user:
         return
+    
+    contributors = server_data['contributors']
+    emoji_dicts = server_data['emoji_dictionary']
 
     contributor_emoji = next((emoji_id for emoji_id, contributor_uid in emoji_dicts.items() if str(reaction.emoji) == emoji_id), None)
     if contributor_emoji:

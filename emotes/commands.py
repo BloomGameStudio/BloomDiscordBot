@@ -1,4 +1,3 @@
-import logging
 from typing import List, Dict
 from discord.ext import commands
 from discord.ext.commands import Context
