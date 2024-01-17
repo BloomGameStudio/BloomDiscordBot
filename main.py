@@ -36,7 +36,7 @@ def main():
     # Setup the emotes discord commands, and events
     setup_contrbitutor_commands(bot, contributors, emoji_dicts)
     # Setup the shared events
-    setup_shared_events(bot, contributors, emoji_dicts, proposals, new_proposal_emoji)
+    setup_shared_events(bot, data, proposals, new_proposal_emoji)
     bot.posted_events = load_posted_events()
 
     # Setup the event discord commands, and events
