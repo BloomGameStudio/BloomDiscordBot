@@ -4,18 +4,12 @@ import discord
 from shared.constants import CONTRIBUTORS_FILE_PATH
 from typing import List, Dict, Any
 
-def add_contributor_to_list(uid: str, emoji_id: str, contributors: List[Dict[str, str]], emoji_id_mapping: Dict[str, str]) -> Dict[str, str]:    
+def add_contributor_to_list(ctx: discord.ext.commands.Context, uid: str, emoji_id: str, contributors: List[Dict[str, str]], emoji_id_mapping: Dict[str, str]) -> Dict[str, str]:    
     new_contributor = {"uid": uid}
     contributors.append(new_contributor)
     emoji_id_mapping[emoji_id] = uid  # Use the UID directly as the value in emoji_id_mapping
 
-    # Create a single dictionary to pass to update_json_file
-    data_to_update = {
-        "contributors": contributors,
-        "emoji_id_mapping": emoji_id_mapping
-    }
-
-    update_json_file(data_to_update)  # Pass the required arguments
+    update_json_file(ctx.guild.name, {"contributors": contributors, "emoji_dictionary": emoji_id_mapping})
     return new_contributor
     
 async def send_dm_once(bot: discord.Client, contributor: Dict[str, str], message_link: str) -> None:
@@ -24,10 +18,18 @@ async def send_dm_once(bot: discord.Client, contributor: Dict[str, str], message
         dm_message = f"Hello {user.name}! You have been mentioned in this message! {message_link}"
         await user.send(dm_message)
 
-def update_json_file(servers: Dict[str, Dict[str, Any]]) -> None:
-    with open(CONTRIBUTORS_FILE_PATH, 'w') as json_file:
-        json.dump({"servers": servers}, json_file, indent=4)
+def update_json_file(server_name: str, server_data: Dict[str, Any]) -> None:
+    # Read the existing data
+    with open(CONTRIBUTORS_FILE_PATH, 'r') as json_file:
+        data = json.load(json_file)
 
+    # Update the specific server's data
+    data["servers"][server_name] = server_data
+
+    # Write the updated data back to the file
+    with open(CONTRIBUTORS_FILE_PATH, 'w') as json_file:
+        json.dump(data, json_file, indent=4)
+        
 async def list_contributors(ctx: discord.ext.commands.Context, contributors: List[Dict[str, str]], emoji_id_mapping: Dict[str, Dict[str, str]]) -> None:
     server_name = ctx.guild.name
     emoji_dict = emoji_id_mapping.get(server_name)
@@ -62,8 +64,7 @@ async def remove_contributor(ctx: discord.ext.commands.Context, contributors: Di
                 server_contributors.remove(contributor)
                 contributors[ctx.guild.name] = server_contributors  # Update the contributors with the updated server_contributors
                 emoji_dicts[ctx.guild.name] = emoji_dict  # Update the emoji_dicts with the updated emoji_dict
-                servers = {ctx.guild.name: {"contributors": server_contributors, "emoji_dictionary": emoji_dict}}
-                update_json_file(servers)  # Pass the updated servers dictionary
+                update_json_file(ctx.guild.name, {"contributors": server_contributors, "emoji_dictionary": emoji_dict})
                 await ctx.send(f"Contributor removed successfully!")
                 return
         await ctx.send("Contributor not found.")
@@ -112,7 +113,7 @@ async def add_contributor(ctx: discord.ext.commands.Context, contributors: Dict[
                 if emoji_dict is None:
                     await ctx.send("Emoji dictionary not found for server: " + ctx.guild.name)
                     return
-                add_contributor_to_list(uid, emoji_id, server_contributors, emoji_dict)
+                add_contributor_to_list(ctx, uid, emoji_id, server_contributors, emoji_dict)
                 await ctx.send(f"Contributor added successfully!")
         else:
             await ctx.send("Invalid input. Please provide all required information.")
