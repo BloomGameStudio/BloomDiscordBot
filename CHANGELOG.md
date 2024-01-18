@@ -9,10 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Functionality to detect contributors emojis in chat, as well as if their emoji is used as a react. ping the respective user for said emoji.
-- Functions to add, remove, or check the contributors that exist
+- Support for both the Bloom Studio Discord server, and the Bloom Collective Discord server.
 
-- This CHANGELOG file.
+- Functionality to detect contributors emojis in chat, as well as if their emoji is used as a react. ping the respective user for said emoji.
+
+- Functions to add, remove, or check the contributors that exist
 
 - $bot_help command to provide details about useable comamnds.
 
@@ -31,6 +32,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Vote timer to track and identify if a proposal vote passes or fails once published in Discord
 
 - Creating a proposal in Snapshot using the proposal information from Discord
+
+- This CHANGELOG file.
 
 ## [0.1.0] - x-x-2023
 
