@@ -13,7 +13,7 @@ The bot will listen for the on_scheduled_event_create event and then call notify
 setup_event_events is used so that all event events can be loaded at once. instead of individually.
 """
 
-def setup_event_events(bot: commands.Bot, data: Dict[str, Dict[str, str]]) -> None:
+def setup_event_events(bot: commands.Bot, emoji_dicts: Dict[str, Dict[str, str]]) -> None:
     @bot.event
     async def on_ready():
         logging.info(f"Logged in as {bot.user.name} ({bot.user.id})")
@@ -21,11 +21,11 @@ def setup_event_events(bot: commands.Bot, data: Dict[str, Dict[str, str]]) -> No
         logging.info(f"Starting background task for all guilds")
         for guild in bot.guilds:
             # Load Emoji ID Dictionary based on the guilds the bot is in
-            if guild.name == "pub-server":
-                emoji_id_mapping = data.get("public_server_emoji_dictionary")
+            if guild.name == "Bloom Studio":
+                emoji_id_mapping = emoji_dicts.get("Bloom Studio")
                 break
-            elif guild.name == "priv-server":
-                emoji_id_mapping = data.get("private_server_emoji_dictionary")
+            elif guild.name == "Bloom Collective":
+                emoji_id_mapping = emoji_dicts.get("Bloom Collective")
                 break
         else:
             logging.info("Bot is not part of the expected servers with emoji dictionaries")
