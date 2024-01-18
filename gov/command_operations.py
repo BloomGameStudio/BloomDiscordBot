@@ -4,18 +4,27 @@ from typing import List, Dict
 from .proposals import publish_draft
 from shared.constants import GOVERNANCE_TALK_CHANNEL_ID
 
-async def handle_votedraft(ctx: commands.Context, proposals: List[Dict[str, str]], new_proposal_emoji: str) -> None:
+
+async def handle_votedraft(
+    ctx: commands.Context, proposals: List[Dict[str, str]], new_proposal_emoji: str
+) -> None:
     # Get the channel with the name 'governance-talk' in the server
-    governance_talk_channel = discord.utils.get(ctx.guild.channels, name=GOVERNANCE_TALK_CHANNEL_ID)
-    
+    governance_talk_channel = discord.utils.get(
+        ctx.guild.channels, name=GOVERNANCE_TALK_CHANNEL_ID
+    )
+
     if governance_talk_channel is None:
-        await ctx.send("The 'governance-talk' channel could not be found in this server")
+        await ctx.send(
+            "The 'governance-talk' channel could not be found in this server"
+        )
         return
-    
+
     if ctx.channel.id != governance_talk_channel.id:
-        await ctx.send(f"This command can only be used in <#{governance_talk_channel.id}>")
+        await ctx.send(
+            f"This command can only be used in <#{governance_talk_channel.id}>"
+        )
         return
-    
+
     # Send a message
     msg = "Would you like to work on an existing draft proposal, or do you wish to create a new one? \nExisting drafts are:"
     await ctx.send(msg)
@@ -26,7 +35,13 @@ async def handle_votedraft(ctx: commands.Context, proposals: List[Dict[str, str]
 
     await ctx.send(f"{new_proposal_emoji} New")
 
-async def handle_publishdraft(ctx: commands.Context, draft_name: str, proposals: List[Dict[str, str]], bot: commands.Bot) -> None:
+
+async def handle_publishdraft(
+    ctx: commands.Context,
+    draft_name: str,
+    proposals: List[Dict[str, str]],
+    bot: commands.Bot,
+) -> None:
     draft_to_publish = next(
         (item for item in proposals if item["name"].strip() == draft_name.strip()),
         None,

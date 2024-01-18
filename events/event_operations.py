@@ -10,6 +10,7 @@ from typing import List, Optional, Any
 from discord import ScheduledEvent
 from discord.ext.commands import Bot
 
+
 # Load the stored events from the JSON file
 def load_posted_events() -> List[int]:
     try:
@@ -19,6 +20,7 @@ def load_posted_events() -> List[int]:
     except FileNotFoundError:
         return []
 
+
 # Save the posted events to the JSON file
 def save_posted_events(posted_events: List[int]) -> None:
     try:
@@ -26,10 +28,11 @@ def save_posted_events(posted_events: List[int]) -> None:
 
         with open(POSTED_EVENTS_FILE_PATH, "w") as file:
             json.dump(posted_events, file)
-            
+
     except Exception as e:
         logging.error(f"Error saving posted events: {e}")
-    
+
+
 # Format the event message and send it to the channel
 def format_event(event: ScheduledEvent, guild_id: int) -> str:
     # Format the event start time for Discord time
@@ -45,22 +48,28 @@ def format_event(event: ScheduledEvent, guild_id: int) -> str:
     )
     return formatted_event
 
+
 # NOTE: For some reason it doesn't appear that you can access the userIDs interested
 # in a scheduled event. It's either a count, or a boolean.
 # performing a GET request, however, does allow this.
-def get_guild_scheduled_event_users(guild_id: int, scheduled_event_id: int, limit: int = 100, with_member: bool = False, before: Optional[str] = None, after: Optional[str] = None) -> Optional[List[Any]]:
+def get_guild_scheduled_event_users(
+    guild_id: int,
+    scheduled_event_id: int,
+    limit: int = 100,
+    with_member: bool = False,
+    before: Optional[str] = None,
+    after: Optional[str] = None,
+) -> Optional[List[Any]]:
     url = f"https://discord.com/api/v10/guilds/{guild_id}/scheduled-events/{scheduled_event_id}/users"
 
     params = {
-        'limit': limit,
-        'with_member': with_member,
-        'before': before,
-        'after': after
+        "limit": limit,
+        "with_member": with_member,
+        "before": before,
+        "after": after,
     }
 
-    headers = {
-        'Authorization': f'Bot {os.getenv("DISCORD_BOT_TOKEN")}'
-    }
+    headers = {"Authorization": f'Bot {os.getenv("DISCORD_BOT_TOKEN")}'}
 
     response = requests.get(url, params=params, headers=headers)
 
@@ -69,6 +78,7 @@ def get_guild_scheduled_event_users(guild_id: int, scheduled_event_id: int, limi
     else:
         print(f"Error: {response.status_code} - {response.text}")
         return None
+
 
 # Notify the channel about the newly created event after a short delay
 async def notify_new_event(bot: Bot, event: ScheduledEvent, guild_id: int) -> None:
@@ -92,6 +102,7 @@ async def notify_new_event(bot: Bot, event: ScheduledEvent, guild_id: int) -> No
             logging.info(f"Event channel not found for guild.")
     else:
         logging.info(f"Guild not found")
+
 
 # Fetch all upcoming events within the next 24 hours this is called by tasks.py
 async def fetch_upcoming_events(guild):

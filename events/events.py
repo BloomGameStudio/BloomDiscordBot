@@ -13,7 +13,10 @@ The bot will listen for the on_scheduled_event_create event and then call notify
 setup_event_events is used so that all event events can be loaded at once. instead of individually.
 """
 
-def setup_event_events(bot: commands.Bot, emoji_dicts: Dict[str, Dict[str, str]]) -> None:
+
+def setup_event_events(
+    bot: commands.Bot, emoji_dicts: Dict[str, Dict[str, str]]
+) -> None:
     @bot.event
     async def on_ready():
         logging.info(f"Logged in as {bot.user.name} ({bot.user.id})")
@@ -28,11 +31,13 @@ def setup_event_events(bot: commands.Bot, emoji_dicts: Dict[str, Dict[str, str]]
                 emoji_id_mapping = emoji_dicts.get("Bloom Collective")
                 break
         else:
-            logging.info("Bot is not part of the expected servers with emoji dictionaries")
+            logging.info(
+                "Bot is not part of the expected servers with emoji dictionaries"
+            )
             emoji_id_mapping = {}
-        
+
         check_events.start(bot)
-        
+
     @bot.event
     async def on_scheduled_event_create(event: ScheduledEvent) -> None:
         logging.info(f"New scheduled event created: {event.name}")
