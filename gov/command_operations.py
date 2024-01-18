@@ -15,7 +15,7 @@ async def handle_votedraft(
 
     if governance_talk_channel is None:
         await ctx.send(
-            "The 'governance-talk' channel could not be found in this server"
+            "The 'governance' channel could not be found in this server"
         )
         return
 
