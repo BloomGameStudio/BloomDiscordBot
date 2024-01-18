@@ -17,12 +17,12 @@ def main():
     with open(CONTRIBUTORS_FILE_PATH, 'r') as json_file:
         data: Dict[str, Any] = json.load(json_file)
         contributors: Dict[str, List[Dict[str, str]]] = {
-            "pub-server": data["servers"]["pub-server"]["contributors"],
-            "priv-server": data["servers"]["priv-server"]["contributors"]
+            "Bloom Studio": data["servers"]["Bloom Studio"]["contributors"],
+            "Bloom Collective": data["servers"]["Bloom Collective"]["contributors"]
         }
         emoji_dicts: Dict[str, Dict[str, str]] = {
-            "pub-server": data["servers"]["pub-server"]["emoji_dictionary"],
-            "priv-server": data["servers"]["priv-server"]["emoji_dictionary"]
+            "Bloom Studio": data["servers"]["Bloom Studio"]["emoji_dictionary"],
+            "Bloom Collective": data["servers"]["Bloom Collective"]["emoji_dictionary"]
         }
     # Discord Config
     intents: discord.Intents = discord.Intents.default()

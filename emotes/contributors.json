@@ -1,6 +1,6 @@
 {
     "servers": {
-        "pub-server": {
+        "Bloom Studio": {
             "contributors": [
                 {
                     "uid": "353572599957291010",
@@ -80,7 +80,7 @@
                 "<:sarahtonein:1192380082468175882>": "316765092689608706"
             }
         },
-        "priv-server": {
+        "Bloom Collective": {
             "contributors": [
                 {
                     "uid": "353572599957291010",
