@@ -2,7 +2,7 @@
 
 # Quick start guide:
 
-1. Ensure there are existing channels in Bloom Collective, and Bloom Studio Discord servers with the channel names set in constants.py. The bot will determine the required channel IDs / Forum Channel IDs from the names of the channels.
+1. Ensure there are existing channels in Bloom Collective, and Bloom Studio Discord servers with the channel names set in constants.py. The bot will determine the required channel IDs / Forum Channel IDs from the channel names in it's respective server.
 
 2. Create a .env file. Reference .env.example for what is required. 
 
@@ -27,7 +27,7 @@
 __Note__ 
 
 The bot is currently designed to work between both of Blooms servers.
-Further support for additional servers, and merging of other bot functionalities are still being worked on.
+Further support for additional servers, and merging of other bot functionality are in progress.
 
 
 **Docker-Compose**
