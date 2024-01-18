@@ -1,9 +1,14 @@
 import logging
 from discord.ext import tasks, commands
-from events.event_operations import get_guild_scheduled_event_users, save_posted_events, fetch_upcoming_events
+from events.event_operations import (
+    get_guild_scheduled_event_users,
+    save_posted_events,
+    fetch_upcoming_events,
+)
 from events.task_operations import format_and_send_message
 from shared.helpers import get_channel_by_name
 from shared.constants import GENERAL_CHANNEL_ID
+
 
 @tasks.loop(minutes=60)
 async def check_events(bot: commands.Bot) -> None:
@@ -14,7 +19,9 @@ async def check_events(bot: commands.Bot) -> None:
         upcoming_events = await fetch_upcoming_events(guild)
 
         if not upcoming_events:
-            logging.info(f"No upcoming events in the next 24 hours for guild {guild.id}.")
+            logging.info(
+                f"No upcoming events in the next 24 hours for guild {guild.id}."
+            )
             continue
 
         channel = get_channel_by_name(guild, GENERAL_CHANNEL_ID)
@@ -30,7 +37,9 @@ async def check_events(bot: commands.Bot) -> None:
             save_posted_events([event.id for event in upcoming_events])
         else:
             # Subsequent runs, filter out already posted events
-            new_events = [event for event in upcoming_events if event.id not in bot.posted_events]
+            new_events = [
+                event for event in upcoming_events if event.id not in bot.posted_events
+            ]
 
             if new_events:
                 for event in new_events:
@@ -42,4 +51,6 @@ async def check_events(bot: commands.Bot) -> None:
                 bot.posted_events.extend([event.id for event in new_events])
                 save_posted_events(bot.posted_events)
             else:
-                logging.info(f"No new upcoming events in the next 24 hours for guild {guild.id}.")
+                logging.info(
+                    f"No new upcoming events in the next 24 hours for guild {guild.id}."
+                )

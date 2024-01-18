@@ -10,12 +10,13 @@ The function calls related to the commands are located in command_operations.py
 setup_gov_commands is used so that all event commands can be loaded at once. instead of individually.
 """
 
+
 def setup_gov_commands(bot: commands.Bot) -> None:
-    @bot.command(name='vote_draft', aliases=['v'], pass_context=True)
+    @bot.command(name="vote_draft", aliases=["v"], pass_context=True)
     async def votedraft(ctx):
         await handle_votedraft(ctx, proposals, new_proposal_emoji)
 
-    @bot.command(name='publish_draft')
+    @bot.command(name="publish_draft")
     async def publishdraft(ctx: commands.Context, *, draft_name: str) -> None:
         if not draft_name:
             await ctx.send("Please provide a draft name.")

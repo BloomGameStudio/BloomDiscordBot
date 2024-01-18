@@ -1,10 +1,13 @@
 from discord import Guild
 
+
 async def list_events_operation(guild: Guild) -> str:
     event_list = guild.scheduled_events
 
     # Extracting event information
-    event_info_list = [(event.name, event.id, event.description) for event in event_list]
+    event_info_list = [
+        (event.name, event.id, event.description) for event in event_list
+    ]
 
     # Formatting the information
     formatted_events = [
@@ -14,6 +17,7 @@ async def list_events_operation(guild: Guild) -> str:
     formatted_string = "\n\n".join(formatted_events)
 
     return formatted_string
+
 
 async def delete_event_operation(guild, event_id):
     event = guild.get_scheduled_event(event_id)
