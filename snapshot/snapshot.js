@@ -22,7 +22,7 @@ async function createProposal(title, abstract, background, choices) {
 
     const wallet = new ethers.Wallet(ethPrivateKey, provider);
 
-    const hub = 'https://testnet.hub.snapshot.org';
+    const hub = 'https://hub.snapshot.org';
 
     // Initialize Snapshot client
     const client = new snapshot.Client712(hub);
@@ -32,7 +32,7 @@ async function createProposal(title, abstract, background, choices) {
     const fortyeighthoursinSeconds = 48 * 3600;
 
     const proposalParams = {
-      space: 'bloomtest.eth',
+      space: 'gov.bloomstudio.eth',
       type: 'weighted', // define the voting system
       title: removeMarkdown(title),
       body: `Abstract:\n ${removeMarkdown(abstract)}\n\n Background:\n ${removeMarkdown(background)}`,
