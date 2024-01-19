@@ -3,7 +3,7 @@ from discord import ScheduledEvent
 from discord.ext import commands
 from events.event_operations import notify_new_event
 from events.tasks import check_events
-from shared.constants import GUILD_ID
+from typing import Dict
 
 """
 The bot listens for the on_ready event and then calls check_events in tasks.py
@@ -13,20 +13,32 @@ The bot will listen for the on_scheduled_event_create event and then call notify
 setup_event_events is used so that all event events can be loaded at once. instead of individually.
 """
 
-def setup_event_events(bot: commands.Bot) -> None:
+
+def setup_event_events(
+    bot: commands.Bot, emoji_dicts: Dict[str, Dict[str, str]]
+) -> None:
     @bot.event
     async def on_ready():
         logging.info(f"Logged in as {bot.user.name} ({bot.user.id})")
         await bot.change_presence()
-        guild = bot.get_guild(GUILD_ID)
-
-        if guild:
-            # Start the background task to check events automatically every hour
-            check_events.start(bot)
+        logging.info(f"Starting background task for all guilds")
+        for guild in bot.guilds:
+            # Load Emoji ID Dictionary based on the guilds the bot is in
+            if guild.name == "Bloom Studio":
+                emoji_id_mapping = emoji_dicts.get("Bloom Studio")
+                break
+            elif guild.name == "Bloom Collective":
+                emoji_id_mapping = emoji_dicts.get("Bloom Collective")
+                break
         else:
-            logging.error("Discord server ID not found")
+            logging.info(
+                "Bot is not part of the expected servers with emoji dictionaries"
+            )
+            emoji_id_mapping = {}
+
+        check_events.start(bot)
 
     @bot.event
     async def on_scheduled_event_create(event: ScheduledEvent) -> None:
         logging.info(f"New scheduled event created: {event.name}")
-        await notify_new_event(bot, event)
+        await notify_new_event(bot, event, event.guild_id)

@@ -3,11 +3,13 @@ import requests
 import logging
 import asyncio
 import os
-from shared.constants import POSTED_EVENTS_FILE_PATH, GUILD_ID, GENERAL_CHANNEL_ID
+from shared.constants import POSTED_EVENTS_FILE_PATH, GENERAL_CHANNEL_ID
+from shared.helpers import get_channel_by_name
 from datetime import datetime, timezone
 from typing import List, Optional, Any
-from discord import Guild, ScheduledEvent
+from discord import ScheduledEvent
 from discord.ext.commands import Bot
+
 
 # Load the stored events from the JSON file
 def load_posted_events() -> List[int]:
@@ -18,6 +20,7 @@ def load_posted_events() -> List[int]:
     except FileNotFoundError:
         return []
 
+
 # Save the posted events to the JSON file
 def save_posted_events(posted_events: List[int]) -> None:
     try:
@@ -25,14 +28,15 @@ def save_posted_events(posted_events: List[int]) -> None:
 
         with open(POSTED_EVENTS_FILE_PATH, "w") as file:
             json.dump(posted_events, file)
-            
+
     except Exception as e:
         logging.error(f"Error saving posted events: {e}")
-    
+
+
 # Format the event message and send it to the channel
-def format_event(event: ScheduledEvent) -> str:
+def format_event(event: ScheduledEvent, guild_id: int) -> str:
     # Format the event start time for Discord time
-    event_url = f"https://discord.com/events/{GUILD_ID}/{event.id}"
+    event_url = f"https://discord.com/events/{guild_id}/{event.id}"
 
     formatted_event = (
         f"\n"
@@ -44,22 +48,28 @@ def format_event(event: ScheduledEvent) -> str:
     )
     return formatted_event
 
+
 # NOTE: For some reason it doesn't appear that you can access the userIDs interested
 # in a scheduled event. It's either a count, or a boolean.
 # performing a GET request, however, does allow this.
-def get_guild_scheduled_event_users(scheduled_event_id: int, limit: int = 100, with_member: bool = False, before: Optional[str] = None, after: Optional[str] = None) -> Optional[List[Any]]:
-    url = f"https://discord.com/api/v10/guilds/{GUILD_ID}/scheduled-events/{scheduled_event_id}/users"
+def get_guild_scheduled_event_users(
+    guild_id: int,
+    scheduled_event_id: int,
+    limit: int = 100,
+    with_member: bool = False,
+    before: Optional[str] = None,
+    after: Optional[str] = None,
+) -> Optional[List[Any]]:
+    url = f"https://discord.com/api/v10/guilds/{guild_id}/scheduled-events/{scheduled_event_id}/users"
 
     params = {
-        'limit': limit,
-        'with_member': with_member,
-        'before': before,
-        'after': after
+        "limit": limit,
+        "with_member": with_member,
+        "before": before,
+        "after": after,
     }
 
-    headers = {
-        'Authorization': f'Bot {os.getenv("DISCORD_BOT_TOKEN")}'
-    }
+    headers = {"Authorization": f'Bot {os.getenv("DISCORD_BOT_TOKEN")}'}
 
     response = requests.get(url, params=params, headers=headers)
 
@@ -69,28 +79,30 @@ def get_guild_scheduled_event_users(scheduled_event_id: int, limit: int = 100, w
         print(f"Error: {response.status_code} - {response.text}")
         return None
 
+
 # Notify the channel about the newly created event after a short delay
-async def notify_new_event(bot: Bot, event: ScheduledEvent) -> None:
-    guild = bot.get_guild(GUILD_ID)
+async def notify_new_event(bot: Bot, event: ScheduledEvent, guild_id: int) -> None:
+    guild = bot.get_guild(guild_id)
 
     if guild:
         # Wait for 30 mins before sending the notification
-        await asyncio.sleep(60 * 30)
+        await asyncio.sleep(30 * 60)
 
         # Fetch the event again to get the updated details
         event = await guild.fetch_scheduled_event(event.id)
-        formatted_event = format_event(event)
+        formatted_event = format_event(event, guild_id)
 
-        channel = guild.get_channel(GENERAL_CHANNEL_ID)
+        channel = get_channel_by_name(guild, GENERAL_CHANNEL_ID)
 
         if channel:
             # Send the notification and capture the Message object
             await channel.send(f"🌺 **__Newly Created Event__** 🌺 \n{formatted_event}")
 
         else:
-            logging.info(f"Event channel not found")
+            logging.info(f"Event channel not found for guild.")
     else:
         logging.info(f"Guild not found")
+
 
 # Fetch all upcoming events within the next 24 hours this is called by tasks.py
 async def fetch_upcoming_events(guild):

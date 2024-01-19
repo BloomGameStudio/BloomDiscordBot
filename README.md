@@ -1,5 +1,76 @@
 # BloomDiscordBot
 
+# Quick start guide:
+
+1. Ensure there are existing channels in Bloom Collective, and Bloom Studio Discord servers with the channel names set in constants.py. The bot will determine the required channel IDs / Forum Channel IDs from the channel names in it's respective server.
+
+2. Create a .env file. Reference .env.example for what is required. 
+
+3. Set the proposal parameters and space settings to be used in ./snapshot/snapshot.js. For example:
+
+```
+    const proposalParams = {
+      space: 'bloomtest.eth', // Set the space
+      type: 'weighted', // Define the voting system
+      title: removeMarkdown(title),
+      body: `Abstract:\n ${removeMarkdown(abstract)}\n\n Background:\n ${removeMarkdown(background)}`,
+      choices: choices.map(removeMarkdown),
+      start: currentTime,
+      end: currentTime + fortyeighthoursinSeconds,
+      snapshot: await provider.getBlockNumber(), 
+      network: '1',
+      plugins: JSON.stringify({}),
+      app: 'Gov-test' // provide the name of your project using this Snapshot.js integration
+    };
+```
+
+__Note__ 
+
+The bot is currently designed to work between both of Blooms servers.
+Further support for additional servers, and merging of other bot functionality are in progress.
+
+
+**Docker-Compose**
+
+1. To run the latest version from the main branch:
+
+```
+    docker compose up
+```
+
+2. To run and build the checked out branch:
+
+```
+    docker compose up --build
+```
+
+**Docker**
+
+1. Create the docker volume for the contributor information / event information
+
+```
+    docker volume create discordbotvolume
+```
+
+2. Run the container
+
+```
+    //Build with a tag name prior to running:
+
+    docker build -t bloomdiscordbot .
+
+    docker run -v discordbotvolume:/main/data bloomdiscordbot
+```
+
+```
+    //Build without a tag/name prior to running:
+
+    docker build .
+
+    docker run -v discordbotvolume:/main/data <container_name>
+    
+```
+
 # Help:
 
 You can type ```$bot_help``` to get details about what commands can be used, along with a brief description of them

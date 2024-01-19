@@ -6,26 +6,34 @@ from discord.ext import commands
 from discord import Message, Reaction, User
 from emotes.command_operations import send_dm_once
 
-async def handle_message(bot: commands.Bot, message: Message, contributors: List[Dict[str, Union[str, int]]], emoji_id_mapping: Dict[str, int], proposals: List[Dict[str, Union[str, int]]]) -> None:
-    fmt_proposals = ""
 
-    # Loop over proposals and convert them to str with every proposal name being on a newline
+async def handle_message(
+    bot: commands.Bot,
+    message: Message,
+    data: Dict[str, Dict[str, Union[List[Dict[str, str]], Dict[str, str]]]],
+    proposals: List[Dict[str, Union[str, int]]],
+) -> None:
+    if message.author == bot.user:
+        return
+    server_name = message.guild.name
+    server_data = data["servers"].get(server_name)
+    if server_data is None:
+        logging.warning(f"No data found for server: {server_name}")
+        return
+
+    contributors = server_data["contributors"]
+    emoji_dicts = server_data["emoji_dictionary"]
+
+    fmt_proposals = ""
     for proposal in proposals:
         fmt_proposals += f"📝 {proposal['name']}\n"
 
-    if message.author == bot.user:
-        return
-
-    for emoji_id, contributor_uid in emoji_id_mapping.items():
-        contributor = None
-        for c in contributors:
-            if c["uid"] == contributor_uid:
-                contributor = c
-                break
-
+    for emoji_id, contributor_uid in emoji_dicts.items():
+        contributor = next(
+            (c for c in contributors if c["uid"] == contributor_uid), None
+        )
         if emoji_id in message.content:
-            logging.info('Emoji Found in message! %s', emoji_id)
-
+            logging.info("Emoji Found in message! %s", emoji_id)
             if contributor:
                 try:
                     logging.info(f'Messaging the user, {contributor["uid"]}')
@@ -36,21 +44,39 @@ async def handle_message(bot: commands.Bot, message: Message, contributors: List
 
     await bot.process_commands(message)
 
-async def handle_reaction(bot: commands.Bot, reaction: Reaction, user: User, contributors: List[Dict[str, Union[str, int]]], emoji_id_mapping: Dict[str, int], proposals: List[Dict[str, Union[str, int]]], new_proposal_emoji: str) -> None:
+
+async def handle_reaction(
+    bot: commands.Bot,
+    reaction: Reaction,
+    user: User,
+    data: Dict[str, Dict[str, Union[List[Dict[str, str]], Dict[str, str]]]],
+    proposals: List[Dict[str, Union[str, int]]],
+    new_proposal_emoji: str,
+) -> None:
+    server_name = reaction.message.guild.name
+    server_data = data["servers"].get(server_name)
+    if server_data is None:
+        logging.warning(f"No data found for server: {server_name}")
+        return
     if user == bot.user:
         return
 
-    contributor_emoji = next(
-        (emoji_id for emoji_id, contributor_uid in emoji_id_mapping.items() if str(reaction.emoji) == emoji_id),
-        None
-    )
+    contributors = server_data["contributors"]
+    emoji_dicts = server_data["emoji_dictionary"]
 
+    contributor_emoji = next(
+        (
+            emoji_id
+            for emoji_id, contributor_uid in emoji_dicts.items()
+            if str(reaction.emoji) == emoji_id
+        ),
+        None,
+    )
     if contributor_emoji:
         contributor = next(
-            (c for c in contributors if c["uid"] == emoji_id_mapping[contributor_emoji]),
-            None
+            (c for c in contributors if c["uid"] == emoji_dicts[contributor_emoji]),
+            None,
         )
-
         if contributor:
             message_link = reaction.message.jump_url
             logging.info("Emoji react found, DMing contributor")
@@ -63,16 +89,24 @@ async def handle_reaction(bot: commands.Bot, reaction: Reaction, user: User, con
 
     if reaction.emoji == "📝":
         edit_proposal = next(
-            (item for item in proposals if reaction.message.content.strip().endswith(item["name"].strip())),
-            None
+            (
+                item
+                for item in proposals
+                if reaction.message.content.strip().endswith(item["name"].strip())
+            ),
+            None,
         )
 
         if edit_proposal:
-            await reaction.message.channel.send(f"You are editing: {edit_proposal['name']}")
-            await reaction.message.channel.send("**Draft Details:**\n"
-                                       f"**Title:** {edit_proposal['name']}\n"
-                                       f"**Abstract:** {edit_proposal['abstract']}\n"
-                                       f"**Background:** {edit_proposal['background']}\n")
+            await reaction.message.channel.send(
+                f"You are editing: {edit_proposal['name']}"
+            )
+            await reaction.message.channel.send(
+                "**Draft Details:**\n"
+                f"**Title:** {edit_proposal['name']}\n"
+                f"**Abstract:** {edit_proposal['abstract']}\n"
+                f"**Background:** {edit_proposal['background']}\n"
+            )
 
             change_selection = await bot.wait_for("message", check=check)
             change_selection = change_selection.content.lower()
@@ -110,11 +144,16 @@ async def handle_reaction(bot: commands.Bot, reaction: Reaction, user: User, con
                     await channel.send("Changes have been saved")
 
                     if edit_proposal["type"].lower() == "budget":
-                        title = f"**Bloom Budget Proposal Draft: {edit_proposal['name']}**"
+                        title = (
+                            f"**Bloom Budget Proposal Draft: {edit_proposal['name']}**"
+                        )
                     else:
-                        title = f"**Bloom General Proposal Draft: {edit_proposal['name']}**"
+                        title = (
+                            f"**Bloom General Proposal Draft: {edit_proposal['name']}**"
+                        )
 
-                    msg = f"""
+                    msg = textwrap.dedent(
+                        f"""
                     {title}
 
                     __**Abstract**__
@@ -127,12 +166,11 @@ async def handle_reaction(bot: commands.Bot, reaction: Reaction, user: User, con
                     ** 👎 Reassess**
                     ** ❌ Abstain**
 
-                    \n
                     If you wish to publish your draft proposal, please use command ``$publish_draft``.
                     """
+                    ).strip()
 
-                    await channel.send(textwrap.dedent(msg))
-
+                    await channel.send(msg)
                     break
 
                 elif change_selection.lower() == "cancel":
@@ -167,7 +205,7 @@ async def handle_reaction(bot: commands.Bot, reaction: Reaction, user: User, con
 
         if proposal["type"].lower() == "budget":
             title = f"**Bloom Budget Proposal (BBP) Draft: {name.content}**"
-       
+
         else:
             title = f"**Bloom Governance Proposal (BGP) Draft: {name.content}**"
 
