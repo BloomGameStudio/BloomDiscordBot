@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from typing import List, Dict
 from .proposals import publish_draft
-from shared.constants import GOVERNANCE_TALK_CHANNEL_ID
+from shared.constants import GOVERNANCE_TALK_CHANNEL
 
 
 async def handle_votedraft(
@@ -10,7 +10,7 @@ async def handle_votedraft(
 ) -> None:
     # Get the channel with the name 'governance-talk' in the server
     governance_talk_channel = discord.utils.get(
-        ctx.guild.channels, name=GOVERNANCE_TALK_CHANNEL_ID
+        ctx.guild.channels, name=GOVERNANCE_TALK_CHANNEL
     )
 
     if governance_talk_channel is None:

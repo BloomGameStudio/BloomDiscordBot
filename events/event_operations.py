@@ -3,7 +3,7 @@ import requests
 import logging
 import asyncio
 import os
-from shared.constants import POSTED_EVENTS_FILE_PATH, GENERAL_CHANNEL_ID
+from shared.constants import POSTED_EVENTS_FILE_PATH, GENERAL_CHANNEL
 from shared.helpers import get_channel_by_name
 from datetime import datetime, timezone
 from typing import List, Optional, Any
@@ -92,7 +92,7 @@ async def notify_new_event(bot: Bot, event: ScheduledEvent, guild_id: int) -> No
         event = await guild.fetch_scheduled_event(event.id)
         formatted_event = format_event(event, guild_id)
 
-        channel = get_channel_by_name(guild, GENERAL_CHANNEL_ID)
+        channel = get_channel_by_name(guild, GENERAL_CHANNEL)
 
         if channel:
             # Send the notification and capture the Message object

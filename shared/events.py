@@ -20,3 +20,6 @@ def setup_shared_events(
             await handle_reaction(
                 bot, reaction, user, data, proposals, new_proposal_emoji
             )
+    @bot.event
+    async def on_member_join(member):
+        await member.send("Welcome to Bloom Collective! Please read the rules in #welcome-and-rules and introduce yourself in #introductions. You can also check out our website at https://bloomcollective.org/ and our wiki at https://wiki.bloomcollective.org/")

@@ -5,7 +5,7 @@ import config.config as cfg
 from typing import Dict, Any, List, Tuple
 from discord.ext.commands import Bot
 import discord
-from shared.constants import GOVERNANCE_BUDGET_CHANNEL_ID, GOVERNANCE_CHANNEL_ID
+from shared.constants import GOVERNANCE_BUDGET_CHANNEL, GOVERNANCE_CHANNEL
 
 proposals: List[Dict[str, Any]] = []
 
@@ -20,7 +20,7 @@ async def prepare_draft(draft: Dict[str, Any]) -> Tuple[str, str, str]:
 
     if draft_type == "budget":
         id_type = "budget"
-        channel_name = GOVERNANCE_BUDGET_CHANNEL_ID
+        channel_name = GOVERNANCE_BUDGET_CHANNEL
         cfg.current_budget_id += 1
         cfg.update_id_values(
             cfg.current_budget_id, id_type
@@ -28,7 +28,7 @@ async def prepare_draft(draft: Dict[str, Any]) -> Tuple[str, str, str]:
         title = f"Bloom Budget Proposal (BBP) #{cfg.current_budget_id}: {draft['name']}"
     else:
         id_type = "governance"
-        channel_name = GOVERNANCE_CHANNEL_ID
+        channel_name = GOVERNANCE_CHANNEL
         cfg.current_governance_id += 1
         cfg.update_id_values(
             cfg.current_governance_id, id_type

@@ -7,7 +7,7 @@ from events.event_operations import (
 )
 from events.task_operations import format_and_send_message
 from shared.helpers import get_channel_by_name
-from shared.constants import GENERAL_CHANNEL_ID
+from shared.constants import GENERAL_CHANNEL
 
 
 @tasks.loop(minutes=60)
@@ -24,7 +24,7 @@ async def check_events(bot: commands.Bot) -> None:
             )
             continue
 
-        channel = get_channel_by_name(guild, GENERAL_CHANNEL_ID)
+        channel = get_channel_by_name(guild, GENERAL_CHANNEL)
 
         # Check if it's the initial run or not
         if not bot.posted_events:
