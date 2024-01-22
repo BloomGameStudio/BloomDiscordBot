@@ -1,9 +1,12 @@
 # Constants used throughout the bot
 # Ensure the servers you run the bot in contain the required channel names
-GENERAL_CHANNEL_ID = "🌺│home"
-GOVERNANCE_CHANNEL_ID = "improvement-props"
-GOVERNANCE_BUDGET_CHANNEL_ID = "budgetary-props"
-GOVERNANCE_TALK_CHANNEL_ID = "🐬│governance"
+GENERAL_CHANNEL = "🌺│home"
+GOVERNANCE_CHANNEL = "improvement-props"
+GOVERNANCE_BUDGET_CHANNEL = "budgetary-props"
+GOVERNANCE_TALK_CHANNEL = "🐬│governance"
+INTRODUCE_YOURSELF = "introduce-yourself"
+RULES_CHANNEL = "rules"
+
 new_proposal_emoji = "💡"
 CONTRIBUTORS_FILE_PATH = "./emotes/contributors.json"
 POSTED_EVENTS_FILE_PATH = "./events/posted_events.json"
@@ -28,3 +31,14 @@ ROLE_WHEN_NEW_USER_CONFIRMED='contributors'
 # GUILD_TRIGGER = 'Bloom Studio'
 # COLOR_CHANGING_ROLE = 'bloom-visual'
 # COMMAND_TRIGGERS = ['!']
+
+#-----------------------------# 
+#
+#    @property
+#    def __general_channel(self):
+#        for guild in self.guilds:
+#            if guild.name.startswith(GUILD_TRIGGER):
+#                for channel in guild.channels:
+#                    if "home" in channel.name:
+#                        return channel
+#        return None
