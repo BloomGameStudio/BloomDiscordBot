@@ -29,7 +29,7 @@ def main():
     intents: discord.Intents = discord.Intents.default()
     intents.message_content = True
     intents.reactions = True
-    bot: commands.Bot = commands.Bot(command_prefix="$", intents=intents)
+    bot: commands.Bot = commands.Bot(command_prefix="!", intents=intents)
 
     # Setup the governance discord commands, and events
     setup_gov_commands(bot)

@@ -25,7 +25,6 @@ ROLE_WHEN_NEW_USER_CONFIRMED='contributors'
 #-----------------------------#
 #THESE ARE BOT/GUILD SPECIFIC #
 #-----------------------------#
-COLOR_CHANGING_ROLE = 'bloom-visual'
-COMMAND_TRIGGERS = ['!']
-PRICE_TRIGGERS = ['$']
-GUILD_TRIGGER = 'Bloom Collective'
+# GUILD_TRIGGER = 'Bloom Studio'
+# COLOR_CHANGING_ROLE = 'bloom-visual'
+# COMMAND_TRIGGERS = ['!']
