@@ -4,13 +4,11 @@ GENERAL_CHANNEL = "🌺│home"
 GOVERNANCE_CHANNEL = "improvement-props"
 GOVERNANCE_BUDGET_CHANNEL = "budgetary-props"
 GOVERNANCE_TALK_CHANNEL = "🐬│governance"
-INTRODUCE_YOURSELF = "introduce-yourself"
+INTRODUCE_YOURSELF_CHANNEL = "introduce-yourself"
 RULES_CHANNEL = "rules"
-
 new_proposal_emoji = "💡"
 CONTRIBUTORS_FILE_PATH = "./emotes/contributors.json"
 POSTED_EVENTS_FILE_PATH = "./events/posted_events.json"
-
 
 #OK BLOOMER CONSTANTS
 
