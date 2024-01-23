@@ -27,9 +27,10 @@ def setup_shared_events(
         await handle_raw_react(bot, payload, data, proposals)
     @bot.event
     async def on_member_join(member):
-        logging.info(f"New member: {member.name} in server: {member.guild.name}")
-        unverified_role = get(member.guild.roles, name="unverified")
-        if unverified_role:
-            await member.add_roles(unverified_role)
-
-        await member.send("Welcome to Bloom Collective! Please read the rules in #welcome-and-rules and introduce yourself in #introductions. You can also check out our website at https://bloomcollective.org/ and our wiki at https://wiki.bloomcollective.org/")
+        logging.info(f"New member: {member.name} has joined: {member.guild.name}")
+        #NOTE
+        # Adding a role to a user BYPASSES the Discord built in Rule checking
+        ##
+        #unverified_role = get(member.guild.roles, name="unverified")
+        #if unverified_role:
+        #   await member.add_roles(unverified_role)
