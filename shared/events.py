@@ -1,8 +1,9 @@
 from typing import Dict, Union, List
 from discord.ext import commands
 from discord import Message, Reaction, User
+from discord.utils import get
 from shared.event_operations import handle_message, handle_reaction
-
+import logging
 
 def setup_shared_events(
     bot: commands.Bot,
@@ -22,4 +23,9 @@ def setup_shared_events(
             )
     @bot.event
     async def on_member_join(member):
+        logging.info(f"New member: {member.name} in server: {member.guild.name}")
+        unverified_role = get(member.guild.roles, name="unverified")
+        if unverified_role:
+            await member.add_roles(unverified_role)
+
         await member.send("Welcome to Bloom Collective! Please read the rules in #welcome-and-rules and introduce yourself in #introductions. You can also check out our website at https://bloomcollective.org/ and our wiki at https://wiki.bloomcollective.org/")
