@@ -9,21 +9,22 @@ from emotes.command_operations import send_dm_once
 
 async def handle_raw_react(
     bot: commands.Bot,
-    payload,
+    react: Reaction,
     data: Dict[str, Dict[str, Union[List[Dict[str, str]], Dict[str, str]]]],
     proposals: List[Dict[str, Union[str, int]]],
 ) -> None:
-    message_id = payload.message_id
+    message_id = react.message_id
     if message_id == 1199160059716980830:
-        guild_id = payload.guild_id
+        guild_id = react.guild_id
         guild = discord.utils.get(bot.guilds, id=guild_id)
 
-        if payload.emoji.name == "✅":
+        if react.emoji.name == "✅":
             role = discord.utils.get(guild.roles, name="verified")
             if role is not None:
-                member = discord.utils.get(guild.members, id=payload.user_id)
+                member = discord.utils.get(guild.members, id=react.user_id)
                 if member is not None:
                     await member.add_roles(role)
+                    await member.remove_roles(discord.utils.get(guild.roles, name="unverified"))
                     logging.info("done")
                 else:
                     logging.info("Member not found.")
