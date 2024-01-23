@@ -17,10 +17,9 @@ def setup_shared_events(
 
     @bot.event
     async def on_reaction_add(reaction: Reaction, user: User) -> None:
-        if new_proposal_emoji is not None:
-            await handle_reaction(
-                bot, reaction, user, data, proposals, new_proposal_emoji
-            )
+        await handle_reaction(
+            bot, reaction, user, data, proposals, new_proposal_emoji
+        )
     @bot.event
     async def on_member_join(member):
         logging.info(f"New member: {member.name} in server: {member.guild.name}")
