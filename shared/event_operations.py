@@ -17,7 +17,7 @@ async def process_reaction_add(bot, payload):
         if payload.emoji.name == "🌺":
             role = get(guild.roles, name="bloomer")
             await member.add_roles(role)
-            response = f"{member.display_name} has selected 🌺!\n\n**Their commitment is official and they are now a Bloomer!"
+            response = f"{member.display_name} has selected 🌺!\n\n**Their commitment is official and they are now a Bloomer!**"
             general_channel = get_channel_by_name(guild, "🌺│home")
             await general_channel.send(response)
         else:
@@ -43,7 +43,9 @@ async def handle_member_join(member: discord.Member) -> None:
     await welcome_channel.send(
         f" 🌺 Welcome {member.mention}  to {member.guild.name}! We are pleased to have you here 🌺\n"
         "\n"
-        f"If you are an existing aXP, bXP, or cXP Hodler, please head over to <#{collab_land_join_channel.id}> to verify your wallet and to receive your respective role! \n"
+        "Take a moment to read and agree to the rules before you get started!"
+        "\n"
+        f"If you are an existing aXP, bXP, or cXP Hodler, please head over to <#{collab_land_join_channel.id}> to verify your wallet in order to receive your respective role! \n"
         "\n"
         f"Refer to <#{start_here_channel.id}> for more details about the studio!"
     )
