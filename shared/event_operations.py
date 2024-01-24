@@ -6,32 +6,31 @@ from discord.ext import commands
 from discord import Message, Reaction, User
 from discord.utils import get
 from emotes.command_operations import send_dm_once
-from shared.constants import INTRODUCE_YOURSELF_CHANNEL
+from shared.constants import DISCORD_ROLE_TRIGGERS, RULES_MESSAGE_ID
+from shared.helpers import get_channel_by_name
 
-async def handle_raw_react(
-    bot: commands.Bot,
-    payload,
-    data: Dict[str, Dict[str, Union[List[Dict[str, str]], Dict[str, str]]]],
-    proposals: List[Dict[str, Union[str, int]]],
-) -> None:
-    message_id = payload.message_id
-    if message_id == 1199160059716980830:
-        guild_id = payload.guild_id
-        guild = discord.utils.get(bot.guilds, id=guild_id)
-
-        if payload.emoji.name == "✅":
-            role = discord.utils.get(guild.roles, name="verified")
-            if role is not None:
-                member = discord.utils.get(guild.members, id=payload.user_id)
-                if member is not None:
+async def process_reaction_add(bot, payload):
+    if payload.message_id == RULES_MESSAGE_ID:
+        guild = bot.get_guild(payload.guild_id)
+        member = guild.get_member(payload.user_id)
+        if payload.emoji.name == '🌺':
+            role = get(guild.roles, name='bloomer')
+            await member.add_roles(role)
+            response = f"{member.display_name} has selected 🌺!\n\n**Their commitment is official and they are now a Bloomer!"
+            general_channel = get_channel_by_name(guild, "🌺│home")
+            await general_channel.send(response)
+        else:
+            for role_info in DISCORD_ROLE_TRIGGERS:
+                if payload.emoji.id == role_info.get('emoji_id'):
+                    general_channel = get_channel_by_name(guild, "🌺│home")
+                    role = get(guild.roles, name=role_info.get('role'))
+                    response = f"{member.display_name} has joined **{role_info.get('name')}**!"
+                    await general_channel.send(response)
+                    if role is None:
+                        logging.info(f"Role {role_info.get('role')} not found")
+                        return
                     await member.add_roles(role)
-                    logging.info("done")
-                else:
-                    logging.info("Member not found.")
-            else:
-                logging.info("Role not found."
-)
-                
+          
 async def handle_member_join(member: discord.Member) -> None:
     #Send to welcome channel
     welcome_channel = get(member.guild.channels, name="welcome")
