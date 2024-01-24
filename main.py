@@ -12,6 +12,7 @@ from shared.constants import CONTRIBUTORS_FILE_PATH, new_proposal_emoji
 from shared.events import setup_shared_events
 from typing import Dict, Any, List
 
+
 def main():
     # Load contributors and emoji ID mapping from contributors.json
     with open(CONTRIBUTORS_FILE_PATH, "r") as json_file:
@@ -42,7 +43,7 @@ def main():
 
     # Setup the event discord commands, and events
     setup_event_commands(bot)
-    setup_event_events(bot, emoji_dicts)
+    setup_event_events(bot)
 
     # Run the bot
     bot.run(os.getenv("DISCORD_BOT_TOKEN"))
