@@ -14,9 +14,7 @@ setup_event_events is used so that all event events can be loaded at once. inste
 """
 
 
-def setup_event_events(
-    bot: commands.Bot
-) -> None:
+def setup_event_events(bot: commands.Bot) -> None:
     @bot.event
     async def on_ready():
         logging.info(f"Logged in as {bot.user.name} ({bot.user.id})")
