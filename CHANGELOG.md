@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- on_member_join added to greet a new potential Bloomer, advising them where to start and how to allocate a role to themselves if they are an existing *XP token holder. 
+
+- Merged features from OK Bloomer bot:
+    - Add to role based off an emoji react to a predefined message ID and notify channel
+    - Notify channel a person has joined a pod
+    
 - Support for both the Bloom Studio Discord server, and the Bloom Collective Discord server.
 
 - Functionality to detect contributors emojis in chat, as well as if their emoji is used as a react. ping the respective user for said emoji.
