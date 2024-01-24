@@ -12,7 +12,11 @@ def add_contributor_to_list(
     contributors: List[Dict[str, str]],
     emoji_id_mapping: Dict[str, str],
 ) -> Dict[str, str]:
-    new_contributor = {"uid": uid}
+    # Get the user's display name
+    user = ctx.guild.get_member(int(uid))
+    note = user.display_name if user else "User not found"
+
+    new_contributor = {"uid": uid, "note": note}
     contributors.append(new_contributor)
     emoji_id_mapping[
         emoji_id
@@ -23,7 +27,6 @@ def add_contributor_to_list(
         {"contributors": contributors, "emoji_dictionary": emoji_id_mapping},
     )
     return new_contributor
-
 
 async def send_dm_once(
     bot: discord.Client, contributor: Dict[str, str], message_link: str
@@ -58,7 +61,7 @@ async def list_contributors(
         await ctx.send(f"No emoji dictionary found for server: {server_name}")
         return
 
-    emoji_mapping_list = [f"{emoji}: {id}" for emoji, id in emoji_dict.items()]
+    emoji_mapping_list = [f"{emoji}" for emoji in emoji_dict.keys()]
     emoji_mapping_text = "\n".join(emoji_mapping_list)
     message = f" :fire: **List of Contributors** :fire: \n" f"{emoji_mapping_text}"
     await ctx.send(message)
