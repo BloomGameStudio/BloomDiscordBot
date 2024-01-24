@@ -8,30 +8,16 @@ from discord.utils import get
 from emotes.command_operations import send_dm_once
 from shared.constants import INTRODUCE_YOURSELF_CHANNEL
 
-async def handle_raw_react(
-    bot: commands.Bot,
-    react: Reaction,
-    data: Dict[str, Dict[str, Union[List[Dict[str, str]], Dict[str, str]]]],
-    proposals: List[Dict[str, Union[str, int]]],
-) -> None:
-    message_id = react.message_id
-    #NOTE
-    #These are statically defined and unique to unrelated servers in development
-    if message_id == 1199160059716980830 or 1199186995499511909:
-        guild_id = react.guild_id
-        guild = discord.utils.get(bot.guilds, id=guild_id)
-
-        if react.emoji.name == "✅":
-            role = discord.utils.get(guild.roles, name="verified")
-            if role is not None:
-                member = discord.utils.get(guild.members, id=react.user_id)
-                if member is not None:
-                    await member.add_roles(role)
-                    await member.remove_roles(discord.utils.get(guild.roles, name="unverified"))
-                else:
-                    logging.info("Member not found.")
-            else:
-                logging.info("Role not found.")
+async def handle_member_join(member: discord.Member) -> None:
+    #Send to welcome channel
+    welcome_channel = get(member.guild.channels, name="welcome")
+    collab_land_join_channel = get(member.guild.channels, name="collabland-join")
+    start_here_channel = get(member.guild.channels, name="start-here")
+    await welcome_channel.send(f" 🌺 Welcome {member.mention}  to {member.guild.name}! We are pleased to have you here 🌺\n"
+                               "\n"
+                               f"If you are an existing aXP, bXP, or cXP Hodler, please head over to <#{collab_land_join_channel.id}> to verify your wallet and to receive your respective role! \n"
+                               "\n"
+                               f"Refer to <#{start_here_channel.id}> for more details about the studio!")
 
 async def handle_message(
     bot: commands.Bot,
@@ -67,25 +53,6 @@ async def handle_message(
                     await send_dm_once(bot, contributor, message_link)
                 except discord.errors.NotFound:
                     logging.warning(f'User not found: {contributor["uid"]}')
-
-    # Check if the message is in the 'introduce-yourself' channel
-    if message.channel.name == INTRODUCE_YOURSELF_CHANNEL:
-        # Check if the author doesn't have the 'bloomer' role
-        bloomer_role = discord.utils.get(message.author.roles, name='bloomer')
-        if not bloomer_role:
-            # Get the 'bloomer' role
-            bloomer_role = discord.utils.get(message.guild.roles, name='bloomer')
-            if bloomer_role:
-                # Add the 'bloomer' role to the author
-                await message.author.add_roles(bloomer_role)
-                await message.author.remove_roles(discord.utils.get(message.guild.roles, name="verified"))
-                # Find the '🌺│home' channel
-                home_channel = discord.utils.get(message.guild.text_channels, name='🌺│home')
-                if home_channel:
-                # Send the welcome message
-                    await home_channel.send(f"Welcome to Bloom Studio, {message.author.mention}! \n"
-                                            "We are pleased to have you here! Please checkout the <#1199160059716980830> channel to get started. \n")
-
     await bot.process_commands(message)
 
 
