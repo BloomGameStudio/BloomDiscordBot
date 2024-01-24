@@ -8,6 +8,30 @@ from discord.utils import get
 from emotes.command_operations import send_dm_once
 from shared.constants import INTRODUCE_YOURSELF_CHANNEL
 
+async def handle_raw_react(
+    bot: commands.Bot,
+    payload,
+    data: Dict[str, Dict[str, Union[List[Dict[str, str]], Dict[str, str]]]],
+    proposals: List[Dict[str, Union[str, int]]],
+) -> None:
+    message_id = payload.message_id
+    if message_id == 1199160059716980830:
+        guild_id = payload.guild_id
+        guild = discord.utils.get(bot.guilds, id=guild_id)
+
+        if payload.emoji.name == "✅":
+            role = discord.utils.get(guild.roles, name="verified")
+            if role is not None:
+                member = discord.utils.get(guild.members, id=payload.user_id)
+                if member is not None:
+                    await member.add_roles(role)
+                    logging.info("done")
+                else:
+                    logging.info("Member not found.")
+            else:
+                logging.info("Role not found."
+)
+                
 async def handle_member_join(member: discord.Member) -> None:
     #Send to welcome channel
     welcome_channel = get(member.guild.channels, name="welcome")

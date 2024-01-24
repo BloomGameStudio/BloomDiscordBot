@@ -2,7 +2,7 @@ from typing import Dict, Union, List
 from discord.ext import commands
 from discord import Message, Reaction, User
 from discord.utils import get
-from shared.event_operations import handle_message, handle_reaction, handle_raw_react
+from shared.event_operations import handle_message, handle_reaction, handle_member_join, handle_raw_react
 import logging
 
 
@@ -28,9 +28,5 @@ def setup_shared_events(
     @bot.event
     async def on_member_join(member):
         logging.info(f"New member: {member.name} has joined: {member.guild.name}")
-        #NOTE
-        # Adding a role to a user BYPASSES the Discord built in Rule checking
-        ##
-        #unverified_role = get(member.guild.roles, name="unverified")
-        #if unverified_role:
-        #   await member.add_roles(unverified_role)
+        # Welcome the Bloomer
+        await handle_member_join(member)
