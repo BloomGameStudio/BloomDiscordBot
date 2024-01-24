@@ -9,10 +9,14 @@ new_proposal_emoji = "💡"
 CONTRIBUTORS_FILE_PATH = "./emotes/contributors.json"
 POSTED_EVENTS_FILE_PATH = "./events/posted_events.json"
 
-#OK BLOOMER CONSTANTS
+# This is an example message ID for a message of your choosing.
+# Is used in shared/events.py and shared/event_operations.py
+# Please reference those files for details on thse functions.
+RULES_MESSAGE_ID = 1199577260643057685
 
+# OK Bloomer ROLE_TRIGGERS:
 DISCORD_ROLE_TRIGGERS = [
-	{'name':'Client','emoji_id':737603507795787816,'role':'Client Pod'},
+	{'name':'Client','emoji_id': 1199583728129802322 ,'role':'Client Pod'},
 	{'name':'Graphics & Design','emoji_id':980752213347549234,'role':'Graphics Pod'},
 	{'name':'Backend','emoji_id':846911453839228938,'role':'Backend Pod'},
 	{'name':'Gameplay & Story Pod','emoji_id':961338498525306980,'role':'Gameplay & Story Pod'},
@@ -20,22 +24,5 @@ DISCORD_ROLE_TRIGGERS = [
 	{'name':'Financial','emoji_id':887872297082449970,'role':'Donator'},
 ]
 
+# OK Bloomer default role
 ROLE_WHEN_NEW_USER_CONFIRMED='contributors'
-
-#-----------------------------#
-#THESE ARE BOT/GUILD SPECIFIC #
-#-----------------------------#
-# GUILD_TRIGGER = 'Bloom Studio'
-# COLOR_CHANGING_ROLE = 'bloom-visual'
-# COMMAND_TRIGGERS = ['!']
-
-#-----------------------------# 
-#
-#    @property
-#    def __general_channel(self):
-#        for guild in self.guilds:
-#            if guild.name.startswith(GUILD_TRIGGER):
-#                for channel in guild.channels:
-#                    if "home" in channel.name:
-#                        return channel
-#        return None
