@@ -75,6 +75,13 @@ Further support for additional servers, and merging of other bot functionality a
 
 You can type ```$bot_help``` to get details about what commands can be used, along with a brief description of them
 
+# Onboarding Bloomers
+
+When a Bloomer first joins Bloom Studio's Discord server, they will be welcomed, and encouraged to read and accept the servers rules.
+After doing so, the Bloomer will be able to verify they control some form of *XP, which upon signing a message through CollabLand will automatically assign a role to them (If configured)
+
+The initial greeting message will show the Bloomer where they can get more information about the studio in the start-here channel.
+
 # Governance
 
 **Creating proposals:**
