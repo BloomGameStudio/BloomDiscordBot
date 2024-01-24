@@ -12,7 +12,6 @@ from shared.constants import CONTRIBUTORS_FILE_PATH, new_proposal_emoji
 from shared.events import setup_shared_events
 from typing import Dict, Any, List
 
-
 def main():
     # Load contributors and emoji ID mapping from contributors.json
     with open(CONTRIBUTORS_FILE_PATH, "r") as json_file:
@@ -29,6 +28,7 @@ def main():
     intents: discord.Intents = discord.Intents.default()
     intents.message_content = True
     intents.reactions = True
+    intents.members = True
     bot: commands.Bot = commands.Bot(command_prefix="!", intents=intents)
 
     # Setup the governance discord commands, and events
