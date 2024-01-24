@@ -15,27 +15,13 @@ setup_event_events is used so that all event events can be loaded at once. inste
 
 
 def setup_event_events(
-    bot: commands.Bot, emoji_dicts: Dict[str, Dict[str, str]]
+    bot: commands.Bot
 ) -> None:
     @bot.event
     async def on_ready():
         logging.info(f"Logged in as {bot.user.name} ({bot.user.id})")
         await bot.change_presence()
         logging.info(f"Starting background task for all guilds")
-        for guild in bot.guilds:
-            # Load Emoji ID Dictionary based on the guilds the bot is in
-            if guild.name == "Bloom Studio":
-                emoji_id_mapping = emoji_dicts.get("Bloom Studio")
-                break
-            elif guild.name == "Bloom Collective":
-                emoji_id_mapping = emoji_dicts.get("Bloom Collective")
-                break
-        else:
-            logging.info(
-                "Bot is not part of the expected servers with emoji dictionaries"
-            )
-            emoji_id_mapping = {}
-
         check_events.start(bot)
 
     @bot.event
