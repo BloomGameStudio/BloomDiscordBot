@@ -10,7 +10,7 @@ from events.events import setup_event_events
 from events.event_operations import load_posted_events
 from shared.constants import CONTRIBUTORS_FILE_PATH, new_proposal_emoji
 from shared.events import setup_shared_events
-
+from price.commands import setup_market_commands
 
 class Bot:
     def __init__(self):
@@ -27,8 +27,8 @@ class Bot:
                 "Bloom Collective": self.data["servers"]["Bloom Collective"]["contributors"],
             }
             self.emoji_dicts = {
-                "Bloom Studio": self.data["servers"]["Bloom Studio"]["emoji_dictionary"],
-                "Bloom Collective": self.data["servers"]["Bloom Collective"]["emoji_dictionary"],
+                "pub-server": self.data["servers"]["pub-server"]["emoji_dictionary"],
+                "priv-server": self.data["servers"]["priv-server"]["emoji_dictionary"],
             }
 
     def setup_bot(self):
@@ -45,6 +45,7 @@ class Bot:
         self.bot.posted_events = load_posted_events()
         setup_event_commands(self.bot)
         setup_event_events(self.bot)
+        setup_market_commands(self.bot)
 
     def run(self):
         self.bot.run(os.getenv("DISCORD_BOT_TOKEN"))
