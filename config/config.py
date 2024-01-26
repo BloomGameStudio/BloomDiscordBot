@@ -3,6 +3,7 @@ import logging
 from consts.constants import CONFIG_ID_MAP, CONFIG_ABSOLUTE_PATH
 from logger.logger import logger
 
+
 # Load configuration
 config: configparser.ConfigParser = configparser.ConfigParser()
 config.read("config/config.ini")
