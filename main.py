@@ -19,6 +19,12 @@ class Bot:
         self.emoji_dicts = None
         self.data = None
 
+        self.__command_manager = CommandManager()
+        self.__appearance_manager = AppearanceManager()
+        self.__data_manager = DataManager()
+        self.__settings= Settings()
+        self.__bot_user = None
+        
     def load_data(self):
         with open(CONTRIBUTORS_FILE_PATH, "r") as json_file:
             self.data = json.load(json_file)
@@ -27,8 +33,8 @@ class Bot:
                 "Bloom Collective": self.data["servers"]["Bloom Collective"]["contributors"],
             }
             self.emoji_dicts = {
-                "pub-server": self.data["servers"]["pub-server"]["emoji_dictionary"],
-                "priv-server": self.data["servers"]["priv-server"]["emoji_dictionary"],
+                "Bloom Studio": self.data["servers"]["Bloom Studio"]["emoji_dictionary"],
+                "Bloom Collective": self.data["servers"]["Bloom Collective"]["emoji_dictionary"],
             }
 
     def setup_bot(self):
