@@ -208,7 +208,9 @@ async def add_contributor(
                     "Emoji dictionary not found for server: " + ctx.guild.name
                 )
                 return
-            await add_contributor_to_list(ctx, uid, emoji_id, server_contributors, emoji_dict)
+            await add_contributor_to_list(
+                ctx, uid, emoji_id, server_contributors, emoji_dict
+            )
             await ctx.send(f"Contributor added successfully!")
     else:
         await ctx.send("Timeout. Please run the command again.")
