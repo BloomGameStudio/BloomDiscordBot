@@ -58,9 +58,9 @@ async def list_contributors(
         await ctx.send(f"No emoji dictionary found for server: {server_name}")
         return
 
-    emoji_mapping_list = [f"{emoji}: {id}" for emoji, id in emoji_dict.items()]
-    emoji_mapping_text = "\n".join(emoji_mapping_list)
-    message = f" :fire: **List of Contributors** :fire: \n" f"{emoji_mapping_text}"
+    emoji_list = [emoji for emoji in emoji_dict.keys()]
+    emoji_text = "\n".join(emoji_list)
+    message = f" :fire: **List of Contributors** :fire: \n" f"{emoji_text}"
     await ctx.send(message)
 
 
