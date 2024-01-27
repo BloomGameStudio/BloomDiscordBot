@@ -5,14 +5,18 @@ from shared.constants import CONTRIBUTORS_FILE_PATH
 from typing import List, Dict, Any
 
 
-def add_contributor_to_list(
+async def add_contributor_to_list(
     ctx: discord.ext.commands.Context,
     uid: str,
     emoji_id: str,
     contributors: List[Dict[str, str]],
     emoji_id_mapping: Dict[str, str],
 ) -> Dict[str, str]:
-    new_contributor = {"uid": uid}
+    # Get the user's username
+    user = await ctx.guild.fetch_member(int(uid))
+    note = user.name if user else "User not found"
+
+    new_contributor = {"uid": uid, "note": note}
     contributors.append(new_contributor)
     emoji_id_mapping[
         emoji_id
@@ -58,9 +62,9 @@ async def list_contributors(
         await ctx.send(f"No emoji dictionary found for server: {server_name}")
         return
 
-    emoji_mapping_list = [f"{emoji}: {id}" for emoji, id in emoji_dict.items()]
-    emoji_mapping_text = "\n".join(emoji_mapping_list)
-    message = f" :fire: **List of Contributors** :fire: \n" f"{emoji_mapping_text}"
+    emoji_list = [emoji for emoji in emoji_dict.keys()]
+    emoji_text = "\n".join(emoji_list)
+    message = f" :fire: **List of Contributors** :fire: \n" f"{emoji_text}"
     await ctx.send(message)
 
 
@@ -177,7 +181,7 @@ async def add_contributor(
                         "Emoji dictionary not found for server: " + ctx.guild.name
                     )
                     return
-                add_contributor_to_list(
+                await add_contributor_to_list(
                     ctx, uid, emoji_id, server_contributors, emoji_dict
                 )
                 await ctx.send(f"Contributor added successfully!")
@@ -204,7 +208,9 @@ async def add_contributor(
                     "Emoji dictionary not found for server: " + ctx.guild.name
                 )
                 return
-            add_contributor_to_list(uid, emoji_id, server_contributors, emoji_dict)
+            await add_contributor_to_list(
+                ctx, uid, emoji_id, server_contributors, emoji_dict
+            )
             await ctx.send(f"Contributor added successfully!")
     else:
         await ctx.send("Timeout. Please run the command again.")
