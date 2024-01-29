@@ -10,7 +10,6 @@ from events.events import setup_event_events
 from events.event_operations import load_posted_events
 from shared.constants import CONTRIBUTORS_FILE_PATH, new_proposal_emoji
 from shared.events import setup_shared_events
-from price.commands import setup_market_commands
 from controllers.appearance_manager import *
 from controllers.command_manager import *
 from controllers.data_manager import *
@@ -28,32 +27,6 @@ class Bot:
         self.__data_manager = DataManager()
         self.__settings = Settings()
         self.__bot_user = None
-
-    def __assign_bot_user(self):
-        for guild in self.bot.guilds:
-            if guild.name.startswith(GUILD_TRIGGER):
-                for member in guild.members:
-                    if member.id == self.bot.user.id:
-                        self.__bot_user = member
-                        return
-
-    @property
-    def __rules_channel(self):
-        for guild in self.bot.guilds:
-            if guild.name.startswith(GUILD_TRIGGER):
-                for channel in guild.channels:
-                    if "rules" in channel.name:
-                        return channel
-        return None
-
-    @property
-    def __general_channel(self):
-        for guild in self.bot.guilds:
-            if guild.name.startswith(GUILD_TRIGGER):
-                for channel in guild.channels:
-                    if "home" in channel.name:
-                        return channel
-        return None
 
     async def __refresh_name(self):
         await self.__appearance_manager.refresh_title_state(self, self.__data_manager, self.__bot_user, self.__settings)
@@ -90,7 +63,6 @@ class Bot:
         self.bot.posted_events = load_posted_events()
         setup_event_commands(self.bot)
         setup_event_events(self.bot)
-        setup_market_commands(self.bot)
 
     def run(self):
         self.bot.run(os.getenv("DISCORD_BOT_TOKEN"))
