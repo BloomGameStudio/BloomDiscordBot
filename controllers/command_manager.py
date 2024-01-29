@@ -3,6 +3,7 @@ from .data_manager import *
 from .crypto_constants import *
 from .menu_copy import *
 from .settings import *
+from discord.utils import get
 
 class CommandManager():
 
@@ -181,7 +182,7 @@ class CommandManager():
         elif command == 'help':
             return MENU_COPY
         else:
-            return "Command not found | Was processed as {0}".format(remainder)
+            return #"Command not found | Was processed as {0}".format(remainder)
 
     def __prepare_response(self, message, data_manager, settings):
         if self.__is_command(message):
@@ -240,8 +241,19 @@ class CommandManager():
         if lower.startswith('corn') or lower.startswith('btc') or lower.startswith('bitcoin'):
             await message.add_reaction('🌽')
 
-    async def process_new_member(self, member, welcome_channel, rules_channel):
-        response = f"**Welcome to Bloom Collective, {member.display_name}!**\n\nWe're jazzed to have you here.\n\nTo formally join the Collective, please head to <#{rules_channel.id}> and tap the 🌺 to confirm the rulez are gucci with you. Please select any relevant roles you're interested in as well! Cheers and welcome again to the Collective!"
-        await welcome_channel.send(response)
+    async def process_new_member(self, member: discord.Member) -> None:
+    # Send to welcome channel
+        welcome_channel = get(member.guild.channels, name="welcome")
+        collab_land_join_channel = get(member.guild.channels, name="collabland-join")
+        start_here_channel = get(member.guild.channels, name="start-here")
+        await welcome_channel.send(
+            f" 🌺 Welcome {member.mention}  to {member.guild.name}! We are pleased to have you here 🌺\n"
+            "\n"
+            "Take a moment to read and agree to the rules before you get started!"
+            "\n"
+            f"If you are an existing aXP, bXP, or cXP Hodler, please head over to <#{collab_land_join_channel.id}> to verify your wallet in order to receive your respective role! \n"
+            "\n"
+            f"Refer to <#{start_here_channel.id}> for more details about the studio!"
+        )
 
 
