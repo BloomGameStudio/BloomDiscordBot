@@ -184,7 +184,7 @@ class CommandManager():
         elif command == 'help':
             return MENU_COPY
         else:
-            return #"Command not found | Was processed as {0}".format(remainder)
+            return "Command not found"
 
     def __prepare_response(self, message, data_manager, settings):
         if self.__is_command(message):
