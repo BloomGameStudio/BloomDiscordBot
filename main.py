@@ -28,10 +28,6 @@ class Bot:
         self.__data_manager = DataManager()
         self.__settings = Settings()
         self.__bot_user = None
-    
-    ##
-    async def on_member_join(self, member):
-        await self.__command_manager.process_new_member(member, self.__general_channel, self.__rules_channel)
 
     async def on_raw_reaction_add(self, payload):
         if payload.message_id == RULES_MESSAGE_ID:
@@ -92,7 +88,6 @@ class Bot:
         self.bot = commands.Bot(command_prefix="!", intents=intents)
 
         # event listeners
-        self.bot.add_listener(self.on_member_join)
         self.bot.add_listener(self.on_raw_reaction_add)
 
     def setup_commands_and_events(self):
