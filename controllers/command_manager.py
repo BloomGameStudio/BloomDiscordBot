@@ -236,7 +236,7 @@ class CommandManager():
                         general_channel = get_channel_by_name(guild, "🌺│home")
                         role = get(guild.roles, name=role_info.get("role"))
                         response = (
-                            f"{member.display_name} has joined **{role_info.get('name')}**!"
+                            f"{member.display_name} has marked their interest in the **{role_info.get('name')}** pod!"
                         )
                         await general_channel.send(response)
                         if role is None:
