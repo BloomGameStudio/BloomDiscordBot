@@ -83,9 +83,6 @@ class Bot:
         intents.members = True
         self.bot = commands.Bot(command_prefix="!", intents=intents)
 
-        # event listeners
-        self.bot.add_listener(self.on_raw_reaction_add)
-
     def setup_commands_and_events(self):
         setup_gov_commands(self.bot)
         setup_contrbitutor_commands(self.bot, self.contributors, self.emoji_dicts)
