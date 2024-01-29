@@ -36,5 +36,9 @@ def setup_shared_events(
     @bot.event
     async def on_member_join(member):
         logging.info(f"New member: {member.name} has joined: {member.guild.name}")
-        #Welcome the Bloomer
         await command_manager.process_new_member(member)
+    @bot.event
+    async def on_command_error(ctx, error):
+        if isinstance(error, commands.CommandNotFound):
+            logging.info(f"An invalid command '{ctx.message.content}' was sent, it may be processed under on_message instead")
+            return
