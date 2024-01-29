@@ -10,18 +10,22 @@ from shared.event_operations import (
     handle_member_join,
 )
 import logging
-
+from controllers.command_manager import CommandManager
+from controllers.data_manager import DataManager
+from controllers.settings import Settings
 
 def setup_shared_events(
     bot: commands.Bot,
-    data: Dict[str, Dict[str, Dict[str, Union[List[Dict[str, str]], Dict[str, str]]]]],
-    proposals: List[Dict[str, str]],
-    new_proposal_emoji: str = "💡",
+    command_manager: CommandManager,
+    data_manager: DataManager,
+    settings: Settings,
+    data: Dict[str, Dict[str, Dict[str, Union[List[Dict[str, str]], Dict[str, str]]]]] = {},
+    proposals: List[Dict[str, str]] = [],
+    new_proposal_emoji: str = "💡"
 ) -> None:
     @bot.event
     async def on_message(message: Message) -> None:
-        await handle_message(bot, message, data, proposals)
-
+        await handle_message(bot, message, data, proposals, command_manager, data_manager, settings)
     @bot.event
     async def on_reaction_add(reaction: Reaction, user: User) -> None:
         logging.info(f"Reaction added: {reaction.emoji}")

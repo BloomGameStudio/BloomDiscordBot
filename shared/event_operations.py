@@ -8,7 +8,9 @@ from discord.utils import get
 from emotes.command_operations import send_dm_once
 from shared.constants import DISCORD_ROLE_TRIGGERS, RULES_MESSAGE_ID
 from shared.helpers import get_channel_by_name
-
+from controllers.command_manager import CommandManager
+from controllers.data_manager import DataManager
+from controllers.settings import Settings
 
 async def process_reaction_add(bot, payload):
     if payload.message_id == RULES_MESSAGE_ID:
@@ -56,6 +58,9 @@ async def handle_message(
     message: Message,
     data: Dict[str, Dict[str, Union[List[Dict[str, str]], Dict[str, str]]]],
     proposals: List[Dict[str, Union[str, int]]],
+    command_manager: CommandManager, 
+    data_manager: DataManager,
+    settings: Settings,
 ) -> None:
     if message.author == bot.user:
         return
@@ -85,8 +90,9 @@ async def handle_message(
                     await send_dm_once(bot, contributor, message_link)
                 except discord.errors.NotFound:
                     logging.warning(f'User not found: {contributor["uid"]}')
+    
+    await command_manager.process_message_as_command(message, data_manager, settings)
     await bot.process_commands(message)
-
 
 async def handle_reaction(
     bot: commands.Bot,
