@@ -11,6 +11,10 @@ from events.event_operations import load_posted_events
 from shared.constants import CONTRIBUTORS_FILE_PATH, new_proposal_emoji
 from shared.events import setup_shared_events
 from price.commands import setup_market_commands
+from controllers.appearance_manager import *
+from controllers.command_manager import *
+from controllers.data_manager import *
+from controllers.settings import *
 
 class Bot:
     def __init__(self):
@@ -22,19 +26,62 @@ class Bot:
         self.__command_manager = CommandManager()
         self.__appearance_manager = AppearanceManager()
         self.__data_manager = DataManager()
-        self.__settings= Settings()
+        self.__settings = Settings()
         self.__bot_user = None
-        
+    
+    ##
+    async def on_member_join(self, member):
+        await self.__command_manager.process_new_member(member, self.__general_channel, self.__rules_channel)
+
+    async def on_raw_reaction_add(self, payload):
+        if payload.message_id == RULES_MESSAGE_ID:
+            await self.__command_manager.process_reaction_add(payload, self.__general_channel)
+
+    def __assign_bot_user(self):
+        for guild in self.bot.guilds:
+            if guild.name.startswith(GUILD_TRIGGER):
+                for member in guild.members:
+                    if member.id == self.bot.user.id:
+                        self.__bot_user = member
+                        return
+
+    @property
+    def __rules_channel(self):
+        for guild in self.bot.guilds:
+            if guild.name.startswith(GUILD_TRIGGER):
+                for channel in guild.channels:
+                    if "rules" in channel.name:
+                        return channel
+        return None
+
+    @property
+    def __general_channel(self):
+        for guild in self.bot.guilds:
+            if guild.name.startswith(GUILD_TRIGGER):
+                for channel in guild.channels:
+                    if "home" in channel.name:
+                        return channel
+        return None
+
+    async def __refresh_name(self):
+        await self.__appearance_manager.refresh_title_state(self, self.__data_manager, self.__bot_user, self.__settings)
+        new_momentum = self.__data_manager.token_manager.bitcoin.price_momentum
+        if not self.__settings.momentum == new_momentum:
+            self.__settings.update_momentum(new_momentum)
+
+    async def __refresh_status(self):
+        await self.__appearance_manager.refresh_status(self, self.__data_manager, self.__bot_user, self.__settings)
+
     def load_data(self):
         with open(CONTRIBUTORS_FILE_PATH, "r") as json_file:
             self.data = json.load(json_file)
             self.contributors = {
-                "Bloom Studio": self.data["servers"]["Bloom Studio"]["contributors"],
-                "Bloom Collective": self.data["servers"]["Bloom Collective"]["contributors"],
+                "priv-server": self.data["servers"]["priv-server"]["contributors"],
+                "pub-server": self.data["servers"]["pub-server"]["contributors"],
             }
             self.emoji_dicts = {
-                "Bloom Studio": self.data["servers"]["Bloom Studio"]["emoji_dictionary"],
-                "Bloom Collective": self.data["servers"]["Bloom Collective"]["emoji_dictionary"],
+                "priv-server": self.data["servers"]["priv-server"]["emoji_dictionary"],
+                "pub-server": self.data["servers"]["pub-server"]["emoji_dictionary"],
             }
 
     def setup_bot(self):
@@ -44,10 +91,14 @@ class Bot:
         intents.members = True
         self.bot = commands.Bot(command_prefix="!", intents=intents)
 
+        # event listeners
+        self.bot.add_listener(self.on_member_join)
+        self.bot.add_listener(self.on_raw_reaction_add)
+
     def setup_commands_and_events(self):
         setup_gov_commands(self.bot)
         setup_contrbitutor_commands(self.bot, self.contributors, self.emoji_dicts)
-        setup_shared_events(self.bot, self.data, proposals, new_proposal_emoji)
+        setup_shared_events(self.bot, self.__command_manager, self.__data_manager, self.__settings, self.data, proposals, new_proposal_emoji)
         self.bot.posted_events = load_posted_events()
         setup_event_commands(self.bot)
         setup_event_events(self.bot)
@@ -61,7 +112,6 @@ class Bot:
         self.setup_bot()
         self.setup_commands_and_events()
         self.run()
-
 
 if __name__ == "__main__":
     runner = Bot()
