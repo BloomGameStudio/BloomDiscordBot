@@ -6,8 +6,6 @@ from discord.ext import commands
 from discord import Message, Reaction, User
 from discord.utils import get
 from emotes.command_operations import send_dm_once
-from shared.constants import DISCORD_ROLE_TRIGGERS, RULES_MESSAGE_ID
-from shared.helpers import get_channel_by_name
 from controllers.command_manager import CommandManager
 from controllers.data_manager import DataManager
 from controllers.settings import Settings

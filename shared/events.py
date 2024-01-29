@@ -2,8 +2,6 @@ import logging
 from typing import Dict, Union, List
 from discord.ext import commands
 from discord import Message, Reaction, User
-from discord.utils import get
-from shared.constants import RULES_MESSAGE_ID
 from shared.event_operations import (
     handle_message,
     handle_reaction
@@ -11,6 +9,7 @@ from shared.event_operations import (
 from controllers.command_manager import CommandManager
 from controllers.data_manager import DataManager
 from controllers.settings import Settings
+from controllers.crypto_constants import RULES_MESSAGE_ID
 
 def setup_shared_events(
     bot: commands.Bot,
