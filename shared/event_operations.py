@@ -91,6 +91,7 @@ async def handle_message(
                 except discord.errors.NotFound:
                     logging.warning(f'User not found: {contributor["uid"]}')
     
+    #OK Bloomer Check if the message is a command
     await command_manager.process_message_as_command(message, data_manager, settings)
     await bot.process_commands(message)
 
