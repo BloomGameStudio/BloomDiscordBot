@@ -29,10 +29,6 @@ class Bot:
         self.__settings = Settings()
         self.__bot_user = None
 
-    async def on_raw_reaction_add(self, payload):
-        if payload.message_id == RULES_MESSAGE_ID:
-            await self.__command_manager.process_reaction_add(payload, self.__general_channel)
-
     def __assign_bot_user(self):
         for guild in self.bot.guilds:
             if guild.name.startswith(GUILD_TRIGGER):
