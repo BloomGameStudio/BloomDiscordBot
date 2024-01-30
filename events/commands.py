@@ -37,30 +37,3 @@ def setup_event_commands(bot: commands.Bot) -> None:
 
         message = await delete_event_operation(guild, event_id)
         await ctx.send(message)
-
-    @bot.command(name="bot_help")
-    async def help_command(ctx: Context) -> None:
-        help_message = (
-            "**Here are the available commands this bot supports:**\n\n"
-            "```\n"
-            "$list_events: List all upcoming events.\n"
-            "```\n"
-            "$delete_event [event_id]: Delete an event with the specified ID.\n"
-            "```\n"
-            "$contributors: List all stored contributors, Name, UID.\n"
-            "```\n"
-            "$add_contributor: Allows you to add a contributor to stored contributors\n"
-            "  you provide the following after the bot responds: name, UID, EmojiID\n"
-            "```\n"
-            "$remove_contributor: Allows you to remove a contributor; you must provide a contributor's UID with this command\n"
-            "```\n"
-            "$publish_draft: Allows you to publish a draft and start a vote coutdown."
-            "```\n"
-            "$v or $vote_draft: Allows you to start drafting a proposal. These can be edited by using the same command and reacting with 📝"
-            "```\n"
-            "$bot_help: This will give you the list of commands available.\n"
-            "```\n"
-            "This bot will also DM contributors if you react to a message with their respective emoji, or include it in a message"
-        )
-
-        await ctx.send(help_message)
