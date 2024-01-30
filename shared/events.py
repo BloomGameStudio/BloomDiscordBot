@@ -41,4 +41,3 @@ def setup_shared_events(
     async def on_command_error(ctx, error):
         if isinstance(error, commands.CommandNotFound):
             logging.info(f"An invalid command '{ctx.message.content}' was sent, it may be processed under on_message instead")
-            await command_manager.process_message_as_command(ctx.message, data_manager, settings)

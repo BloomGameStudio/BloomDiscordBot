@@ -9,6 +9,7 @@ from emotes.command_operations import send_dm_once
 from controllers.command_manager import CommandManager
 from controllers.data_manager import DataManager
 from controllers.settings import Settings
+from controllers.menu_copy import MENU_COPY
 
 async def handle_member_join(member: discord.Member) -> None:
     # Send to welcome channel
@@ -43,6 +44,10 @@ async def handle_message(
         logging.warning(f"No data found for server: {server_name}")
         return
 
+    if message.content.startswith('!help'):
+        await message.channel.send(MENU_COPY)
+        return
+    
     contributors = server_data["contributors"]
     emoji_dicts = server_data["emoji_dictionary"]
 
@@ -63,6 +68,7 @@ async def handle_message(
                     await send_dm_once(bot, contributor, message_link)
                 except discord.errors.NotFound:
                     logging.warning(f'User not found: {contributor["uid"]}')
+    await command_manager.process_message_as_command(message, data_manager, settings)
     await bot.process_commands(message)
 
 async def handle_reaction(
