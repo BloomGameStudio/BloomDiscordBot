@@ -3,7 +3,6 @@ from discord import ScheduledEvent
 from discord.ext import commands
 from events.event_operations import notify_new_event
 from events.tasks import check_events
-from typing import Dict
 
 """
 The bot listens for the on_ready event and then calls check_events in tasks.py
