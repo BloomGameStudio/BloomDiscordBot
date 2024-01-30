@@ -236,8 +236,8 @@ class CommandManager():
                         response = (
                             f"{member.display_name} has marked their interest in the **{role_info.get('name')}** pod!"
                         )
+                        await general_channel.send(response)
                         #NOTE: Removed role assignment; simply post that they are interested in the role
-                        #await general_channel.send(response)
                         #if role is None:
                         #    logging.info(f"Role {role_info.get('role')} not found")
                         #    return
