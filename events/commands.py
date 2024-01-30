@@ -35,5 +35,5 @@ def setup_event_commands(bot: commands.Bot) -> None:
             )
             return
 
-        message = await delete_event_operation(guild, event_id)
+        message = await delete_event_operation(ctx, guild, event_id)
         await ctx.send(message)

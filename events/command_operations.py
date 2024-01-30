@@ -19,7 +19,14 @@ async def list_events_operation(guild: Guild) -> str:
     return formatted_string
 
 
-async def delete_event_operation(guild, event_id):
+async def delete_event_operation(ctx, guild, event_id):
+    # Retrieve the guild member who invoked the command
+    member = ctx.guild.get_member(ctx.author.id)
+
+    # Check if they have the 'core' role.
+    if not any(role.name == 'core' for role in member.roles):
+        await ctx.send("You do not have permission to use this command.")
+        return
     event = guild.get_scheduled_event(event_id)
 
     if event:
