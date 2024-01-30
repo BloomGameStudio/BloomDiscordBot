@@ -21,7 +21,7 @@ def setup_event_commands(bot: commands.Bot) -> None:
     async def delete_event(ctx: Context, event_id: int = None) -> None:
         if event_id is None:
             await ctx.send(
-                "Please enter an event_id with this command. Example: `$deleteevent 1179241076016566272`"
+                "Please enter an event_id with this command. Example: `!delete_event 1179241076016566272`"
             )
             return
 
@@ -31,7 +31,7 @@ def setup_event_commands(bot: commands.Bot) -> None:
             event_id = int(event_id)
         except ValueError:
             await ctx.send(
-                "Invalid event_id. Please provide a valid integer. Use $listevents to get a list of events"
+                "Invalid event_id. Please provide a valid integer. Use !list_events to get a list of events"
             )
             return
 
