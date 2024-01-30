@@ -181,8 +181,6 @@ class CommandManager():
             data_manager.token_manager.clear()
             base_message = "**Initializing Silph Bot!**\n------------------------\n"
             return base_message + self.__add_tokens_to_cycle(['eth'],data_manager,settings)
-        elif command == 'help':
-            return MENU_COPY
         else:
             return "Command not found"
 
