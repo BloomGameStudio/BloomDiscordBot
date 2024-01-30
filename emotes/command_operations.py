@@ -73,6 +73,13 @@ async def remove_contributor(
     emoji_dicts: Dict[str, Dict[str, str]],
     user_mention: str,
 ) -> None:
+    # Retrieve the guild member who invoked the command
+    member = ctx.guild.get_member(ctx.author.id)
+
+    # Check if they have the 'core' role.
+    if not any(role.name == 'core' for role in member.roles):
+        await ctx.send("You do not have permission to use this command.")
+        return
     if user_mention:
         uid = user_mention.strip("<@!>").split(">")[0]
         server_contributors = contributors.get(ctx.guild.name)
@@ -124,6 +131,13 @@ async def add_contributor(
     emoji_dicts: Dict[str, Dict[str, str]],
     bot: discord.client,
 ) -> None:
+    # Retrieve the guild member who invoked the command
+    member = ctx.guild.get_member(ctx.author.id)
+
+    # Check if they have the 'core' role.
+    if not any(role.name == 'core' for role in member.roles):
+        await ctx.send("You do not have permission to use this command.")
+        return
     message = await ctx.send(
         "**To add a contributor, reply to this message by tagging them with their emoji**\n"
         "\n"
