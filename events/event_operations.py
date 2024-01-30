@@ -116,3 +116,41 @@ async def fetch_upcoming_events(guild):
             upcoming_events.append(event)
 
     return upcoming_events
+
+# NOTE:
+# OK Bloomer functionality that may want to be added in the future
+# This is from app.py in the DiscordBot repo
+
+    # async def start_looped_info(self):
+    #    self.loop.create_task(self.start_looping_status())
+    #    self.loop.create_task(self.start_looping_requests())
+
+    # async def start_looping_status(self):
+    #     while True:
+    #         await self.__refresh_status()
+    #         await asyncio.sleep(self.__settings.cycle_length)
+
+    # async def start_looping_requests(self):
+    #     while True:
+    #         self.__data_manager.update_all_token_prices()
+    #         await self.__refresh_name()
+    #         await asyncio.sleep(self.__settings.request_frequency)
+
+    # async def start_looping_ens_requests(self):
+    #     while True:
+    #         await self.__data_manager.load_ens()
+    #         await asyncio.sleep(2000)
+
+    # async def start_looping_nft_requests(self):
+    #     while True:
+    #         await self.__data_manager.get_collections()
+    #         await asyncio.sleep(2000)
+
+    # async def __refresh_name(self):
+    #   await self.__appearance_manager.refresh_title_state(self,self.__data_manager,self.__bot_user,self.__settings)
+    #    new_momentum = self.__data_manager.token_manager.bitcoin.price_momentum
+    #    if not self.__settings.momentum == new_momentum:
+    #        self.__settings.update_momentum(new_momentum)
+
+    #async def __refresh_status(self):
+    #    await self.__appearance_manager.refresh_status(self,self.__data_manager,self.__bot_user,self.__settings)

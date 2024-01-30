@@ -38,10 +38,10 @@ HR_ERROR_JSON_DECODE = 'Decoding JSON has failed'
 #-----------------------------#
 POKEMON_GENERATIONS = 8
 
-RULES_MESSAGE_ID = 1062733571376287765
+RULES_MESSAGE_ID = 1199535053194154044
 
 DISCORD_ROLE_TRIGGERS = [
-	{'name':'Client','emoji_id':737603507795787816,'role':'Client Pod'},
+	{'name':'Client','emoji_id':1176399164154851368,'role':'Client Pod'},
 	{'name':'Graphics & Design','emoji_id':980752213347549234,'role':'Graphics Pod'},
 	{'name':'Backend','emoji_id':846911453839228938,'role':'Backend Pod'},
 	{'name':'Gameplay & Story Pod','emoji_id':961338498525306980,'role':'Gameplay & Story Pod'},
@@ -57,4 +57,4 @@ ROLE_WHEN_NEW_USER_CONFIRMED='contributors'
 COLOR_CHANGING_ROLE = 'bloom-visual'
 COMMAND_TRIGGERS = ['!']
 PRICE_TRIGGERS = ['$']
-GUILD_TRIGGER = 'priv-server'
+GUILD_TRIGGER = 'Bloom Studio'

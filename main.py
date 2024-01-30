@@ -23,19 +23,8 @@ class Bot:
         self.data = None
 
         self.__command_manager = CommandManager()
-        self.__appearance_manager = AppearanceManager()
         self.__data_manager = DataManager()
         self.__settings = Settings()
-        self.__bot_user = None
-
-    async def __refresh_name(self):
-        await self.__appearance_manager.refresh_title_state(self, self.__data_manager, self.__bot_user, self.__settings)
-        new_momentum = self.__data_manager.token_manager.bitcoin.price_momentum
-        if not self.__settings.momentum == new_momentum:
-            self.__settings.update_momentum(new_momentum)
-
-    async def __refresh_status(self):
-        await self.__appearance_manager.refresh_status(self, self.__data_manager, self.__bot_user, self.__settings)
 
     def load_data(self):
         with open(CONTRIBUTORS_FILE_PATH, "r") as json_file:
