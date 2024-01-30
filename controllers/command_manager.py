@@ -182,7 +182,7 @@ class CommandManager():
             base_message = "**Initializing Silph Bot!**\n------------------------\n"
             return base_message + self.__add_tokens_to_cycle(['eth'],data_manager,settings)
         else:
-            return "Command not found"
+            return # "Command not found"
 
     def __prepare_response(self, message, data_manager, settings):
         if self.__is_command(message):
@@ -236,11 +236,12 @@ class CommandManager():
                         response = (
                             f"{member.display_name} has marked their interest in the **{role_info.get('name')}** pod!"
                         )
-                        await general_channel.send(response)
-                        if role is None:
-                            logging.info(f"Role {role_info.get('role')} not found")
-                            return
-                        await member.add_roles(role)
+                        #NOTE: Removed role assignment; simply post that they are interested in the role
+                        #await general_channel.send(response)
+                        #if role is None:
+                        #    logging.info(f"Role {role_info.get('role')} not found")
+                        #    return
+                        #await member.add_roles(role)
 
     async def make_user_role(self,user,role=ROLE_WHEN_NEW_USER_CONFIRMED):
         for guild_role in user.guild.roles:
