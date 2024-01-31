@@ -1,5 +1,7 @@
 from discord import Guild
 from discord.ext.commands import Context
+from shared.helpers import get_guild_member_check_role
+
 
 async def list_events_operation(guild: Guild) -> str:
     event_list = guild.scheduled_events
@@ -20,13 +22,10 @@ async def list_events_operation(guild: Guild) -> str:
 
 
 async def delete_event_operation(ctx: Context, guild: Guild, event_id: int):
-    # Retrieve the guild member who invoked the command
-    member = ctx.guild.get_member(ctx.author.id)
-
-    # Check if they have the 'core' role.
-    if not any(role.name == "core" for role in member.roles):
-        await ctx.send("You do not have permission to use this command.")
+    permitted = await get_guild_member_check_role(ctx)
+    if not permitted:
         return
+
     event = guild.get_scheduled_event(event_id)
 
     if event:
