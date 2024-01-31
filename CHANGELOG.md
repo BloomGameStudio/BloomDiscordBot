@@ -13,10 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - on_member_join added to greet a new potential Bloomer, advising them where to start and how to allocate a role to themselves if they are an existing cXP token holder. 
 
-- Merged features from OK Bloomer bot:
+- Merged features from OK Bloomer bot.
     - Add to bloomer role, based off an emoji react to a predefined message ID and notify channel
-    - Notify channel a person has marked themseslves as interested in a pod
-    - Other functionality related to price, gas, and more. These are not currently implemented however.
+    - Notify channel a person has joined a pod
     
 - Support for both the Bloom Studio Discord server, and the Bloom Collective Discord server.
 

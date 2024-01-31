@@ -2,11 +2,11 @@
 
 # Onboarding Bloomers in the Bloom Studio Server
 
-When a Bloomer first joins Bloom Studio's Discord server, they will be welcomed, and encouraged to read and accept the servers rules before they can post. This is a built in anti-spam protection that Discord offer.
+When a bloomer first joins Bloom Studio's Discord server, they will be welcomed, and encouraged to read and accept the servers rules before they can post. This is a built in anti-spam protection that Discord offers.
 
-After agreeing to the server rules, the Bloomer will be able to verify they posses some form of Contributor XP, which upon signing a message through CollabLand will automatically assign a role to them (If configured)
+After agreeing to the server rules, the bloomer will be able to verify they posses some form of Contributor XP, which upon signing a message through CollabLand will automatically assign the appropriate role to the bloomer
 
-The initial greeting message will show the Bloomer where they can get more information about the studio in the start-here channel, Bloomers can also mark their interest in a specific pod by reacting to a message in start-here. To fully become a bloomer (be assigned the bloomer role) one needs to react with a 🌺.
+The initial greeting message advise the bloomer where the can get more information about Bloom Studio.
 
 # Quick start guide:
 
