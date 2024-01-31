@@ -1,5 +1,8 @@
 import configparser
 import logging
+from consts.constants import CONFIG_ID_MAP, CONFIG_ABSOLUTE_PATH
+from logger.logger import logger
+
 
 # Load configuration
 config: configparser.ConfigParser = configparser.ConfigParser()
@@ -7,11 +10,6 @@ config.read("config/config.ini")
 
 current_governance_id: int = config.getint("ID_START_VALUES", "governance_id")
 current_budget_id: int = config.getint("ID_START_VALUES", "budget_id")
-
-# Set up logging
-logging_level: str = config.get("Logging", "level", fallback="INFO")
-numeric_logging_level: int = getattr(logging, logging_level.upper(), logging.INFO)
-logging.basicConfig(level=numeric_logging_level)
 
 
 # Update values when proposals are submitted.
@@ -26,3 +24,40 @@ def update_id_values(id_value: int, id_type: str) -> None:
 
     with open("config/config.ini", "w") as configfile:
         config.write(configfile)
+
+
+def increment_config_id(
+    id_type: str, increment: int = +1, config: configparser.ConfigParser = config
+) -> None:
+    """
+    Increments the ID value for a given proposal type in the config file.
+
+    Note: Use typed id_types instead of using raw strings these can be imported from consts
+
+    Args:
+      id_type: A string specifying the ID type ('governance' or 'budget')
+      increment: An integer specifying how much to increment the ID by (default 1)
+      config: A ConfigParser instance (default uses config initialized here)
+
+    Returns:
+        None
+    """
+
+    id_type = id_type.lower()
+
+    if id_type not in CONFIG_ID_MAP:
+        err_msg = f"Invalid id_type: {id_type}"
+        logger.error(err_msg)
+        raise ValueError(err_msg)
+
+    key = CONFIG_ID_MAP[id_type]
+    config["ID_START_VALUES"][key] += str(increment)
+
+    try:
+        with open(CONFIG_ABSOLUTE_PATH, "w") as f:
+            config.write(f)
+
+    except IOError as e:
+        err_msg = f"Error writing config file: {e}"
+        logger.error(err_msg)
+        raise Exception(err_msg, e)
