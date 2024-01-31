@@ -9,8 +9,9 @@ from emotes.command_operations import send_dm_once
 from .constants import MENU_COPY, DISCORD_ROLE_TRIGGERS, RULES_MESSAGE_ID
 from .helpers import get_channel_by_name
 
+
 async def process_new_member(member: discord.Member) -> None:
-# Send to welcome channel
+    # Send to welcome channel
     welcome_channel = get(member.guild.channels, name="welcome")
     collab_land_join_channel = get(member.guild.channels, name="collabland-join")
     start_here_channel = get(member.guild.channels, name="start-here")
@@ -23,6 +24,7 @@ async def process_new_member(member: discord.Member) -> None:
         "\n"
         f"Refer to <#{start_here_channel.id}> for more details about the studio!"
     )
+
 
 async def handle_message(
     bot: commands.Bot,
@@ -38,10 +40,10 @@ async def handle_message(
         logging.warning(f"No data found for server: {server_name}")
         return
 
-    if message.content.startswith('!help'):
+    if message.content.startswith("!help"):
         await message.channel.send(MENU_COPY)
         return
-    
+
     contributors = server_data["contributors"]
     emoji_dicts = server_data["emoji_dictionary"]
 
@@ -63,6 +65,7 @@ async def handle_message(
                 except discord.errors.NotFound:
                     logging.warning(f'User not found: {contributor["uid"]}')
     await bot.process_commands(message)
+
 
 async def handle_reaction(
     bot: commands.Bot,
@@ -247,6 +250,7 @@ async def handle_reaction(
 
         await channel.send(textwrap.dedent(msg))
 
+
 async def process_reaction_add(bot, payload):
     if payload.message_id == RULES_MESSAGE_ID:
         guild = bot.get_guild(payload.guild_id)
@@ -262,11 +266,9 @@ async def process_reaction_add(bot, payload):
                 if payload.emoji.id == role_info.get("emoji_id"):
                     general_channel = get_channel_by_name(guild, "🌺│home")
                     role = get(guild.roles, name=role_info.get("role"))
-                    response = (
-                        f"{member.display_name} has joined the **{role_info.get('name')}** pod!"
-                    )
+                    response = f"{member.display_name} has joined the **{role_info.get('name')}** pod!"
                     await general_channel.send(response)
-                        
+
                     if role is None:
                         logging.info(f"Role {role_info.get('role')} not found")
                         return

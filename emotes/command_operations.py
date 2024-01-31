@@ -28,6 +28,7 @@ async def add_contributor_to_list(
     )
     return new_contributor
 
+
 async def send_dm_once(
     bot: discord.Client, contributor: Dict[str, str], message_link: str
 ) -> None:
@@ -77,7 +78,7 @@ async def remove_contributor(
     member = ctx.guild.get_member(ctx.author.id)
 
     # Check if they have the 'core' role.
-    if not any(role.name == 'core' for role in member.roles):
+    if not any(role.name == "core" for role in member.roles):
         await ctx.send("You do not have permission to use this command.")
         return
     if user_mention:
@@ -135,7 +136,7 @@ async def add_contributor(
     member = ctx.guild.get_member(ctx.author.id)
 
     # Check if they have the 'core' role.
-    if not any(role.name == 'core' for role in member.roles):
+    if not any(role.name == "core" for role in member.roles):
         await ctx.send("You do not have permission to use this command.")
         return
     message = await ctx.send(

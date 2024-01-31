@@ -24,11 +24,17 @@ class Bot:
             self.data = json.load(json_file)
             self.contributors = {
                 "Bloom Studio": self.data["servers"]["Bloom Studio"]["contributors"],
-                "Bloom Collective": self.data["servers"]["Bloom Collective"]["contributors"],
+                "Bloom Collective": self.data["servers"]["Bloom Collective"][
+                    "contributors"
+                ],
             }
             self.emoji_dicts = {
-                "Bloom Studio": self.data["servers"]["Bloom Studio"]["emoji_dictionary"],
-                "Bloom Collective": self.data["servers"]["Bloom Collective"]["emoji_dictionary"],
+                "Bloom Studio": self.data["servers"]["Bloom Studio"][
+                    "emoji_dictionary"
+                ],
+                "Bloom Collective": self.data["servers"]["Bloom Collective"][
+                    "emoji_dictionary"
+                ],
             }
 
     def setup_bot(self):
@@ -54,6 +60,7 @@ class Bot:
         self.setup_bot()
         self.setup_commands_and_events()
         self.run()
+
 
 if __name__ == "__main__":
     runner = Bot()
