@@ -8,12 +8,9 @@ from emotes.commands import setup_contrbitutor_commands
 from events.commands import setup_event_commands
 from events.events import setup_event_events
 from events.event_operations import load_posted_events
-from shared.constants import CONTRIBUTORS_FILE_PATH, new_proposal_emoji
 from shared.events import setup_shared_events
-from controllers.appearance_manager import *
-from controllers.command_manager import *
-from controllers.data_manager import *
-from controllers.settings import *
+from shared.constants import CONTRIBUTORS_FILE_PATH, new_proposal_emoji
+
 
 class Bot:
     def __init__(self):
@@ -21,10 +18,6 @@ class Bot:
         self.contributors = None
         self.emoji_dicts = None
         self.data = None
-
-        self.__command_manager = CommandManager()
-        self.__data_manager = DataManager()
-        self.__settings = Settings()
 
     def load_data(self):
         with open(CONTRIBUTORS_FILE_PATH, "r") as json_file:
@@ -48,7 +41,7 @@ class Bot:
     def setup_commands_and_events(self):
         setup_gov_commands(self.bot)
         setup_contrbitutor_commands(self.bot, self.contributors, self.emoji_dicts)
-        setup_shared_events(self.bot, self.__command_manager, self.__data_manager, self.__settings, self.data, proposals, new_proposal_emoji)
+        setup_shared_events(self.bot, self.data, proposals, new_proposal_emoji)
         self.bot.posted_events = load_posted_events()
         setup_event_commands(self.bot)
         setup_event_events(self.bot)
