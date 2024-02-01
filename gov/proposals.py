@@ -22,6 +22,7 @@ they are published to snapshot through a node.js script.
 Refer to snapshot for more information on how the snapshot is created.
 """
 
+
 # prepare the draft by setting the type, channel ID, and title based on the draft type
 async def prepare_draft(draft: Dict[str, Any]) -> Tuple[str, str, str]:
     """
@@ -74,7 +75,9 @@ async def publish_draft(draft: Dict[str, Any], bot: Bot, guild_id: int) -> None:
         bot.get_guild(guild_id).channels, name=channel_name
     )
     if not forum_channel:
-        logger.error(f"Error: Unable to publish draft, Forum Channel not found. Please verify a channel exists with the name {channel_name} and it aligns with shared/constants.py")
+        logger.error(
+            f"Error: Unable to publish draft, Forum Channel not found. Please verify a channel exists with the name {channel_name} and it aligns with shared/constants.py"
+        )
         return
 
     # Store the content in a variable

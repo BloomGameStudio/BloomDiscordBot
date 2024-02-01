@@ -9,17 +9,18 @@ from events.task_operations import format_and_send_message
 from shared.helpers import get_channel_by_name
 from shared.constants import GENERAL_CHANNEL
 
-#Events/tasks.py is responsible for handling the background tasks associated with Discord events.
+# Events/tasks.py is responsible for handling the background tasks associated with Discord events.
+
 
 @tasks.loop(minutes=60)
 async def check_events(bot: commands.Bot) -> None:
     """
     Check for upcoming events every 60 minutes. If there are any new events, they are posted to Discord.
-    Interested users are identified and event details are formatted in a message and sent to the general channel. 
+    Interested users are identified and event details are formatted in a message and sent to the general channel.
     This is done through format_and_send_message invocation.
 
     The posted events are then saved to a JSON file to prevent duplicate posts.
-    
+
     Parameters:
     bot (commands.Bot): The bot instance.
     """
@@ -36,9 +37,7 @@ async def check_events(bot: commands.Bot) -> None:
         upcoming_events = await fetch_upcoming_events(guild)
 
         if not upcoming_events:
-            logger.info(
-                f"No upcoming events in the next 24 hours for guild {guild}."
-            )
+            logger.info(f"No upcoming events in the next 24 hours for guild {guild}.")
             continue
 
         # Check if it's the initial run or not

@@ -15,6 +15,7 @@ Events such as on_message, on_reaction_add, etc. Events that are shared across m
 are added here.
 """
 
+
 async def process_new_member(member: discord.Member) -> None:
     """
     Sends a welcome message to a new member in the welcome channel.
@@ -37,6 +38,7 @@ async def process_new_member(member: discord.Member) -> None:
         "\n"
         f"Refer to <#{start_here_channel.id}> for more details about the studio!"
     )
+
 
 async def handle_message(
     bot: commands.Bot,
@@ -94,6 +96,7 @@ async def handle_message(
                     logger.warning(f'User not found: {contributor["uid"]}')
     # Process commands
     await bot.process_commands(message)
+
 
 async def handle_reaction(
     bot: commands.Bot,

@@ -7,6 +7,7 @@ events/command_operations.py is responsible for handling the business logic asso
 This includes fetching events, and deleting events.
 """
 
+
 async def list_events_operation(guild: Guild) -> str:
     """
     List all the events in the guild and format the information.
@@ -16,7 +17,7 @@ async def list_events_operation(guild: Guild) -> str:
 
     Returns:
     str: The formatted event information.
-    """ 
+    """
     event_list = guild.scheduled_events
 
     # Extracting event information

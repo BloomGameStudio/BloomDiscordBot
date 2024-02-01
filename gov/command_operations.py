@@ -11,6 +11,7 @@ command_operations.py is responsible for handling the business logic
 associated with different commands such as !publish_draft, and !v / !vote_draft.
 """
 
+
 async def handle_votedraft(
     ctx: commands.Context, proposals: List[Dict[str, str]], new_proposal_emoji: str
 ) -> None:
@@ -24,7 +25,9 @@ async def handle_votedraft(
     """
     try:
         # Get the channel with the name 'governance' in the server
-        governance_talk_channel = get_channel_by_name(ctx.guild, GOVERNANCE_TALK_CHANNEL)
+        governance_talk_channel = get_channel_by_name(
+            ctx.guild, GOVERNANCE_TALK_CHANNEL
+        )
     except ValueError as e:
         await ctx.send(str(e))
         logger.error(f"Error drafting a vote: {str(e)}")

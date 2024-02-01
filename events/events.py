@@ -22,6 +22,7 @@ def setup_event_events(bot: commands.Bot) -> None:
     Parameters:
     bot (commands.Bot): The bot instance.
     """
+
     @bot.event
     async def on_ready():
         """
@@ -38,7 +39,7 @@ def setup_event_events(bot: commands.Bot) -> None:
         """
         Handles the on_scheduled_event_create event. This event is triggered when a new scheduled event is created.
         notify_new_event is then invoked to notify the guild about the new event after a delay.
-        
+
         Parameters:
         event (ScheduledEvent): The event that was created.
         """

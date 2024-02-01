@@ -88,7 +88,6 @@ def get_guild_scheduled_event_users(
     before: Optional[str] = None,
     after: Optional[str] = None,
 ) -> Optional[List[Any]]:
-    
     """
     Get the users interested in a scheduled event.
 

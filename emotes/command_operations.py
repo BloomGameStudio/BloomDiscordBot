@@ -10,6 +10,7 @@ emotes/command_operations.py is responsible for handling the business logic asso
 This includes adding, removing, listing, and direct messaging contributors.
 """
 
+
 async def add_contributor_to_list(
     ctx: discord.ext.commands.Context,
     uid: str,
@@ -22,7 +23,7 @@ async def add_contributor_to_list(
     Creates a new contributor object and adds it to the list of contributors.
     Adds the emoji ID to the emoji ID mapping.
     update_json_file is called to update the JSON file with the new contributor and emoji ID mapping.
-   
+
     Parameters:
     ctx (Context): The context of the command invocation.
     uid (str): The UID of the contributor to add.
@@ -56,7 +57,7 @@ async def send_dm_once(
     A contributor can be mentioned via a react, or in a message itself.
     To mention a contributor you must use their emoji.
     The contributor needs to exist in emotes/contributors.json for the contributor to be mentioned.
-    
+
     Parameters:
     bot (discord.Client): The bot instance.
     contributor (Dict[str, str]): The contributor to send a DM to.

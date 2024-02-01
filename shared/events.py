@@ -13,6 +13,7 @@ modules. For example, the on_message event is used by the gov and emotes modules
 
 """
 
+
 def setup_shared_events(
     bot: commands.Bot,
     data: Dict[
@@ -33,6 +34,7 @@ def setup_shared_events(
     Returns:
     None
     """
+
     @bot.event
     async def on_message(message: Message) -> None:
         """
