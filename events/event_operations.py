@@ -1,6 +1,5 @@
 import json
 import requests
-import logging
 import asyncio
 import os
 from shared.constants import POSTED_EVENTS_FILE_PATH, GENERAL_CHANNEL
@@ -9,12 +8,12 @@ from datetime import datetime, timezone
 from typing import List, Optional, Any
 from discord import ScheduledEvent
 from discord.ext.commands import Bot
-
+from logger.logger import logger
 
 # Load the stored events from the JSON file
 def load_posted_events() -> List[int]:
     try:
-        logging.info(f"Loading events from: {POSTED_EVENTS_FILE_PATH}")
+        logger.info(f"Loading events from: {POSTED_EVENTS_FILE_PATH}")
         with open(POSTED_EVENTS_FILE_PATH, "r") as file:
             return json.load(file)
     except FileNotFoundError:
@@ -24,13 +23,13 @@ def load_posted_events() -> List[int]:
 # Save the posted events to the JSON file
 def save_posted_events(posted_events: List[int]) -> None:
     try:
-        logging.info(f"Saving events to: {POSTED_EVENTS_FILE_PATH}")
+        logger.info(f"Saving events to: {POSTED_EVENTS_FILE_PATH}")
 
         with open(POSTED_EVENTS_FILE_PATH, "w") as file:
             json.dump(posted_events, file)
 
     except Exception as e:
-        logging.error(f"Error saving posted events: {e}")
+        logger.error(f"Error saving posted events: {e}")
 
 
 # Format the event message and send it to the channel
@@ -99,9 +98,9 @@ async def notify_new_event(bot: Bot, event: ScheduledEvent, guild_id: int) -> No
             await channel.send(f"🌺 **__Newly Created Event__** 🌺 \n{formatted_event}")
 
         else:
-            logging.info(f"Event channel not found for guild.")
+            logger.info(f"Event channel not found for guild.")
     else:
-        logging.info(f"Guild not found")
+        logger.info(f"Guild not found")
 
 
 # Fetch all upcoming events within the next 24 hours this is called by tasks.py

@@ -1,4 +1,4 @@
-import logging
+from logger.logger import logger
 from discord import ScheduledEvent
 from discord.ext import commands
 from events.event_operations import notify_new_event
@@ -16,12 +16,12 @@ setup_event_events is used so that all event events can be loaded at once. inste
 def setup_event_events(bot: commands.Bot) -> None:
     @bot.event
     async def on_ready():
-        logging.info(f"Logged in as {bot.user.name} ({bot.user.id})")
+        logger.info(f"Logged in as {bot.user.name} ({bot.user.id})")
         await bot.change_presence()
-        logging.info(f"Starting background task for all guilds")
+        logger.info(f"Starting background task for all guilds")
         check_events.start(bot)
 
     @bot.event
     async def on_scheduled_event_create(event: ScheduledEvent) -> None:
-        logging.info(f"New scheduled event created: {event.name}")
+        logger.info(f"New scheduled event created: {event.name}")
         await notify_new_event(bot, event, event.guild_id)

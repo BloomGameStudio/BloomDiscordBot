@@ -1,5 +1,4 @@
 import discord
-import logging
 import textwrap
 from typing import List, Dict, Union
 from discord.ext import commands
@@ -8,6 +7,7 @@ from discord.utils import get
 from emotes.command_operations import send_dm_once
 from .constants import MENU_COPY, DISCORD_ROLE_TRIGGERS, RULES_MESSAGE_ID
 from .helpers import get_channel_by_name
+from logger.logger import logger
 
 
 async def process_new_member(member: discord.Member) -> None:
@@ -37,7 +37,7 @@ async def handle_message(
     server_name = message.guild.name
     server_data = data["servers"].get(server_name)
     if server_data is None:
-        logging.warning(f"No data found for server: {server_name}")
+        logger.warning(f"No data found for server: {server_name}")
         return
 
     if message.content.startswith("!help"):
@@ -56,14 +56,14 @@ async def handle_message(
             (c for c in contributors if c["uid"] == contributor_uid), None
         )
         if emoji_id in message.content:
-            logging.info("Emoji Found in message! %s", emoji_id)
+            logger.info("Emoji Found in message! %s", emoji_id)
             if contributor:
                 try:
-                    logging.info(f'Messaging the user, {contributor["uid"]}')
+                    logger.info(f'Messaging the user, {contributor["uid"]}')
                     message_link = message.jump_url
                     await send_dm_once(bot, contributor, message_link)
                 except discord.errors.NotFound:
-                    logging.warning(f'User not found: {contributor["uid"]}')
+                    logger.warning(f'User not found: {contributor["uid"]}')
     await bot.process_commands(message)
 
 
@@ -78,7 +78,7 @@ async def handle_reaction(
     server_name = reaction.message.guild.name
     server_data = data["servers"].get(server_name)
     if server_data is None:
-        logging.warning(f"No data found for server: {server_name}")
+        logger.warning(f"No data found for server: {server_name}")
         return
     if user == bot.user:
         return
@@ -101,7 +101,7 @@ async def handle_reaction(
         )
         if contributor:
             message_link = reaction.message.jump_url
-            logging.info("Emoji react found, DMing contributor")
+            logger.info("Emoji react found, DMing contributor")
             await send_dm_once(bot, contributor, message_link)
 
     def check(m):
@@ -270,6 +270,6 @@ async def process_reaction_add(bot, payload):
                     await general_channel.send(response)
 
                     if role is None:
-                        logging.info(f"Role {role_info.get('role')} not found")
+                        logger.info(f"Role {role_info.get('role')} not found")
                         return
                     await member.add_roles(role)

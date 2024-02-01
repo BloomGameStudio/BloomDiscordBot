@@ -1,4 +1,4 @@
-import logging
+from logger.logger import logger
 from typing import Dict, Union, List
 from discord.ext import commands
 from discord import Message, Reaction, User
@@ -30,7 +30,7 @@ def setup_shared_events(
 
     @bot.event
     async def on_member_join(member):
-        logging.info(f"New member: {member.name} has joined: {member.guild.name}")
+        logger.info(f"New member: {member.name} has joined: {member.guild.name}")
         await process_new_member(member)
 
     @bot.event
