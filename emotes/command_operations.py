@@ -5,6 +5,10 @@ from shared.constants import CONTRIBUTORS_FILE_PATH
 from shared.helpers import get_guild_member_check_role
 from typing import List, Dict, Any
 
+"""
+emotes/command_operations.py is responsible for handling the business logic associated with emote commands
+This includes adding, removing, listing, and direct messaging contributors.
+"""
 
 async def add_contributor_to_list(
     ctx: discord.ext.commands.Context,
@@ -13,6 +17,20 @@ async def add_contributor_to_list(
     contributors: List[Dict[str, str]],
     emoji_id_mapping: Dict[str, str],
 ) -> Dict[str, str]:
+    """
+    Add a contributor to the list of contributors.
+    Creates a new contributor object and adds it to the list of contributors.
+    Adds the emoji ID to the emoji ID mapping.
+    update_json_file is called to update the JSON file with the new contributor and emoji ID mapping.
+   
+    Parameters:
+    ctx (Context): The context of the command invocation.
+    uid (str): The UID of the contributor to add.
+    emoji_id (str): The emoji ID of the contributor to add.
+    contributors (List[Dict[str, str]]): The list of contributors to add to.
+    emoji_id_mapping (Dict[str, str]): The emoji ID mapping to add to.
+
+    """
     # Get the user's username
     user = await ctx.guild.fetch_member(int(uid))
     note = user.name if user else "User not found"
@@ -33,6 +51,18 @@ async def add_contributor_to_list(
 async def send_dm_once(
     bot: discord.Client, contributor: Dict[str, str], message_link: str
 ) -> None:
+    """
+    Sends a direct message to a contributor if they are mentioned in a message.
+    A contributor can be mentioned via a react, or in a message itself.
+    To mention a contributor you must use their emoji.
+    The contributor needs to exist in emotes/contributors.json for the contributor to be mentioned.
+    
+    Parameters:
+    bot (discord.Client): The bot instance.
+    contributor (Dict[str, str]): The contributor to send a DM to.
+    message_link (str): The link to the message that mentioned the contributor.
+    """
+
     user = await bot.fetch_user(int(contributor["uid"]))
     if user:
         dm_message = f"Hello {user.name}! You have been mentioned in this message! {message_link}"
@@ -40,6 +70,13 @@ async def send_dm_once(
 
 
 def update_json_file(server_name: str, server_data: Dict[str, Any]) -> None:
+    """
+    Update emotes/contributors.json with the new contributor and emoji ID mapping.
+
+    Parameters:
+    server_name (str): The name of the server to update.
+    server_data (Dict[str, Any]): The data to update the server with.
+    """
     # Read the existing data
     with open(CONTRIBUTORS_FILE_PATH, "r") as json_file:
         data = json.load(json_file)
@@ -57,6 +94,14 @@ async def list_contributors(
     contributors: List[Dict[str, str]],
     emoji_id_mapping: Dict[str, Dict[str, str]],
 ) -> None:
+    """
+    List all contributors in a specific guild/s.
+
+    Parameters:
+    ctx (Context): The context in which the command was invoked.
+    contributors (List[Dict[str, str]]): The contributors to list.
+    emoji_id_mapping (Dict[str, Dict[str, str]]): The emoji ID mapping to use.
+    """
     server_name = ctx.guild.name
     emoji_dict = emoji_id_mapping.get(server_name)
     if emoji_dict is None:
@@ -75,6 +120,17 @@ async def remove_contributor(
     emoji_dicts: Dict[str, Dict[str, str]],
     user_mention: str,
 ) -> None:
+    """
+    Remove a contributors details from the list of contributors.
+    The user invoking this command needs the authorization to do so.
+
+    Parameters:
+    ctx (Context): The context in which the command was invoked.
+    contributors (Dict[str, List[Dict[str, str]]]): The contributors to remove from.
+    emoji_dicts (Dict[str, Dict[str, str]]): The emoji ID mapping to use.
+    user_mention (str): The mention of the user to remove.
+
+    """
     permitted = await get_guild_member_check_role(ctx)
     if not permitted:
         return
@@ -129,6 +185,17 @@ async def add_contributor(
     emoji_dicts: Dict[str, Dict[str, str]],
     bot: discord.client,
 ) -> None:
+    """
+    Add a contributor to the list of contributors if the user invoking the command has the authorization to do so.
+    The contributor is added by either tagging them with their emoji, or reacting to the message with their emoji.
+
+    Parameters:
+    ctx (Context): The context in which the command was invoked.
+    contributors (Dict[str, List[Dict[str, str]]]): The contributors dict to add to.
+    emoji_dicts (Dict[str, Dict[str, str]]): The emoji ID mapping to use.
+    bot (discord.client): The bot instance.
+
+    """
     permitted = await get_guild_member_check_role(ctx)
     if not permitted:
         return
