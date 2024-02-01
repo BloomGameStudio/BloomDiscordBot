@@ -1,15 +1,14 @@
-import discord
+"""
+command_operations.py is responsible for handling the business logic
+associated with different commands such as !publish_draft, and !v / !vote_draft.
+"""
+
 from discord.ext import commands
 from typing import List, Dict
 from .proposals import publish_draft
 from shared.constants import GOVERNANCE_TALK_CHANNEL
 from shared.helpers import get_channel_by_name
 from logger.logger import logger
-
-"""
-command_operations.py is responsible for handling the business logic
-associated with different commands such as !publish_draft, and !v / !vote_draft.
-"""
 
 
 async def handle_votedraft(
@@ -29,7 +28,7 @@ async def handle_votedraft(
             ctx.guild, GOVERNANCE_TALK_CHANNEL
         )
     except ValueError as e:
-        await ctx.send(str(e))
+        await ctx.send(f"Cannot find governance channel in this server.")
         logger.error(f"Error drafting a vote: {str(e)}")
         return
 

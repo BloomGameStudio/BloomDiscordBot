@@ -1,3 +1,9 @@
+"""
+shared/event_operations.py is responsible for handling the business logic associated with different
+Events such as on_message, on_reaction_add, etc. Events that are shared across multiple domains of interest
+are added here.
+"""
+
 import discord
 import textwrap
 from typing import List, Dict, Union
@@ -9,12 +15,6 @@ from .constants import MENU_COPY, DISCORD_ROLE_TRIGGERS, RULES_MESSAGE_ID
 from .helpers import get_channel_by_name
 from logger.logger import logger
 
-"""
-shared/event_operations.py is responsible for handling the business logic associated with different
-Events such as on_message, on_reaction_add, etc. Events that are shared across multiple domains of interest
-are added here.
-"""
-
 
 async def process_new_member(member: discord.Member) -> None:
     """
@@ -23,21 +23,24 @@ async def process_new_member(member: discord.Member) -> None:
     Args:
         member (discord.Member): The new member who joined the server.
     """
-    # Get the welcome channel
-    welcome_channel = get(member.guild.channels, name="welcome")
-    collab_land_join_channel = get(member.guild.channels, name="collabland-join")
-    start_here_channel = get(member.guild.channels, name="start-here")
+    try:
+        # Get the welcome channel
+        welcome_channel = get_channel_by_name(member.guild, "welcome")
+        collab_land_join_channel = get_channel_by_name(member.guild, "collabland-join")
+        start_here_channel = get_channel_by_name(member.guild, "start-here")
 
-    # Send the welcome message
-    await welcome_channel.send(
-        f" 🌺 Welcome {member.mention}  to {member.guild.name}! We are pleased to have you here 🌺\n"
-        "\n"
-        "Take a moment to read and agree to the rules before you get started!"
-        "\n"
-        f"If you are an existing aXP, bXP, or cXP Hodler, please head over to <#{collab_land_join_channel.id}> to verify your wallet in order to receive your respective role! \n"
-        "\n"
-        f"Refer to <#{start_here_channel.id}> for more details about the studio!"
-    )
+        # Send the welcome message
+        await welcome_channel.send(
+            f" 🌺 Welcome {member.mention}  to {member.guild.name}! We are pleased to have you here 🌺\n"
+            "\n"
+            "Take a moment to read and agree to the rules before you get started!"
+            "\n"
+            f"If you are an existing aXP, bXP, or cXP Hodler, please head over to <#{collab_land_join_channel.id}> to verify your wallet in order to receive your respective role! \n"
+            "\n"
+            f"Refer to <#{start_here_channel.id}> for more details about the studio!"
+        )
+    except ValueError as e:
+        logger.error(f"Error sending welcome message: {str(e)}")
 
 
 async def handle_message(
@@ -239,10 +242,12 @@ async def handle_reaction(
                     {edit_proposal["background"]}
 
                     ** 👍 Yes**
+
                     ** 👎 Reassess**
+
                     ** ❌ Abstain**
 
-                    If you wish to publish your draft proposal, please use command ``$publish_draft``.
+                    If you wish to publish your draft proposal, please use command ``!publish_draft``.
                     """
                     ).strip()
 
@@ -301,7 +306,7 @@ async def handle_reaction(
         ** ❌ Abstain**
 
     
-        If you wish to publish your draft proposal, please use command ``$publish_draft``
+        If you wish to publish your draft proposal, please use command ``!publish_draft``
         """
 
         await channel.send(textwrap.dedent(msg))

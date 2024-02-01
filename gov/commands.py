@@ -1,14 +1,14 @@
-from discord.ext import commands
-from .command_operations import handle_votedraft, handle_publishdraft
-from .proposals import proposals
-from shared.constants import new_proposal_emoji
-
 """
 When the bot is initiated the command list below will be loaded so that they can be called.
 The function invocations related to the commands are located in gov/command_operations.py
 
 setup_gov_commands is used so that all event commands can be loaded at once. instead of individually.
 """
+
+from discord.ext import commands
+from .command_operations import handle_votedraft, handle_publishdraft
+from .proposals import proposals
+from shared.constants import new_proposal_emoji
 
 
 def setup_gov_commands(bot: commands.Bot) -> None:

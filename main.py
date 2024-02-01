@@ -1,16 +1,3 @@
-import discord
-import os
-import json
-from discord.ext import commands
-from gov.commands import setup_gov_commands
-from gov.proposals import proposals
-from emotes.commands import setup_contrbitutor_commands
-from events.commands import setup_event_commands
-from events.events import setup_event_events
-from events.event_operations import load_posted_events
-from shared.constants import CONTRIBUTORS_FILE_PATH, new_proposal_emoji
-from shared.events import setup_shared_events
-
 """
 The Bot class contains the bot's functionality. It has methods to load data from a JSON file, 
 set up the bot with the necessary intents, set up commands and events, and runs the bot.
@@ -27,8 +14,21 @@ Refer to the specific files for more information.
 
 """
 
-class Bot:
+import discord
+import os
+import json
+from discord.ext import commands
+from gov.commands import setup_gov_commands
+from gov.proposals import proposals
+from emotes.commands import setup_contrbitutor_commands
+from events.commands import setup_event_commands
+from events.events import setup_event_events
+from events.event_operations import load_posted_events
+from shared.constants import CONTRIBUTORS_FILE_PATH, new_proposal_emoji
+from shared.events import setup_shared_events
 
+
+class Bot:
     def main(self):
         # Load the contributor and dictionary data from the JSON file emotes/contributors.json
         with open(CONTRIBUTORS_FILE_PATH, "r") as json_file:
@@ -55,7 +55,7 @@ class Bot:
         intents.members = True
         self.bot = commands.Bot(command_prefix="!", intents=intents)
 
-        # Setup commands and events for the bot 
+        # Setup commands and events for the bot
         setup_gov_commands(self.bot)
         setup_contrbitutor_commands(self.bot, self.contributors, self.emoji_dicts)
         setup_shared_events(self.bot, self.data, proposals, new_proposal_emoji)
@@ -65,6 +65,7 @@ class Bot:
 
         # Run the bot
         self.bot.run(os.getenv("DISCORD_BOT_TOKEN"))
+
 
 if __name__ == "__main__":
     # Create an instance of the bot and run main func

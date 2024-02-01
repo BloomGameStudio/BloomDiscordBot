@@ -1,11 +1,11 @@
-from discord import Guild
-from discord.ext.commands import Context
-from shared.helpers import get_guild_member_check_role
-
 """
 events/command_operations.py is responsible for handling the business logic associated with event commands
 This includes fetching events, and deleting events.
 """
+
+from discord import Guild
+from discord.ext.commands import Context
+from shared.helpers import get_guild_member_check_role
 
 
 async def list_events_operation(guild: Guild) -> str:

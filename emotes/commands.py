@@ -1,3 +1,10 @@
+"""
+When the bot is initiated the command list below will be loaded so that they can be invoked.
+The function calls related to the commands are located in command_operations.py
+
+setup_contributor_commands is used so that all event commands can be loaded at once. instead of individually.
+"""
+
 from typing import List, Dict
 from discord.ext import commands
 from discord.ext.commands import Context
@@ -6,13 +13,6 @@ from emotes.command_operations import (
     remove_contributor,
     add_contributor,
 )
-
-"""
-When the bot is initiated the command list below will be loaded so that they can be invoked.
-The function calls related to the commands are located in command_operations.py
-
-setup_contributor_commands is used so that all event commands can be loaded at once. instead of individually.
-"""
 
 
 def setup_contrbitutor_commands(

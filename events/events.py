@@ -1,9 +1,3 @@
-from logger.logger import logger
-from discord import ScheduledEvent
-from discord.ext import commands
-from events.event_operations import notify_new_event
-from events.tasks import check_events
-
 """
 Setup event events for the bot.
 
@@ -13,6 +7,13 @@ This task runs every hour to check for upcoming events within the next 24 hours.
 The bot will listen for the on_scheduled_event_create event and then invoke notify_new_event in event_operations.py
 setup_event_events is used so that all event events can be loaded at once. instead of individually.
 """
+
+
+from logger.logger import logger
+from discord import ScheduledEvent
+from discord.ext import commands
+from events.event_operations import notify_new_event
+from events.tasks import check_events
 
 
 def setup_event_events(bot: commands.Bot) -> None:

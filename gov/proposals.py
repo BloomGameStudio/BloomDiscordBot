@@ -1,3 +1,13 @@
+"""
+gov/proposals.py is responsible for handling the publishing of proposals.
+
+Proposals are tracked through a timer, and if the posted proposal passes the sniff test (quorum of yes reacts)
+they are published to snapshot through a node.js script.
+
+Refer to snapshot for more information on how the snapshot is created.
+"""
+
+
 import asyncio
 import subprocess
 import textwrap
@@ -12,15 +22,6 @@ from logger.logger import logger
 proposals: List[Dict[str, Any]] = []
 
 ongoing_votes: Dict[int, Dict[str, Any]] = {}
-
-"""
-gov/proposals.py is responsible for handling the publishing of proposals.
-
-Proposals are tracked through a timer, and if the posted proposal passes the sniff test (quorum of yes reacts)
-they are published to snapshot through a node.js script.
-
-Refer to snapshot for more information on how the snapshot is created.
-"""
 
 
 # prepare the draft by setting the type, channel ID, and title based on the draft type

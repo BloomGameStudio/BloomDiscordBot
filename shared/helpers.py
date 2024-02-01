@@ -1,10 +1,10 @@
-import discord
-
 """
 shared/helpers.py is responsible for setting up helper functions for the bot.
 helper functions may be functions that contain functionality that is used by multiple
 modules.
 """
+
+import discord
 
 
 def get_channel_by_name(guild: discord.Guild, channel_name: str) -> discord.TextChannel:

@@ -1,13 +1,13 @@
-from discord.ext import commands
-from discord.ext.commands import Context
-from events.command_operations import list_events_operation, delete_event_operation
-
 """
 When the bot is initiated the command list below will be loaded so that they can be invoked.
 The function calls related to the commands are located in command_operations.py
 
 setup_event_commands is used so that all event commands can be loaded at once. instead of individually.
 """
+
+from discord.ext import commands
+from discord.ext.commands import Context
+from events.command_operations import list_events_operation, delete_event_operation
 
 
 def setup_event_commands(bot: commands.Bot) -> None:

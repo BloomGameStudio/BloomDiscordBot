@@ -1,3 +1,9 @@
+"""
+events/event_operations.py is responsible for handling the business logic associated with events
+This includes fetching events, loading posted events, saving posted events, notifying guild of new events. 
+"""
+
+
 import json
 import requests
 import asyncio
@@ -9,11 +15,6 @@ from typing import List, Optional, Any
 from discord import ScheduledEvent
 from discord.ext.commands import Bot
 from logger.logger import logger
-
-"""
-events/event_operations.py is responsible for handling the business logic associated with events
-This includes fetching events, loading posted events, saving posted events, notifying guild of new events. 
-"""
 
 
 # Load the stored events from the JSON file

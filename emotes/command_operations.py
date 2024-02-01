@@ -1,14 +1,14 @@
+"""
+emotes/command_operations.py is responsible for handling the business logic associated with emote commands
+This includes adding, removing, listing, and direct messaging contributors.
+"""
+
 import asyncio
 import json
 import discord
 from shared.constants import CONTRIBUTORS_FILE_PATH
 from shared.helpers import get_guild_member_check_role
 from typing import List, Dict, Any
-
-"""
-emotes/command_operations.py is responsible for handling the business logic associated with emote commands
-This includes adding, removing, listing, and direct messaging contributors.
-"""
 
 
 async def add_contributor_to_list(

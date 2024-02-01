@@ -1,11 +1,12 @@
-from discord import ScheduledEvent, TextChannel
-from typing import List, Dict, Union
-
 """
 When the bot is initiated the on_ready event will be loaded which starts the check_events task.
 This task runs every hour to check for upcoming events within the next 24 hours.
 format_and_send_message is used to format the message and send it to the general channel.
 """
+
+
+from discord import ScheduledEvent, TextChannel
+from typing import List, Dict, Union
 
 
 async def format_and_send_message(
