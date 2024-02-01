@@ -11,9 +11,27 @@ proposals: List[Dict[str, Any]] = []
 
 ongoing_votes: Dict[int, Dict[str, Any]] = {}
 
+"""
+gov/proposals.py is responsible for handling the publishing of proposals.
+
+Proposals are tracked through a timer, and if the posted proposal passes the sniff test (quorum of yes reacts)
+they are published to snapshot through a node.js script.
+
+Refer to snapshot for more information on how the snapshot is created.
+"""
 
 # prepare the draft by setting the type, channel ID, and title based on the draft type
 async def prepare_draft(draft: Dict[str, Any]) -> Tuple[str, str, str]:
+    """
+    Prepare the draft by setting the type, channel ID, and title based on the draft type.
+    Increment the current ID and update the config file.
+
+    Parameters:
+    draft (Dict[str, Any]): The draft to be prepared.
+
+    Returns:
+    Tuple[str, str, str]: The ID type, channel name, and title of the draft.
+    """
     draft_type = draft["type"].lower()
     if draft_type not in [BUDGET_ID_TYPE, GOVERNANCE_ID_TYPE]:
         raise ValueError(f"Invalid draft type: {draft_type}")
@@ -40,6 +58,14 @@ async def prepare_draft(draft: Dict[str, Any]) -> Tuple[str, str, str]:
 
 # publish the draft by creating a thread with the prepared content and starting a vote timer
 async def publish_draft(draft: Dict[str, Any], bot: Bot, guild_id: int) -> None:
+    """
+    Publish the draft by creating a thread with the prepared content and starting a vote timer.
+
+    Parameters:
+    draft (Dict[str, Any]): The draft to be published.
+    bot (Bot): The bot instance.
+    guild_id (int): The ID of the guild where the draft will be published.
+    """
     id_type, channel_name, title = await prepare_draft(draft)
 
     forum_channel = discord.utils.get(
@@ -92,6 +118,19 @@ async def vote_timer(
     title: str,
     draft: Dict[str, Any],
 ) -> None:
+    """
+    NOTE: This should be changed as a long sleep time is unideal, IE if the bot is restarted while sleeping.
+
+    Start a timer for the vote. After 48 hours, the vote is concluded and the result is posted.
+
+    Parameters:
+    thread_id (int): The ID of the thread where the vote is taking place.
+    bot (Bot): The bot instance.
+    guild_id (int): The ID of the guild where the vote is taking place.
+    channel_name (str): The name of the channel where the vote is taking place.
+    title (str): The title of the vote.
+    draft (Dict[str, Any]): The draft that is being voted on.
+    """
     # Sleep until the vote ends
     await asyncio.sleep(48 * 3600)
 

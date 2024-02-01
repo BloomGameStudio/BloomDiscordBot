@@ -4,10 +4,22 @@ from typing import List, Dict
 from .proposals import publish_draft
 from shared.constants import GOVERNANCE_TALK_CHANNEL
 
+"""
+command_operations.py is responsible for handling the business logic
+associated with different commands such as !publish_draft, and !v / !vote_draft.
+"""
 
 async def handle_votedraft(
     ctx: commands.Context, proposals: List[Dict[str, str]], new_proposal_emoji: str
 ) -> None:
+    """
+    Handles the vote draft command. This command allows users to draft a proposal.
+
+    Parameters:
+    ctx (commands.Context): The context in which the command was called.
+    proposals (List[Dict[str, str]]): The list of proposals.
+    new_proposal_emoji (str): The emoji for new proposals.
+    """
     # Get the channel with the name 'governance-talk' in the server
     governance_talk_channel = discord.utils.get(
         ctx.guild.channels, name=GOVERNANCE_TALK_CHANNEL
@@ -40,6 +52,15 @@ async def handle_publishdraft(
     proposals: List[Dict[str, str]],
     bot: commands.Bot,
 ) -> None:
+    """
+    Handle the publish draft command. This command checks if a draft exists before invoking publish_draft.
+    proposals are removed from the list of proposals before they are published because of the 48 hour timer.
+    Parameters:
+    ctx (commands.Context): The context in which the command was called.
+    draft_name (str): The name of the draft to be published.
+    proposals (List[Dict[str, str]]): The list of proposals.
+    bot (commands.Bot): The bot instance.
+    """
     draft_to_publish = next(
         (item for item in proposals if item["name"].strip() == draft_name.strip()),
         None,
