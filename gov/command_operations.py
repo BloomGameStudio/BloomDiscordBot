@@ -3,6 +3,8 @@ from discord.ext import commands
 from typing import List, Dict
 from .proposals import publish_draft
 from shared.constants import GOVERNANCE_TALK_CHANNEL
+from shared.helpers import get_channel_by_name
+from logger.logger import logger
 
 """
 command_operations.py is responsible for handling the business logic
@@ -20,13 +22,12 @@ async def handle_votedraft(
     proposals (List[Dict[str, str]]): The list of proposals.
     new_proposal_emoji (str): The emoji for new proposals.
     """
-    # Get the channel with the name 'governance-talk' in the server
-    governance_talk_channel = discord.utils.get(
-        ctx.guild.channels, name=GOVERNANCE_TALK_CHANNEL
-    )
-
-    if governance_talk_channel is None:
-        await ctx.send("The 'governance' channel could not be found in this server")
+    try:
+        # Get the channel with the name 'governance' in the server
+        governance_talk_channel = get_channel_by_name(ctx.guild, GOVERNANCE_TALK_CHANNEL)
+    except ValueError as e:
+        await ctx.send(str(e))
+        logger.error(f"Error drafting a vote: {str(e)}")
         return
 
     if ctx.channel.id != governance_talk_channel.id:

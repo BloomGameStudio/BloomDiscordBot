@@ -7,6 +7,8 @@ from typing import Dict, Any, List, Tuple
 from discord.ext.commands import Bot
 from shared.constants import GOVERNANCE_BUDGET_CHANNEL, GOVERNANCE_CHANNEL
 from consts.types import GOVERNANCE_ID_TYPE, BUDGET_ID_TYPE
+from logger.logger import logger
+
 proposals: List[Dict[str, Any]] = []
 
 ongoing_votes: Dict[int, Dict[str, Any]] = {}
@@ -72,7 +74,7 @@ async def publish_draft(draft: Dict[str, Any], bot: Bot, guild_id: int) -> None:
         bot.get_guild(guild_id).channels, name=channel_name
     )
     if not forum_channel:
-        print("Error: Channel not found.")
+        logger.error(f"Error: Unable to publish draft, Forum Channel not found. Please verify a channel exists with the name {channel_name} and it aligns with shared/constants.py")
         return
 
     # Store the content in a variable
