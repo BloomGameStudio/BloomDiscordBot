@@ -10,7 +10,7 @@ from .helpers import get_channel_by_name
 from logger.logger import logger
 
 """
-shared/event_operations is responsible for handling the business logic associated with different
+shared/event_operations.py is responsible for handling the business logic associated with different
 Events such as on_message, on_reaction_add, etc. Events that are shared across multiple domains of interest
 are added here.
 """
