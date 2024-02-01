@@ -14,6 +14,7 @@ shared/event_operations.py is responsible for handling the business logic associ
 Events such as on_message, on_reaction_add, etc. Events that are shared across multiple domains of interest
 are added here.
 """
+
 async def process_new_member(member: discord.Member) -> None:
     """
     Sends a welcome message to a new member in the welcome channel.
@@ -45,6 +46,7 @@ async def handle_message(
 ) -> None:
     """
     Handles a new message in the server.
+    If a contributors emoji is found, a DM is sent to the contributor.
 
     Args:
         bot (commands.Bot): The bot instance.
@@ -103,6 +105,8 @@ async def handle_reaction(
 ) -> None:
     """
     Handles a new reaction in the server.
+    If a contributors emoji is found, a DM is sent to the contributor.
+    Proposals are edited if 📝 is used
 
     Args:
         bot (commands.Bot): The bot instance.
@@ -288,7 +292,9 @@ async def handle_reaction(
         {background.content}
 
         ** 👍 Yes**
+
         ** 👎 Reassess**
+
         ** ❌ Abstain**
 
     
@@ -300,7 +306,7 @@ async def handle_reaction(
 
 async def process_reaction_add(bot, payload):
     """
-    Processes a reaction add event.
+    Processes a reaction add event. Allocates roles to members based on their reaction.
 
     Args:
         bot (commands.Bot): The bot instance.
