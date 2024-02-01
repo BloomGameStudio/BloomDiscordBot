@@ -1,10 +1,32 @@
-# Constants used throughout the bot
-# Ensure the servers you run the bot in contain the required channel names
+"""
+This file contains constants used throughout the bot.
+
+GENERAL_CHANNEL, GOVERNANCE_CHANNEL, GOVERNANCE_BUDGET_CHANNEL, GOVERNANCE_TALK_CHANNEL
+are various channels used throughout the bot.
+Example usage is when posting information to Discord such as new events, new governance proposals, when members join, etc.
+
+new_proposal_emoji: The emoji used to inform the bot you wish to draft a new governance proposal.
+This is required when !v or !vote_draft command is invoked.
+
+CONTRIBUTORS_FILE_PATH: File path to the JSON file containing a dictionary of contributors and emoji dictionaries for both Bloom Studio and Bloom Collective.
+
+POSTED_EVENTS_FILE_PATH: File path to the JSON file containing a list of posted events (events that have been posted to Discord). 
+This is used to prevent duplicate events from being posted.
+
+RULES_MESSAGE_ID: The ID of the message that contains the rules/welcome message.
+
+DISCORD_ROLE_TRIGGERS: A list of dictionaries. Each dictionary represents a role that can be assigned to a bloomer.
+Each dictionary contains the following keys:
+- 'name': The name of the role.
+- 'emoji_id': The ID of the emoji associated with the role.
+- 'role': The actual role that will be assigned to the user.
+
+MENU_COPY: A string containing the help menu for the bot. This menu lists all the available commands and their descriptions.
+"""
 GENERAL_CHANNEL = "🌺│home"
 GOVERNANCE_CHANNEL = "improvement-props"
 GOVERNANCE_BUDGET_CHANNEL = "budgetary-props"
 GOVERNANCE_TALK_CHANNEL = "🐬│governance"
-INTRODUCE_YOURSELF_CHANNEL = "🌊│introduce-yourself"
 new_proposal_emoji = "💡"
 CONTRIBUTORS_FILE_PATH = "./emotes/contributors.json"
 POSTED_EVENTS_FILE_PATH = "./events/posted_events.json"
