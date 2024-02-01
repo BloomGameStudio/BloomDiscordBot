@@ -203,7 +203,7 @@ async def handle_reaction(
 
                 await channel.send(
                     "You can edit further by repeating the previous step. If you are finished type 'save' without the single quotes \n"
-                    "If you wish to publish your draft, please use command ``$publish_draft``"
+                    "If you wish to publish your draft, please use command ``!publish_draft``"
                 )
 
                 change_selection = await bot.wait_for("message", check=check)
