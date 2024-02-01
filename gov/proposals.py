@@ -2,11 +2,11 @@ import asyncio
 import subprocess
 import textwrap
 import config.config as cfg
+import discord
 from typing import Dict, Any, List, Tuple
 from discord.ext.commands import Bot
-import discord
 from shared.constants import GOVERNANCE_BUDGET_CHANNEL, GOVERNANCE_CHANNEL
-
+from consts.types import GOVERNANCE_ID_TYPE, BUDGET_ID_TYPE
 proposals: List[Dict[str, Any]] = []
 
 ongoing_votes: Dict[int, Dict[str, Any]] = {}
@@ -15,11 +15,11 @@ ongoing_votes: Dict[int, Dict[str, Any]] = {}
 # prepare the draft by setting the type, channel ID, and title based on the draft type
 async def prepare_draft(draft: Dict[str, Any]) -> Tuple[str, str, str]:
     draft_type = draft["type"].lower()
-    if draft_type not in ["budget", "governance"]:
+    if draft_type not in [BUDGET_ID_TYPE, GOVERNANCE_ID_TYPE]:
         raise ValueError(f"Invalid draft type: {draft_type}")
 
-    if draft_type == "budget":
-        id_type = "budget"
+    if draft_type == BUDGET_ID_TYPE:
+        id_type = BUDGET_ID_TYPE
         channel_name = GOVERNANCE_BUDGET_CHANNEL
         cfg.current_budget_id += 1
         cfg.update_id_values(
@@ -27,7 +27,7 @@ async def prepare_draft(draft: Dict[str, Any]) -> Tuple[str, str, str]:
         )  # Update the governance ID in the config file
         title = f"Bloom Budget Proposal (BBP) #{cfg.current_budget_id}: {draft['name']}"
     else:
-        id_type = "governance"
+        id_type = GOVERNANCE_ID_TYPE
         channel_name = GOVERNANCE_CHANNEL
         cfg.current_governance_id += 1
         cfg.update_id_values(
