@@ -22,7 +22,8 @@ for two servers:
 The bot uses the following Discord Intents : message content, reactions, and members.
 
 The bot has several commands and events, which are set up in the `setup_commands_and_events` method. 
-These commands and events are defined in separate folders, which are imported at the tope of this code.
+These commands and events are defined in separate modules, which are imported at the tope of this code.
+Refer to the specific files for more information.
 
 """
 
