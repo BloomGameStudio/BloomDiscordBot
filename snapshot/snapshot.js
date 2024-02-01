@@ -5,6 +5,7 @@
  * The environment variables ETH_ADDRESS and ETH_PRIVATE_KEY must be set in a .env file.
  * The ETH_ADDRESS is the address of the account that will create the proposal.
  * The ETH_PRIVATE_KEY is the private key of the ETH_ADDRESS account.
+ * wrapper.js is responsible for calling this function with the correct arguments.
  */
 const { ethers } = require('ethers');
 const snapshot = require('@snapshot-labs/snapshot.js');
