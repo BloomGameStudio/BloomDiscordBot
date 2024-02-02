@@ -11,7 +11,7 @@ from discord.ext import commands
 from discord import Message, Reaction, User
 from discord.utils import get
 from emotes.command_operations import send_dm_once
-from consts.constants import MENU_COPY, DISCORD_ROLE_TRIGGERS, RULES_MESSAGE_ID
+from consts.constants import MENU_COPY, DISCORD_ROLE_TRIGGERS, RULES_MESSAGE_ID, GENERAL_CHANNEL
 from consts.types import BUDGET_ID_TYPE, GOVERNANCE_ID_TYPE
 from .helpers import get_channel_by_name
 from logger.logger import logger
@@ -26,7 +26,7 @@ async def process_new_member(member: discord.Member) -> None:
     """
     try:
         # Get the welcome channel
-        welcome_channel = get_channel_by_name(member.guild, "welcome")
+        welcome_channel = get_channel_by_name(member.guild, GENERAL_CHANNEL)
         collab_land_join_channel = get_channel_by_name(member.guild, "collabland-join")
         start_here_channel = get_channel_by_name(member.guild, "start-here")
 
@@ -36,7 +36,7 @@ async def process_new_member(member: discord.Member) -> None:
             "\n"
             "Take a moment to read and agree to the rules before you get started!"
             "\n"
-            f"If you are an existing aXP, bXP, or cXP Hodler, please head over to <#{collab_land_join_channel.id}> to verify your wallet in order to receive your respective role! \n"
+            f"If you are an existing aXP, bXP, or uXP Hodler, please head over to <#{collab_land_join_channel.id}> to verify your wallet in order to receive your respective role! \n"
             "\n"
             f"Refer to <#{start_here_channel.id}> for more details about the studio!"
         )
