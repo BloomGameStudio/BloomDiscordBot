@@ -12,6 +12,7 @@ from discord import Message, Reaction, User
 from discord.utils import get
 from emotes.command_operations import send_dm_once
 from consts.constants import MENU_COPY, DISCORD_ROLE_TRIGGERS, RULES_MESSAGE_ID
+from consts.types import BUDGET_ID_TYPE, GOVERNANCE_ID_TYPE
 from .helpers import get_channel_by_name
 from logger.logger import logger
 
@@ -269,10 +270,13 @@ async def handle_reaction(
         proposal["name"] = name.content
         proposals.append(proposal)
 
+        def is_valid_type(message):
+            return message.content.lower() in [BUDGET_ID_TYPE, GOVERNANCE_ID_TYPE]
+
         await channel.send("Is this budget or governance?")
 
-        type = await bot.wait_for("message", check=check)
-        proposal["type"] = type.content
+        type_message = await bot.wait_for("message", check=is_valid_type)
+        proposal["type"] = type_message.content
 
         await channel.send(f"Great! What is the abstract?")
 
