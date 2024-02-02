@@ -8,7 +8,7 @@ setup_gov_commands is used so that all event commands can be loaded at once. ins
 from discord.ext import commands
 from .command_operations import handle_votedraft, handle_publishdraft
 from .proposals import proposals
-from shared.constants import new_proposal_emoji
+from consts.constants import new_proposal_emoji
 
 
 def setup_gov_commands(bot: commands.Bot) -> None:

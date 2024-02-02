@@ -6,7 +6,7 @@ associated with different commands such as !publish_draft, and !v / !vote_draft.
 from discord.ext import commands
 from typing import List, Dict
 from .proposals import publish_draft
-from shared.constants import GOVERNANCE_TALK_CHANNEL
+from consts.constants import GOVERNANCE_TALK_CHANNEL
 from shared.helpers import get_channel_by_name
 from logger.logger import logger
 

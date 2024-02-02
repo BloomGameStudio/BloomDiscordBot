@@ -8,7 +8,7 @@ import json
 import requests
 import asyncio
 import os
-from shared.constants import POSTED_EVENTS_FILE_PATH, GENERAL_CHANNEL
+from consts.constants import POSTED_EVENTS_FILE_PATH, GENERAL_CHANNEL
 from shared.helpers import get_channel_by_name
 from datetime import datetime, timezone
 from typing import List, Optional, Any

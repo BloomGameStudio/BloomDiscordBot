@@ -24,7 +24,7 @@ from emotes.commands import setup_contrbitutor_commands
 from events.commands import setup_event_commands
 from events.events import setup_event_events
 from events.event_operations import load_posted_events
-from shared.constants import CONTRIBUTORS_FILE_PATH, new_proposal_emoji
+from consts.constants import CONTRIBUTORS_FILE_PATH, new_proposal_emoji
 from shared.events import setup_shared_events
 
 

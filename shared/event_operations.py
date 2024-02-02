@@ -11,7 +11,7 @@ from discord.ext import commands
 from discord import Message, Reaction, User
 from discord.utils import get
 from emotes.command_operations import send_dm_once
-from .constants import MENU_COPY, DISCORD_ROLE_TRIGGERS, RULES_MESSAGE_ID
+from consts.constants import MENU_COPY, DISCORD_ROLE_TRIGGERS, RULES_MESSAGE_ID
 from .helpers import get_channel_by_name
 from logger.logger import logger
 

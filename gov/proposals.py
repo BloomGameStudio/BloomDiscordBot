@@ -15,7 +15,7 @@ import config.config as cfg
 import discord
 from typing import Dict, Any, List, Tuple
 from discord.ext.commands import Bot
-from shared.constants import GOVERNANCE_BUDGET_CHANNEL, GOVERNANCE_CHANNEL
+from consts.constants import GOVERNANCE_BUDGET_CHANNEL, GOVERNANCE_CHANNEL
 from consts.types import GOVERNANCE_ID_TYPE, BUDGET_ID_TYPE
 from logger.logger import logger
 
