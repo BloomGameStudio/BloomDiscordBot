@@ -9,7 +9,7 @@ import discord
 
 def get_channel_by_name(guild: discord.Guild, channel_name: str) -> discord.TextChannel:
     """
-    Soft match a channel name from shared/constants.py to a channel in the guild.
+    Soft match a channel name from consts/constants.py to a channel in the guild.
 
     Parameters:
     guild (discord.Guild): The guild to search for the channel in.
@@ -31,7 +31,7 @@ def get_channel_by_name(guild: discord.Guild, channel_name: str) -> discord.Text
             return channel
     raise ValueError(
         f"No channel containing the name {channel_name} exists in the guild {guild}."
-        "\nPlease check the channel names in shared/constants.py and make sure they match the channel names in your Discord server."
+        "\nPlease check the channel names in consts/constants.py and make sure they match the channel names in your Discord server."
     )
 
 
