@@ -111,9 +111,30 @@ async def publish_draft(draft: Dict[str, Any], bot: Bot, guild_id: int) -> None:
         "abstain_count": 0,
     }
 
+    await react_to_vote(thread_with_message.thread.id, bot, guild_id, channel_name)
+
     await vote_timer(
         thread_with_message.thread.id, bot, guild_id, channel_name, title, draft
     )
+
+
+async def react_to_vote(thread_id, bot, guild_id, channel_name) -> None:
+    logger.info("React to vote invoked!")
+    guild = bot.get_guild(guild_id)
+    if not guild:
+        print(f"Error: Guild with id {guild_id} not found.")
+        return
+
+    # Fetch the channel by name
+    channel = discord.utils.get(guild.channels, name=channel_name)
+    thread = channel.get_thread(thread_id)
+
+    # Fetch the initial message in the thread using the thread ID
+    message = await thread.fetch_message(thread_id)
+
+    await message.add_reaction("👍")
+    await message.add_reaction("👎")
+    await message.add_reaction("❌")
 
 
 async def vote_timer(
