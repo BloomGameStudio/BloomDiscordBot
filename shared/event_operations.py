@@ -11,7 +11,7 @@ from discord.ext import commands
 from discord import Message, Reaction, User
 from discord.utils import get
 from emotes.command_operations import send_dm_once
-from consts.constants import MENU_COPY, DISCORD_ROLE_TRIGGERS, RULES_MESSAGE_ID, GENERAL_CHANNEL
+from consts.constants import MENU_COPY, DISCORD_ROLE_TRIGGERS, RULES_MESSAGE_ID, GENERAL_CHANNEL, YES_VOTE, NO_VOTE, ABSTAIN_VOTE
 from consts.types import BUDGET_ID_TYPE, GOVERNANCE_ID_TYPE
 from .helpers import get_channel_by_name
 from logger.logger import logger
@@ -242,11 +242,11 @@ async def handle_reaction(
                     **__Background__**
                     {edit_proposal["background"]}
 
-                    ** 👍 Yes**
+                    ** {YES_VOTE} Yes**
 
-                    ** 👎 Reassess**
+                    ** {NO_VOTE} Reassess**
 
-                    ** ❌ Abstain**
+                    ** {ABSTAIN_VOTE} Abstain**
 
                     If you wish to publish your draft proposal, please use command ``!publish_draft``.
                     """
@@ -303,11 +303,11 @@ async def handle_reaction(
         **__Background__**
         {background.content}
 
-        ** 👍 Yes**
+        ** {YES_VOTE} Yes**
 
-        ** 👎 Reassess**
+        ** {NO_VOTE} Reassess**
 
-        ** ❌ Abstain**
+        ** {ABSTAIN_VOTE} Abstain**
 
     
         If you wish to publish your draft proposal, please use command ``!publish_draft``

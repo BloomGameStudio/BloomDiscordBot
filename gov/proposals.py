@@ -15,7 +15,7 @@ import config.config as cfg
 import discord
 from typing import Dict, Any, List, Tuple
 from discord.ext.commands import Bot
-from consts.constants import GOVERNANCE_BUDGET_CHANNEL, GOVERNANCE_CHANNEL
+from consts.constants import GOVERNANCE_BUDGET_CHANNEL, GOVERNANCE_CHANNEL, YES_VOTE, NO_VOTE, ABSTAIN_VOTE
 from consts.types import GOVERNANCE_ID_TYPE, BUDGET_ID_TYPE
 from logger.logger import logger
 
@@ -92,11 +92,11 @@ async def publish_draft(draft: Dict[str, Any], bot: Bot, guild_id: int) -> None:
     **__Background__**
     {draft["background"]}
 
-    **👍 Yes**
+    **{YES_VOTE} Yes**
 
-    **👎 Reassess**
+    **{NO_VOTE} Reassess**
 
-    **❌ Abstain**
+    **{ABSTAIN_VOTE} Abstain**
 
     Vote will conclude in 48h from now.
     """
@@ -144,9 +144,9 @@ async def react_to_vote(
     # Fetch the initial message in the thread using the thread ID
     message = await thread.fetch_message(thread_id)
 
-    await message.add_reaction("👍")
-    await message.add_reaction("👎")
-    await message.add_reaction("❌")
+    await message.add_reaction(YES_VOTE)
+    await message.add_reaction(NO_VOTE)
+    await message.add_reaction(ABSTAIN_VOTE)
 
 
 async def vote_timer(
@@ -185,13 +185,12 @@ async def vote_timer(
 
     # Fetch the initial message in the thread using the thread ID
     message = await thread.fetch_message(thread_id)
-
     for reaction in message.reactions:
-        if str(reaction.emoji) == "👍":
+        if str(reaction.emoji) == f"{YES_VOTE}":
             ongoing_votes[message.id]["yes_count"] = reaction.count - 1
-        elif str(reaction.emoji) == "👎":
+        elif str(reaction.emoji) == f"{NO_VOTE}":
             ongoing_votes[message.id]["reassess_count"] = reaction.count - 1
-        elif str(reaction.emoji) == "❌":
+        elif str(reaction.emoji) == f"{ABSTAIN_VOTE}":
             ongoing_votes[message.id]["abstain_count"] = reaction.count - 1
 
     # Check the result and post it
