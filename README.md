@@ -92,6 +92,12 @@ Upon completing a draft, it will automatically be posted so that you can view / 
 
 When you decide to publish the draft, you can request the bot to do this.
 
+If you wish to change the emojis used when drafting & reaching soft consensus prior to publishing to snapshot this can be done in consts/constants.py. Simply replace YES_VOTE / NO_VOTE or ABSTAIN_VOTE with the desired emoji id. For example: 
+
+```
+YES_VOTE = "<:gunta:1199583728129802322>"
+```
+
 # Commands
 
 The following commands can be used to create, edit, and publish drafts.
