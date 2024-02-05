@@ -118,11 +118,23 @@ async def publish_draft(draft: Dict[str, Any], bot: Bot, guild_id: int) -> None:
     )
 
 
-async def react_to_vote(thread_id, bot, guild_id, channel_name) -> None:
-    logger.info("React to vote invoked!")
+async def react_to_vote(
+    thread_id: int, bot: Bot, guild_id: int, channel_name: str
+) -> None:
+    """
+    React to the published draft with the vote emojis.
+    This function is called when a draft is published.
+    This will ensure that when a draft is published, the vote emojis are added to the thread.
+
+    Parameters:
+    thread_id (int): The ID of the thread where the vote is taking place.
+    bot (Bot): The bot instance.
+    guild_id (int): The ID of the guild where the vote is taking place.
+    channel_name (str): The name of the channel where the vote is taking place.
+    """
     guild = bot.get_guild(guild_id)
     if not guild:
-        print(f"Error: Guild with id {guild_id} not found.")
+        logger.error(f"Error: Guild with id {guild_id} not found.")
         return
 
     # Fetch the channel by name
@@ -164,7 +176,7 @@ async def vote_timer(
     # Fetch the guild using the guild_id
     guild = bot.get_guild(guild_id)
     if not guild:
-        print(f"Error: Guild with id {guild_id} not found.")
+        logger.error(f"Error: Guild with id {guild_id} not found.")
         return
 
     # Fetch the channel by name
@@ -176,11 +188,11 @@ async def vote_timer(
 
     for reaction in message.reactions:
         if str(reaction.emoji) == "👍":
-            ongoing_votes[message.id]["yes_count"] = reaction.count
+            ongoing_votes[message.id]["yes_count"] = reaction.count - 1
         elif str(reaction.emoji) == "👎":
-            ongoing_votes[message.id]["reassess_count"] = reaction.count
+            ongoing_votes[message.id]["reassess_count"] = reaction.count - 1
         elif str(reaction.emoji) == "❌":
-            ongoing_votes[message.id]["abstain_count"] = reaction.count
+            ongoing_votes[message.id]["abstain_count"] = reaction.count - 1
 
     # Check the result and post it
     result_message = f"Vote for '{title}' has concluded:\n\n"
