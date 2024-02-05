@@ -43,13 +43,13 @@ Further support for additional servers, and merging of other bot functionality a
 1. To run the latest version from the main branch:
 
 ```
-    docker compose up
+    docker-compose up
 ```
 
 2. To run and build the checked out branch:
 
 ```
-    docker compose up --build
+    docker-compose up --build
 ```
 
 **Docker**
