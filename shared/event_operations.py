@@ -80,9 +80,9 @@ async def handle_message(
     contributors = server_data["contributors"]
     emoji_dicts = server_data["emoji_dictionary"]
 
-    fmt_proposals = ""
-    for proposal in proposals:
-        fmt_proposals += f"📝 {proposal['name']}\n"
+    #fmt_proposals = ""
+    #for proposal in proposals:
+    #    fmt_proposals += f"📝 {proposal['name']}\n"
 
     # Check if any emoji in the message matches an emoji in the emoji dictionary
     for emoji_id, contributor_uid in emoji_dicts.items():

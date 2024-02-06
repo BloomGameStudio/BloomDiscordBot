@@ -13,8 +13,6 @@ class Proposal:
         self.background = background
 
 class ProposalModal(ui.Modal, title="Create/Edit Proposal"):
-    proposal = None
-    channel = None
 
     name = ui.TextInput(
         label='Proposal title:',
@@ -71,53 +69,57 @@ class ProposalModal(ui.Modal, title="Create/Edit Proposal"):
             self.proposal.background = self.background.value
 
         e = Embed()
-        e.title = f"Thank you, proposal has been created/edited."
+        e.title = f"Thank you, proposal has been created/edited. Use the same command again to edit or delete an existing proposal"
         e.description = f"{self.proposal.title}"
-        e.footer.text = 'Use the buttons under this embed to publish this draft or edit it.'
-        await interaction.response.send_message(embed=e, view=ProposalButtonsView(proposals))
+        await interaction.response.send_message(embed=e)
 
     async def on_error(self, interaction: discord.Interaction, error: Exception) -> None:
         await interaction.response.send_message('Oops! Something went wrong.', ephemeral=True)
 
-class ProposalSelect(discord.ui.Select):
-    def __init__(self, proposals, placeholder="Select a proposal to edit"):
-        self.proposals = proposals if proposals is not None else []
-        if not self.proposals:
-            options = [discord.SelectOption(label="No proposals to select", value="No proposals")]
-        else:
-            options = [discord.SelectOption(label=proposal.title, value=proposal.title) for proposal in self.proposals]
-        super().__init__(placeholder=placeholder, options=options)
+class DeleteProposalSelect(discord.ui.Select):
+    def __init__(self, proposals):
+        self.proposals = proposals
+        options = [discord.SelectOption(label=proposal.title, value=proposal.title) for proposal in self.proposals]
+        super().__init__(placeholder="Select a proposal to delete", options=options)
 
-    async def on_select(self, interaction: discord.Interaction, option: discord.SelectOption):
-        # Defer the interaction
-        await interaction.response.defer()
-
+    async def callback(self, interaction: discord.Interaction):
         # Find the selected proposal
         for proposal in self.proposals:
-            if proposal.title == option.value:
+            if proposal.title == self.values[0]:
                 selected_proposal = proposal
                 break
         else:
-            await interaction.followup.send('Proposal not found.')
+            await interaction.response.send_message('Proposal not found.')
             return
 
-        # Create a new ProposalModal with the selected proposal
-        try:
-            modal = ProposalModal(interaction.channel, selected_proposal)
-        except Exception as e:
-            raise e
+        # Remove the selected proposal from the proposals list
+        self.proposals.remove(selected_proposal)
+        await interaction.response.send_message(f'Proposal "{selected_proposal.title}" has been deleted.')
 
-        # Send the modal as a response to the interaction
-        try:
-            await interaction.followup.send_modal(modal)
-        except Exception as e:
-            raise e
-        
+class EditProposalSelect(discord.ui.Select):
+    def __init__(self, proposals):
+        self.proposals = proposals
+        options = [discord.SelectOption(label=proposal.title, value=proposal.title) for proposal in self.proposals]
+        super().__init__(placeholder="Select a proposal to edit", options=options)
+
+    async def callback(self, interaction: discord.Interaction):
+        # Find the selected proposal
+        for proposal in self.proposals:
+            if proposal.title == self.values[0]:
+                selected_proposal = proposal
+                break
+        else:
+            await interaction.response.send_message('Proposal not found.')
+            return
+
+        # Open the ProposalModal with the selected proposal
+        modal = ProposalModal(interaction.channel, selected_proposal)
+        await interaction.response.send_modal(modal)
+                
 class ProposalButtonsView(discord.ui.View):
     def __init__(self, proposals):
         super().__init__()
         self.proposals = proposals
-        self.add_item(ProposalSelect(proposals, placeholder="Select a proposal to delete"))
 
     @discord.ui.button(label='Create', style=discord.ButtonStyle.green)
     async def publish(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -132,22 +134,15 @@ class ProposalButtonsView(discord.ui.View):
             await interaction.response.send_message('No proposals to edit.')
         else:
             self.clear_items()
-            self.add_item(ProposalSelect(self.proposals, placeholder="Select a proposal to edit"))
+            self.add_item(EditProposalSelect(self.proposals))
             await interaction.response.edit_message(view=self)
 
     @discord.ui.button(label='Delete', style=discord.ButtonStyle.red)
     async def delete(self, interaction: discord.Interaction, button: discord.ui.Button):
+        # Check if there are any proposals to delete
         if not self.proposals:
             await interaction.response.send_message('No proposals to delete.')
         else:
-            # Get the selected proposal's title
-            selected_proposal_title = self.children[0].value
-
-            # Remove the selected proposal from the global proposals list
-            proposals[:] = [p for p in proposals if p.title != selected_proposal_title]
-
-            # Clear the items from the view and add the updated ProposalSelect dropdown
             self.clear_items()
-            self.add_item(ProposalSelect(proposals, placeholder="Select a proposal to delete"))
-
+            self.add_item(DeleteProposalSelect(self.proposals))
             await interaction.response.edit_message(view=self)

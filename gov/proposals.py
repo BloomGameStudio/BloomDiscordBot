@@ -19,7 +19,7 @@ from consts.constants import GOVERNANCE_BUDGET_CHANNEL, GOVERNANCE_CHANNEL, YES_
 from consts.types import GOVERNANCE_ID_TYPE, BUDGET_ID_TYPE
 from logger.logger import logger
 
-proposals: List[Dict[str, Any]] = []
+#proposals: List[Dict[str, Any]] = []
 
 ongoing_votes: Dict[int, Dict[str, Any]] = {}
 
