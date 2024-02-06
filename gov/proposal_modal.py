@@ -117,6 +117,7 @@ class ProposalButtonsView(discord.ui.View):
     def __init__(self, proposals):
         super().__init__()
         self.proposals = proposals
+        self.add_item(ProposalSelect(proposals, placeholder="Select a proposal to delete"))
 
     @discord.ui.button(label='Create', style=discord.ButtonStyle.green)
     async def publish(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -131,5 +132,22 @@ class ProposalButtonsView(discord.ui.View):
             await interaction.response.send_message('No proposals to edit.')
         else:
             self.clear_items()
-            self.add_item(ProposalSelect(self.proposals))
+            self.add_item(ProposalSelect(self.proposals, placeholder="Select a proposal to edit"))
+            await interaction.response.edit_message(view=self)
+
+    @discord.ui.button(label='Delete', style=discord.ButtonStyle.red)
+    async def delete(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if not self.proposals:
+            await interaction.response.send_message('No proposals to delete.')
+        else:
+            # Get the selected proposal's title
+            selected_proposal_title = self.children[0].value
+
+            # Remove the selected proposal from the global proposals list
+            proposals[:] = [p for p in proposals if p.title != selected_proposal_title]
+
+            # Clear the items from the view and add the updated ProposalSelect dropdown
+            self.clear_items()
+            self.add_item(ProposalSelect(proposals, placeholder="Select a proposal to delete"))
+
             await interaction.response.edit_message(view=self)
