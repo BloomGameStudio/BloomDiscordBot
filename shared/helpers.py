@@ -6,6 +6,7 @@ modules.
 
 import discord
 import consts.constants as constants 
+from typing import Optional
 
 def get_channel_by_name(guild: discord.Guild, channel_name: str) -> discord.TextChannel:
     """
@@ -39,6 +40,35 @@ def get_channel_by_name(guild: discord.Guild, channel_name: str) -> discord.Text
         f"No channel containing the name {channel_name} or {fallback_channel_name} exists in the guild {guild}."
         "\n Check the channel names in consts/constants.py and make sure they match the channel names in your Discord server."
     )
+
+async def get_forum_channel_by_name(guild: discord.Guild, channel_name: str) -> Optional[discord.ForumChannel]:
+    """
+    Retrieve a ForumChannel in a guild based on its name, with support for a fallback channel name.
+
+    Parameters:
+    - guild (discord.Guild): The guild in which to search for the ForumChannel.
+    - channel_name (str): The name of the ForumChannel to search for.
+
+    Returns:
+    Optional[discord.ForumChannel]: The ForumChannel that matches the channel_name, or its fallback channel name.
+    If no matching ForumChannel is found, None is returned.
+
+    If the preferred ForumChannel name is not found, this function tries to use the fallback mapping
+    to retrieve the ForumChannel with the fallback name.
+    """
+    # First, try to find the preferred forum channel name directly
+    for channel in guild.channels:
+        if isinstance(channel, discord.ForumChannel) and channel.name == channel_name:
+            return channel
+
+    # If the preferred forum channel is not found, try to use the fallback mapping
+    fallback_channel_name = constants.CONSTANT_FALLBACK_MAPPING.get(channel_name)
+    if fallback_channel_name:  # If a fallback name is defined for the given channel_name
+        for channel in guild.channels:
+            if isinstance(channel, discord.ForumChannel) and channel.name == fallback_channel_name:
+                return channel
+
+    return None  # Return None if neither the channel_name nor the fallback mapping is found
 
 async def get_guild_member_check_role(ctx: discord.ext.commands.Context) -> bool:
     """
