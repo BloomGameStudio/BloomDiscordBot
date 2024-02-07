@@ -52,8 +52,6 @@ CONSTANT_FALLBACK_MAPPING = {
 }
 
 new_proposal_emoji = "💡"
-CONTRIBUTORS_FILE_PATH = "./emotes/contributors.json"
-POSTED_EVENTS_FILE_PATH = "./events/posted_events.json"
 
 RULES_MESSAGE_ID = 1202059311681904661  # Set to ID of whatever message you want to be used as rules / to welcome a user
 DISCORD_ROLE_TRIGGERS = [
