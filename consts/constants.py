@@ -29,15 +29,29 @@ CONFIG_ABSOLUTE_PATH: The absolute path to the config.ini file.
 
 """
 
-import os
-
 CONFIG_ID_MAP: dict[str, str] = {"governance": "governance_id", "budget": "budget_id"}
 CONFIG_ABSOLUTE_PATH = "config/config.ini"
 
-GENERAL_CHANNEL = os.getenv('GENERAL_CHANNEL') or "🌺│home"
-GOVERNANCE_CHANNEL = os.getenv('GOVERNANCE_CHANNEL') or "improvement-props"
-GOVERNANCE_BUDGET_CHANNEL = os.getenv('GOVERNANCE_BUDGET_CHANNEL') or "budgetary-props"
-GOVERNANCE_TALK_CHANNEL = os.getenv('GOVERNANCE_TALK_CHANNEL') or "🐬│governance"
+# Preferred consts
+GENERAL_CHANNEL = "🌺│home"
+GOVERNANCE_CHANNEL = "improvement-props"
+GOVERNANCE_BUDGET_CHANNEL = "budgetary-props"
+GOVERNANCE_TALK_CHANNEL = "🐬│governance"
+
+# fallback consts
+FALLBACK_GENERAL_CHANNEL = "general"
+FALLBACK_GOVERNANCE_CHANNEL = "governance"
+FALLBACK_GOVERNANCE_BUDGET_CHANNEL = "governance"
+FALLBACK_GOVERNANCE_TALK_CHANNEL = "governance"
+
+# Map the fallback consts to the preferred consts
+CONSTANT_FALLBACK_MAPPING = {
+    GENERAL_CHANNEL: FALLBACK_GENERAL_CHANNEL,
+    GOVERNANCE_CHANNEL: FALLBACK_GOVERNANCE_CHANNEL,
+    GOVERNANCE_BUDGET_CHANNEL: FALLBACK_GOVERNANCE_BUDGET_CHANNEL,
+    GOVERNANCE_TALK_CHANNEL: FALLBACK_GOVERNANCE_TALK_CHANNEL
+}
+
 new_proposal_emoji = "💡"
 CONTRIBUTORS_FILE_PATH = "./emotes/contributors.json"
 POSTED_EVENTS_FILE_PATH = "./events/posted_events.json"
