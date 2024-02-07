@@ -29,9 +29,6 @@ CONFIG_ABSOLUTE_PATH: The absolute path to the config.ini file.
 
 """
 
-CONFIG_ID_MAP: dict[str, str] = {"governance": "governance_id", "budget": "budget_id"}
-CONFIG_ABSOLUTE_PATH = "config/config.ini"
-
 # Preferred consts
 GENERAL_CHANNEL = "🌺│home"
 GOVERNANCE_CHANNEL = "improvement-props"
@@ -40,10 +37,11 @@ GOVERNANCE_TALK_CHANNEL = "🐬│governance"
 
 # fallback consts
 FALLBACK_GENERAL_CHANNEL = "🐘│announcements"
-FALLBACK_GOVERNANCE_CHANNEL = "🌺│home"
+FALLBACK_GOVERNANCE_TALK_CHANNEL = "🌺│home"
+
 #There are no other forum channels within the server to use as a fallback
 FALLBACK_GOVERNANCE_BUDGET_CHANNEL = "improvement-props"
-FALLBACK_GOVERNANCE_TALK_CHANNEL = "budgetary-props"
+FALLBACK_GOVERNANCE_CHANNEL = "budgetary-props"
 
 # Map the fallback consts to the preferred consts
 CONSTANT_FALLBACK_MAPPING = {
