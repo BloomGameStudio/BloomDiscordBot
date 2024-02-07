@@ -22,7 +22,6 @@ def get_channel_by_name(guild: discord.Guild, channel_name: str) -> discord.Text
     Raises:
     ValueError: If no channel containing the channel_name exists in the guild or its fallback mapping.
     """
-    channel_name = channel_name.split("│")[-1] if "│" in channel_name else channel_name
 
     # try to find the preferred channel name directly
     for channel in guild.channels:
@@ -31,13 +30,13 @@ def get_channel_by_name(guild: discord.Guild, channel_name: str) -> discord.Text
 
     # If the preferred channel is not found, try to use the fallback mapping
     fallback_channel_name = constants.CONSTANT_FALLBACK_MAPPING.get(channel_name)
-    if fallback_channel_name:
+    if fallback_channel_name:  # If a fallback name is defined for the given channel_name
         for channel in guild.channels:
             if isinstance(channel, discord.TextChannel) and channel.name == fallback_channel_name:
                 return channel
 
     raise ValueError(
-        f"No channel containing the name {channel_name} exists in the guild {guild}."
+        f"No channel containing the name {channel_name} or {fallback_channel_name} exists in the guild {guild}."
         "\n Check the channel names in consts/constants.py and make sure they match the channel names in your Discord server."
     )
 
