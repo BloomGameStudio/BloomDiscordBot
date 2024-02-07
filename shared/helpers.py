@@ -5,11 +5,12 @@ modules.
 """
 
 import discord
-
+import consts.constants as constants 
 
 def get_channel_by_name(guild: discord.Guild, channel_name: str) -> discord.TextChannel:
     """
-    Soft match a channel name from consts/constants.py to a channel in the guild.
+    Soft match a channel name from consts/constants.py to a channel in the guild. If the primary
+    constant name does not exist, try to match the fallback mapping.
 
     Parameters:
     guild (discord.Guild): The guild to search for the channel in.
@@ -19,21 +20,26 @@ def get_channel_by_name(guild: discord.Guild, channel_name: str) -> discord.Text
     discord.TextChannel: The channel that matches the channel_name.
 
     Raises:
-    ValueError: If no channel containing the channel_name exists in the guild.
+    ValueError: If no channel containing the channel_name exists in the guild or its fallback mapping.
     """
-    # Get the channel name after the pipe character if it exists.
     channel_name = channel_name.split("│")[-1] if "│" in channel_name else channel_name
 
+    # try to find the preferred channel name directly
     for channel in guild.channels:
-        if isinstance(channel, discord.TextChannel) and channel.name.endswith(
-            channel_name
-        ):
+        if isinstance(channel, discord.TextChannel) and channel.name == channel_name:
             return channel
+
+    # If the preferred channel is not found, try to use the fallback mapping
+    fallback_channel_name = constants.CONSTANT_FALLBACK_MAPPING.get(channel_name)
+    if fallback_channel_name:
+        for channel in guild.channels:
+            if isinstance(channel, discord.TextChannel) and channel.name == fallback_channel_name:
+                return channel
+
     raise ValueError(
         f"No channel containing the name {channel_name} exists in the guild {guild}."
-        "\nPlease check the channel names in consts/constants.py and make sure they match the channel names in your Discord server."
+        "\n Check the channel names in consts/constants.py and make sure they match the channel names in your Discord server."
     )
-
 
 async def get_guild_member_check_role(ctx: discord.ext.commands.Context) -> bool:
     """
