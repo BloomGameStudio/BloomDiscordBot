@@ -19,7 +19,7 @@ from consts.constants import GOVERNANCE_BUDGET_CHANNEL, GOVERNANCE_CHANNEL, YES_
 from consts.types import GOVERNANCE_ID_TYPE, BUDGET_ID_TYPE
 from logger.logger import logger
 
-#proposals: List[Dict[str, Any]] = []
+proposals: List[Dict[str, Any]] = []
 
 ongoing_votes: Dict[int, Dict[str, Any]] = {}
 
@@ -47,7 +47,7 @@ async def prepare_draft(draft: Dict[str, Any]) -> Tuple[str, str, str]:
         cfg.update_id_values(
             cfg.current_budget_id, id_type
         )  # Update the governance ID in the config file
-        title = f"Bloom Budget Proposal (BBP) #{cfg.current_budget_id}: {draft['name']}"
+        title = f"Bloom Budget Proposal (BBP) #{cfg.current_budget_id}: {draft['title']}"
     else:
         id_type = GOVERNANCE_ID_TYPE
         channel_name = GOVERNANCE_CHANNEL
@@ -55,7 +55,7 @@ async def prepare_draft(draft: Dict[str, Any]) -> Tuple[str, str, str]:
         cfg.update_id_values(
             cfg.current_governance_id, id_type
         )  # Update the governance ID in the config file
-        title = f"Bloom Governance Proposal (BGP) #{cfg.current_governance_id}: {draft['name']}"
+        title = f"Bloom Governance Proposal (BGP) #{cfg.current_governance_id}: {draft['title']}"
 
     return id_type, channel_name, title
 
@@ -71,7 +71,6 @@ async def publish_draft(draft: Dict[str, Any], bot: Bot, guild_id: int) -> None:
     guild_id (int): The ID of the guild where the draft will be published.
     """
     id_type, channel_name, title = await prepare_draft(draft)
-
     forum_channel = discord.utils.get(
         bot.get_guild(guild_id).channels, name=channel_name
     )
@@ -101,7 +100,6 @@ async def publish_draft(draft: Dict[str, Any], bot: Bot, guild_id: int) -> None:
     Vote will conclude in 48h from now.
     """
     )
-
     thread_with_message = await forum_channel.create_thread(name=title, content=content)
 
     ongoing_votes[thread_with_message.thread.id] = {
@@ -110,7 +108,6 @@ async def publish_draft(draft: Dict[str, Any], bot: Bot, guild_id: int) -> None:
         "reassess_count": 0,
         "abstain_count": 0,
     }
-
     await react_to_vote(thread_with_message.thread.id, bot, guild_id, channel_name)
 
     await vote_timer(
