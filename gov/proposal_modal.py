@@ -1,16 +1,8 @@
 import discord
 from discord import ui
 from discord import Embed
-
-proposals = []
-
-class Proposal:
-    def __init__(self, member_id, title, proposal_type, abstract, background):
-        self.member_id = member_id
-        self.title = title
-        self.proposal_type = proposal_type
-        self.abstract = abstract
-        self.background = background
+from .proposals import proposals
+from .command_operations import handle_publishdraft
 
 class ProposalModal(ui.Modal, title="Create/Edit Proposal"):
 
@@ -44,37 +36,57 @@ class ProposalModal(ui.Modal, title="Create/Edit Proposal"):
         self.proposal = proposal
 
         if proposal is not None:
-            self.name.default = proposal.title
-            self.proposal_type.default = proposal.proposal_type
-            self.background.default = proposal.background
-            self.abstract.default = proposal.abstract
+            self.name.default = proposal['name']
+            self.proposal_type.default = proposal['type']
+            self.background.default = proposal['background']
+            self.abstract.default = proposal['abstract']
 
     async def on_submit(self, interaction: discord.Interaction):
         member_id = interaction.user.id
 
         if self.proposal is None:
-            self.proposal = Proposal(
-                member_id=member_id,
-                title=self.name.value,
-                proposal_type=self.proposal_type.value,
-                abstract=self.abstract.value,
-                background=self.background.value
-            )
+            new_proposal = {
+                'member_id': member_id,
+                'title': self.name.value,
+                'type': self.proposal_type.value,
+                'abstract': self.abstract.value,
+                'background': self.background.value
+            }
             # Add the created proposal to the global proposals list
-            proposals.append(self.proposal)
+            proposals.append(new_proposal)
         else:
-            self.proposal.title = self.name.value
-            self.proposal.proposal_type = self.proposal_type.value
-            self.proposal.abstract = self.abstract.value
-            self.proposal.background = self.background.value
+            self.proposal['title'] = self.name.value
+            self.proposal['type'] = self.proposal_type.value
+            self.proposal['abstract'] = self.abstract.value
+            self.proposal['background'] = self.background.value
 
         e = Embed()
         e.title = f"Thank you, proposal has been created/edited. Use the same command again to edit or delete an existing proposal"
-        e.description = f"{self.proposal.title}"
+        e.description = f"{self.name.value}"
         await interaction.response.send_message(embed=e)
 
     async def on_error(self, interaction: discord.Interaction, error: Exception) -> None:
         await interaction.response.send_message('Oops! Something went wrong.', ephemeral=True)
+
+class PublishDraftSelect(discord.ui.Select):
+    def __init__(self, proposals, bot):
+        self.proposals = proposals
+        self.bot = bot
+        options = [discord.SelectOption(label=proposal['title'], value=proposal['title']) for proposal in self.proposals]
+        super().__init__(placeholder="Select a proposal to publish", options=options) 
+
+    async def callback(self, interaction: discord.Interaction):
+        # Find the selected proposal
+        for proposal in self.proposals:
+            if proposal['title'] == self.values[0]:
+                selected_proposal = proposal
+                break
+        else:
+            await interaction.response.send_message('Proposal not found.')
+            return
+
+        # Call handle_publishdraft
+        await handle_publishdraft(interaction, selected_proposal['title'], self.proposals, self.bot)
 
 class DeleteProposalSelect(discord.ui.Select):
     def __init__(self, proposals):
@@ -122,20 +134,11 @@ class ProposalButtonsView(discord.ui.View):
         self.proposals = proposals
 
     @discord.ui.button(label='Create', style=discord.ButtonStyle.green)
-    async def publish(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def create(self, interaction: discord.Interaction, button: discord.ui.Button):
         # Create a new ProposalModal
         modal = ProposalModal(interaction.channel, None)
         # Send the modal as a response to the interaction
         await interaction.response.send_modal(modal)
-
-    @discord.ui.button(label='Edit', style=discord.ButtonStyle.blurple)
-    async def edit(self, interaction: discord.Interaction, button: discord.ui.Button):
-        if not self.proposals:
-            await interaction.response.send_message('No proposals to edit.')
-        else:
-            self.clear_items()
-            self.add_item(EditProposalSelect(self.proposals))
-            await interaction.response.edit_message(view=self)
 
     @discord.ui.button(label='Delete', style=discord.ButtonStyle.red)
     async def delete(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -145,4 +148,13 @@ class ProposalButtonsView(discord.ui.View):
         else:
             self.clear_items()
             self.add_item(DeleteProposalSelect(self.proposals))
+            await interaction.response.edit_message(view=self)
+
+    @discord.ui.button(label='Edit', style=discord.ButtonStyle.blurple)
+    async def edit(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if not self.proposals:
+            await interaction.response.send_message('No proposals to edit.')
+        else:
+            self.clear_items()
+            self.add_item(EditProposalSelect(self.proposals))
             await interaction.response.edit_message(view=self)
