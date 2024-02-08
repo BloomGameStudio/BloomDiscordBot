@@ -9,7 +9,7 @@ from .proposals import publish_draft
 from consts.constants import GOVERNANCE_TALK_CHANNEL
 from shared.helpers import get_channel_by_name
 from logger.logger import logger
-
+import discord
 
 async def handle_votedraft(
     ctx: commands.Context, proposals: List[Dict[str, str]], new_proposal_emoji: str
@@ -50,28 +50,19 @@ async def handle_votedraft(
 
 
 async def handle_publishdraft(
-    ctx: commands.Context,
+    interaction: discord.Interaction,
     draft_name: str,
     proposals: List[Dict[str, str]],
     bot: commands.Bot,
 ) -> None:
-    """
-    Handle the publish draft command. This command checks if a draft exists before invoking publish_draft.
-    proposals are removed from the list of proposals before they are published because of the 48 hour timer.
-    Parameters:
-    ctx (commands.Context): The context in which the command was called.
-    draft_name (str): The name of the draft to be published.
-    proposals (List[Dict[str, str]]): The list of proposals.
-    bot (commands.Bot): The bot instance.
-    """
     draft_to_publish = next(
-        (item for item in proposals if item["name"].strip() == draft_name.strip()),
+        (item for item in proposals if item.get("title", "").strip() == draft_name.strip()),
         None,
     )
 
     if draft_to_publish:
-        await ctx.send(f"Publishing draft: {draft_to_publish['name']}")
+        await interaction.response.send_message(f"Publishing draft: {draft_to_publish['title']}")
         proposals.remove(draft_to_publish)
-        await publish_draft(draft_to_publish, bot, ctx.guild.id)
+        await publish_draft(draft_to_publish, bot, interaction.guild.id)
     else:
-        await ctx.send(f"Draft not found: {draft_name}")
+        await interaction.response.send_message(f"Draft not found: {draft_name}")
