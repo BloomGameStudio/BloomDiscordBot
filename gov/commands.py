@@ -1,8 +1,8 @@
 from discord.ext import commands
 from .command_operations import handle_votedraft, handle_publishdraft
-from .proposal_modal import proposals
+from .proposals import proposals
 from consts.constants import new_proposal_emoji
-from .proposal_modal import ProposalModal, ProposalButtonsView
+from .proposal_modal import ProposalButtonsView, PublishDraftSelect
 from logger.logger import logger
 from typing import Optional
 import discord
@@ -13,14 +13,15 @@ def setup_gov_commands(bot: commands.Bot) -> None:
     async def votedraft(ctx):
         try: 
             view = ProposalButtonsView(proposals)
-            await ctx.send("Select an option to create, edit, or delete a proposal.", view=view)
+            await ctx.send("Click create, edit, or delete to modify or create a new proposal.", view=view)
         except Exception as e:
             await ctx.send("Couldn't access proposal data.")
-            logger.info(f"{'votedraft', e}")
 
     @bot.command(name="publish_draft")
-    async def publishdraft(ctx: commands.Context, *, draft_name: str) -> None:
-        if not draft_name:
-            await ctx.send("Please provide a draft name.")
-            return
-        await handle_publishdraft(ctx, draft_name, proposals, bot)
+    async def publishdraft(ctx: commands.Context, *, draft_name: str = None) -> None:
+        try:
+            view = discord.ui.View()
+            view.add_item(PublishDraftSelect(proposals, bot))
+            await ctx.send("Select a proposal.", view=view)
+        except Exception as e:
+            await ctx.send("Couldn't access proposal data.")
