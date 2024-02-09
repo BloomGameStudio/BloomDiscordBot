@@ -6,7 +6,7 @@ This includes adding, removing, listing, and direct messaging contributors.
 import asyncio
 import json
 import discord
-from consts.constants import CONTRIBUTORS_FILE_PATH
+from config.config import CONTRIBUTORS_FILE_PATH
 from shared.helpers import get_guild_member_check_role
 from typing import List, Dict, Any
 

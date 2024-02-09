@@ -36,7 +36,7 @@ class ProposalModal(ui.Modal, title="Create/Edit Proposal"):
         self.proposal = proposal
 
         if proposal is not None:
-            self.name.default = proposal['name']
+            self.name.default = proposal['title']
             self.proposal_type.default = proposal['type']
             self.background.default = proposal['background']
             self.abstract.default = proposal['abstract']
