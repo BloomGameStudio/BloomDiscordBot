@@ -8,8 +8,8 @@ import json
 import requests
 import asyncio
 import os
-from consts.constants import POSTED_EVENTS_FILE_PATH, GENERAL_CHANNEL
-from shared.helpers import get_channel_by_name
+from consts.constants import GENERAL_CHANNEL, FALLBACK_GENERAL_CHANNEL, get_channel
+from config.config import POSTED_EVENTS_FILE_PATH
 from datetime import datetime, timezone
 from typing import List, Optional, Any
 from discord import ScheduledEvent
@@ -147,7 +147,9 @@ async def notify_new_event(bot: Bot, event: ScheduledEvent, guild_id: int) -> No
         formatted_event = format_event(event, guild_id)
 
         try:
-            channel = get_channel_by_name(guild, GENERAL_CHANNEL)
+            channel = get_channel(
+                bot, guild.id, GENERAL_CHANNEL, FALLBACK_GENERAL_CHANNEL
+            )
             # Send the notification and capture the Message object
             await channel.send(f"🌺 **__Newly Created Event__** 🌺 \n{formatted_event}")
         except ValueError as e:

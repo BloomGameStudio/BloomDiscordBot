@@ -6,8 +6,9 @@ from events.event_operations import (
     fetch_upcoming_events,
 )
 from events.task_operations import format_and_send_message
-from shared.helpers import get_channel_by_name
-from consts.constants import GENERAL_CHANNEL
+
+# from shared.helpers import get_channel_by_name
+from consts.constants import GENERAL_CHANNEL, FALLBACK_GENERAL_CHANNEL, get_channel
 
 # Events/tasks.py is responsible for handling the background tasks associated with Discord events.
 
@@ -29,10 +30,12 @@ async def check_events(bot: commands.Bot) -> None:
 
     for guild in bot.guilds:
         try:
-            channel = get_channel_by_name(guild, GENERAL_CHANNEL)
+            channel = get_channel(
+                bot, guild.id, GENERAL_CHANNEL, FALLBACK_GENERAL_CHANNEL
+            )
         except ValueError as e:
-            logger.error(f" Cannot check events for guild {guild}, Error: {e}")
-            continue  # Skip this guild and move on to the next one
+            logger.error(f"Cannot check events for guild {guild}, Error: {e}")
+            continue
 
         upcoming_events = await fetch_upcoming_events(guild)
 
