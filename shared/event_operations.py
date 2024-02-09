@@ -11,24 +11,37 @@ from discord.ext import commands
 from discord import Message, Reaction, User
 from discord.utils import get
 from emotes.command_operations import send_dm_once
-from consts.constants import MENU_COPY, DISCORD_ROLE_TRIGGERS, RULES_MESSAGE_ID, GENERAL_CHANNEL
+import consts.constants as consts
 from consts.types import BUDGET_ID_TYPE, GOVERNANCE_ID_TYPE
-from .helpers import get_channel_by_name
 from logger.logger import logger
+from discord.ext.commands import Bot
 
 
-async def process_new_member(member: discord.Member) -> None:
+async def process_new_member(
+    bot: Bot, guild: discord.Guild, member: discord.Member
+) -> None:
     """
     Sends a welcome message to a new member in the welcome channel.
 
     Args:
+        bot (discord.Bot): The bot instance.
+        guild (discord.Guild): The guild where the new member joined.
         member (discord.Member): The new member who joined the server.
     """
     try:
         # Get the welcome channel
-        welcome_channel = get_channel_by_name(member.guild, GENERAL_CHANNEL)
-        collab_land_join_channel = get_channel_by_name(member.guild, "collabland-join")
-        start_here_channel = get_channel_by_name(member.guild, "start-here")
+        welcome_channel = consts.get_channel(
+            bot, guild.id, consts.GENERAL_CHANNEL, consts.FALLBACK_GENERAL_CHANNEL
+        )
+        collab_land_join_channel = consts.get_channel(
+            bot,
+            guild.id,
+            consts.COLLAB_LAND_CHANNEL,
+            consts.FALLBACK_COLLAB_LAND_CHANNEL,
+        )
+        start_here_channel = consts.get_channel(
+            bot, guild.id, consts.START_HERE_CHANNEL, consts.FALLBACK_START_HERE_CHANNEL
+        )
 
         # Send the welcome message
         await welcome_channel.send(
@@ -74,7 +87,7 @@ async def handle_message(
 
     # If the message starts with "!help", send the menu copy
     if message.content.startswith("!help"):
-        await message.channel.send(MENU_COPY)
+        await message.channel.send(consts.MENU_COPY)
         return
 
     contributors = server_data["contributors"]
@@ -325,7 +338,7 @@ async def process_reaction_add(bot, payload):
         payload (discord.RawReactionActionEvent): The reaction payload.
     """
     # If the reaction is on the rules message, process the reaction
-    if payload.message_id == RULES_MESSAGE_ID:
+    if payload.message_id == consts.RULES_MESSAGE_ID:
         guild = bot.get_guild(payload.guild_id)
         member = guild.get_member(payload.user_id)
 
@@ -334,13 +347,20 @@ async def process_reaction_add(bot, payload):
             role = get(guild.roles, name="bloomer")
             await member.add_roles(role)
             response = f"{member.display_name} has selected 🌺!\n\n**Their commitment is official and they are now a Bloomer!**"
-            general_channel = get_channel_by_name(guild, "🌺│home")
+            general_channel = consts.get_channel(
+                bot, guild.id, consts.GENERAL_CHANNEL, consts.FALLBACK_GENERAL_CHANNEL
+            )
             await general_channel.send(response)
         else:
             # If the reaction emoji matches any in DISCORD_ROLE_TRIGGERS, add the corresponding role to the member
-            for role_info in DISCORD_ROLE_TRIGGERS:
+            for role_info in consts.DISCORD_ROLE_TRIGGERS:
                 if payload.emoji.id == role_info.get("emoji_id"):
-                    general_channel = get_channel_by_name(guild, "🌺│home")
+                    general_channel = consts.get_channel(
+                        bot,
+                        guild.id,
+                        consts.GENERAL_CHANNEL,
+                        consts.FALLBACK_GENERAL_CHANNEL,
+                    )
                     role = get(guild.roles, name=role_info.get("role"))
                     response = f"{member.display_name} has joined the **{role_info.get('name')}** pod!"
                     await general_channel.send(response)
