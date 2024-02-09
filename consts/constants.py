@@ -36,15 +36,17 @@ GENERAL_CHANNEL = "🌺│home"
 GOVERNANCE_CHANNEL = "improvement-props"
 GOVERNANCE_BUDGET_CHANNEL = "budgetary-props"
 GOVERNANCE_TALK_CHANNEL = "🐬│governance"
+COLLAB_LAND_CHANNEL = "🤖│collabland-join"
+START_HERE_CHANNEL = "start-here"
 
 # fallback consts
 FALLBACK_GENERAL_CHANNEL = "🐘│announcements"
 FALLBACK_GOVERNANCE_TALK_CHANNEL = "🌺│home"
+FALLBACK_COLLAB_LAND_CHANNEL = "🌺│home"
+FALLBACK_START_HERE_CHANNEL = "🌺│home"
 
-# There are no other forum channels within the server to use as a fallback
-FALLBACK_GOVERNANCE_BUDGET_CHANNEL = "improvement-props"
-FALLBACK_GOVERNANCE_CHANNEL = "budgetary-props"
-
+# NOTE: There are no fallbacks for GOVERNANCE_CHANNEL and GOVERNANCE_BUDGET_CHANNEL
+# Should there be the desire to do so, fallback channels should be created along with a function that handles forum channel types
 
 # Attempt to get the preferred channel, if it fails, attempt to get the fallback channel, if it fails, attempt to get the default channel
 # The default channel is "general" this is a text channel that is created when a server is made.
@@ -69,7 +71,6 @@ def get_channel(bot, guild_id, preferred_channel, fallback_channel):
                     "Both preferred, fallback, and default channels not found"
                 )
         return channel
-
 
 new_proposal_emoji = "💡"
 
