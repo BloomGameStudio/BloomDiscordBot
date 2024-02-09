@@ -1,22 +1,35 @@
-import discord
+"""
+command_operations.py is responsible for handling the business logic
+associated with different commands such as !publish_draft, and !v / !vote_draft.
+"""
+
 from discord.ext import commands
 from typing import List, Dict
 from .proposals import publish_draft
-from shared.constants import GOVERNANCE_TALK_CHANNEL_ID
+from consts.constants import GOVERNANCE_TALK_CHANNEL
+from shared.helpers import get_channel_by_name
+from logger.logger import logger
 
 
 async def handle_votedraft(
     ctx: commands.Context, proposals: List[Dict[str, str]], new_proposal_emoji: str
 ) -> None:
-    # Get the channel with the name 'governance-talk' in the server
-    governance_talk_channel = discord.utils.get(
-        ctx.guild.channels, name=GOVERNANCE_TALK_CHANNEL_ID
-    )
+    """
+    Handles the vote draft command. This command allows users to draft a proposal.
 
-    if governance_talk_channel is None:
-        await ctx.send(
-            "The 'governance' channel could not be found in this server"
+    Parameters:
+    ctx (commands.Context): The context in which the command was called.
+    proposals (List[Dict[str, str]]): The list of proposals.
+    new_proposal_emoji (str): The emoji for new proposals.
+    """
+    try:
+        # Get the channel with the name 'governance' in the server
+        governance_talk_channel = get_channel_by_name(
+            ctx.guild, GOVERNANCE_TALK_CHANNEL
         )
+    except ValueError as e:
+        await ctx.send(f"Cannot find governance channel in this server.")
+        logger.error(f"Error drafting a vote: {str(e)}")
         return
 
     if ctx.channel.id != governance_talk_channel.id:
@@ -42,6 +55,15 @@ async def handle_publishdraft(
     proposals: List[Dict[str, str]],
     bot: commands.Bot,
 ) -> None:
+    """
+    Handle the publish draft command. This command checks if a draft exists before invoking publish_draft.
+    proposals are removed from the list of proposals before they are published because of the 48 hour timer.
+    Parameters:
+    ctx (commands.Context): The context in which the command was called.
+    draft_name (str): The name of the draft to be published.
+    proposals (List[Dict[str, str]]): The list of proposals.
+    bot (commands.Bot): The bot instance.
+    """
     draft_to_publish = next(
         (item for item in proposals if item["name"].strip() == draft_name.strip()),
         None,

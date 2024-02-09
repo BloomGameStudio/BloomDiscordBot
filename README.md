@@ -1,5 +1,13 @@
 # BloomDiscordBot
 
+# Onboarding Bloomers in the Bloom Studio Server
+
+When a bloomer first joins Bloom Studio's Discord server, they will be welcomed, and encouraged to read and accept the servers rules before they can post. This is a built in anti-spam protection that Discord offers.
+
+After agreeing to the server rules, the bloomer will be able to verify they posses some form of Contributor XP, which upon signing a message through CollabLand will automatically assign the appropriate role to the bloomer
+
+The initial greeting message advise the bloomer where the can get more information about Bloom Studio.
+
 # Quick start guide:
 
 1. Ensure there are existing channels in Bloom Collective, and Bloom Studio Discord servers with the channel names set in constants.py. The bot will determine the required channel IDs / Forum Channel IDs from the channel names in it's respective server.
@@ -73,7 +81,7 @@ Further support for additional servers, and merging of other bot functionality a
 
 # Help:
 
-You can type ```$bot_help``` to get details about what commands can be used, along with a brief description of them
+You can type ```!help``` to get details about what commands can be used, along with a brief description of them
 
 # Governance
 
@@ -87,15 +95,15 @@ When you decide to publish the draft, you can request the bot to do this.
 # Commands
 
 The following commands can be used to create, edit, and publish drafts.
-All commands start with $. The $ symbol is being used as ! currently conflicts with the existing OK Bloomer bot.
+All commands start with !.
 
 **Vote Draft:**
 
-$vote_draft *or* $v
+!vote_draft *or* !v
 
 **Example:**
 
-```$vote_draft``` 
+```!vote_draft``` 
 
 **Response:**
 
@@ -170,17 +178,17 @@ Example background information about the proposal
  :bulby_sore: Reassess
  :pepe_angel: Abstain
  
-If you wish to publish your draft proposal, please use command ``$publish_draft``
+If you wish to publish your draft proposal, please use command ``!publish_draft``
 
 ```
 
 **Edit Draft**
 
-You will use the same command as before ```$vote_draft / $v``` A list of drafts if they exist will appear as a response from the bot. You are required to react to the draft you wish to edit with the 📝 emoji.
+You will use the same command as before ```!vote_draft / !v``` A list of drafts if they exist will appear as a response from the bot. You are required to react to the draft you wish to edit with the 📝 emoji.
 
 **Example:**
 
-```$vote_draft```
+```!vote_draft```
 
 **Response:**
 
@@ -265,12 +273,12 @@ test draft background
  :bulby_sore: Reassess
  :pepe_angel: Abstain
 
-If you wish to publish your draft proposal, please use command $publish_draft.
+If you wish to publish your draft proposal, please use command !publish_draft.
 ```
 
 **Publish Draft:**
 
-In order to publish a draft you need to use the command $publish_draft [draft name]
+In order to publish a draft you need to use the command !publish_draft [draft name]
 
 This will automatically publish the draft you want to the appropriate Discord channel (Gov-Budget or Governance) depending on if it is a general proposal or a budget.
 
@@ -281,7 +289,7 @@ A Snapshot space is required to be configured and is outside the scope of this d
 
 **Example:**
 
-```$publish_draft new title```
+```!publish_draft new title```
 
 **Response:**
 
@@ -327,18 +335,18 @@ Events can be deleted through a command, detailed below.
 # Commands:
 
 The following commands can be used to delete, and list events.
-All commands start with: $
+All commands start with: !
 
 **List Events:**
 
 ```
-$list_events
+!list_events
 ```
 
 **Example:**
 
 ```
-$list_events
+!list_events
 ```
 
 **Response:**
@@ -358,13 +366,13 @@ Description:
 **Delete Events:**
 
 ```
-$delete_event <event_id>
+!delete_event <event_id>
 ```
 
 **Example**
 
 ```
-$delete_event 1179242504395165748
+!delete_event 1179242504395165748
 ```
 
 **Response**
@@ -379,18 +387,18 @@ When a mapped contributors Emoji is used in Blooms Discord server (as a message,
 
 # Commands:
 
-The following commands can be used to manage, and list contributors. All commands start with $
+The following commands can be used to manage, and list contributors. All commands start with !
 
 **Remove COntributor:**
 
 ```
-$remove_contributor @contributor
+!remove_contributor @contributor
 ```
 
 **Example:**
 
 ```
-$remove_contributor @sarahtonein
+!remove_contributor @sarahtonein
 ```
 
 **Response:**
@@ -402,13 +410,13 @@ Contributor Sarahtonein removed successfully!
 **Add Contributor:**
 
 ```
-$add_contributor
+!add_contributor
 ```
 
 **Example:**
 
 ```
-$add_contributor
+!add_contributor
 ```
 
 **Response:**
@@ -435,13 +443,13 @@ Contributor Sarahtonein added successfully!
 **List Contributors:**
 
 ```
-$contributors
+!contributors
 ```
 
 **Example:**
 
 ```
-$contributors
+!contributors
 ```
 
 **Response:**

@@ -1,20 +1,33 @@
+"""
+events/event_operations.py is responsible for handling the business logic associated with events
+This includes fetching events, loading posted events, saving posted events, notifying guild of new events. 
+"""
+
+
 import json
 import requests
-import logging
 import asyncio
 import os
-from shared.constants import POSTED_EVENTS_FILE_PATH, GENERAL_CHANNEL_ID
+from consts.constants import GENERAL_CHANNEL
+from config.config import POSTED_EVENTS_FILE_PATH
 from shared.helpers import get_channel_by_name
 from datetime import datetime, timezone
 from typing import List, Optional, Any
 from discord import ScheduledEvent
 from discord.ext.commands import Bot
+from logger.logger import logger
 
 
 # Load the stored events from the JSON file
 def load_posted_events() -> List[int]:
+    """
+    Load the event IDs that have already been posted to Discord from the JSON file.
+
+    Returns:
+    List[int]: The list of event IDs that have already been posted to Discord.
+    """
     try:
-        logging.info(f"Loading events from: {POSTED_EVENTS_FILE_PATH}")
+        logger.info(f"Loading events from: {POSTED_EVENTS_FILE_PATH}")
         with open(POSTED_EVENTS_FILE_PATH, "r") as file:
             return json.load(file)
     except FileNotFoundError:
@@ -23,18 +36,35 @@ def load_posted_events() -> List[int]:
 
 # Save the posted events to the JSON file
 def save_posted_events(posted_events: List[int]) -> None:
+    """
+    Save the posted event IDs to the JSON file.
+
+    Parameters:
+    posted_events (List[int]): The list of event IDs that have already been posted to Discord.
+    """
     try:
-        logging.info(f"Saving events to: {POSTED_EVENTS_FILE_PATH}")
+        logger.info(f"Saving events to: {POSTED_EVENTS_FILE_PATH}")
 
         with open(POSTED_EVENTS_FILE_PATH, "w") as file:
             json.dump(posted_events, file)
 
     except Exception as e:
-        logging.error(f"Error saving posted events: {e}")
+        logger.error(f"Error saving posted events: {e}")
 
 
 # Format the event message and send it to the channel
 def format_event(event: ScheduledEvent, guild_id: int) -> str:
+    """
+    Formats the event message and returns it.
+    invoked by notify_new_event
+
+    Parameters:
+    event (ScheduledEvent): The event to be formatted.
+    guild_id (int): The ID of the guild in which the event was created.
+
+    Returns:
+    str: The formatted event message.
+    """
     # Format the event start time for Discord time
     event_url = f"https://discord.com/events/{guild_id}/{event.id}"
 
@@ -60,6 +90,21 @@ def get_guild_scheduled_event_users(
     before: Optional[str] = None,
     after: Optional[str] = None,
 ) -> Optional[List[Any]]:
+    """
+    Get the users interested in a scheduled event.
+
+    Parameters:
+    guild_id (int): The ID of the guild in which the event was created.
+    scheduled_event_id (int): The ID of the event.
+    limit (int): The maximum number of users to be returned.
+    NOTE: The remaining below are optional parameters, that we may wish to use in the future.
+    with_member (bool): Whether to include the member object in the response.
+    before (Optional[str]): The ID of the user to be used as the upper limit.
+    after (Optional[str]): The ID of the user to be used as the lower limit.
+
+    Returns:
+    Optional[List[Any]]: The list of users interested in the event.
+    """
     url = f"https://discord.com/api/v10/guilds/{guild_id}/scheduled-events/{scheduled_event_id}/users"
 
     params = {
@@ -82,6 +127,16 @@ def get_guild_scheduled_event_users(
 
 # Notify the channel about the newly created event after a short delay
 async def notify_new_event(bot: Bot, event: ScheduledEvent, guild_id: int) -> None:
+    """
+    Notify the General channel about the newly created event after a short delay.
+    Fetches and formats the event before posting it.
+
+    Parameters:
+    bot (Bot): The bot instance.
+    event (ScheduledEvent): The event that was created.
+    guild_id (int): The ID of the guild in which the event was created.
+    """
+
     guild = bot.get_guild(guild_id)
 
     if guild:
@@ -92,20 +147,30 @@ async def notify_new_event(bot: Bot, event: ScheduledEvent, guild_id: int) -> No
         event = await guild.fetch_scheduled_event(event.id)
         formatted_event = format_event(event, guild_id)
 
-        channel = get_channel_by_name(guild, GENERAL_CHANNEL_ID)
-
-        if channel:
+        try:
+            channel = get_channel_by_name(guild, GENERAL_CHANNEL)
             # Send the notification and capture the Message object
             await channel.send(f"🌺 **__Newly Created Event__** 🌺 \n{formatted_event}")
+        except ValueError as e:
+            logger.error(f"Cannot post newly created event to Discord, Error: {e}")
+            return
 
-        else:
-            logging.info(f"Event channel not found for guild.")
     else:
-        logging.info(f"Guild not found")
+        logger.info(f"Guild not found")
 
 
 # Fetch all upcoming events within the next 24 hours this is called by tasks.py
 async def fetch_upcoming_events(guild):
+    """
+    Fetches all upcoming events within the next 24 hours.
+
+    Parameters:
+    guild (Guild): The guild for which the events are to be fetched.
+
+    Returns:
+    List[ScheduledEvent]: The list of upcoming events.
+
+    """
     current_time = datetime.now().astimezone(timezone.utc)
     events = await guild.fetch_scheduled_events()
     upcoming_events = []
