@@ -87,7 +87,7 @@ def setup_shared_events(
         None
         """
         logger.info(f"New member: {member.name} has joined: {member.guild.name}")
-        await process_new_member(member)
+        await process_new_member(bot, member.guild, member)
 
     @bot.event
     async def on_command_error(ctx, error):
