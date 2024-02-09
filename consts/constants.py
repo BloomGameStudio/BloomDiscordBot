@@ -29,6 +29,8 @@ CONFIG_ABSOLUTE_PATH: The absolute path to the config.ini file.
 
 """
 
+import discord
+
 # Preferred consts
 GENERAL_CHANNEL = "🌺│home"
 GOVERNANCE_CHANNEL = "improvement-props"
@@ -39,34 +41,45 @@ GOVERNANCE_TALK_CHANNEL = "🐬│governance"
 FALLBACK_GENERAL_CHANNEL = "🐘│announcements"
 FALLBACK_GOVERNANCE_TALK_CHANNEL = "🌺│home"
 
-#There are no other forum channels within the server to use as a fallback
+# There are no other forum channels within the server to use as a fallback
 FALLBACK_GOVERNANCE_BUDGET_CHANNEL = "improvement-props"
 FALLBACK_GOVERNANCE_CHANNEL = "budgetary-props"
 
-# Map the fallback consts to the preferred consts
-CONSTANT_FALLBACK_MAPPING = {
-    GENERAL_CHANNEL: FALLBACK_GENERAL_CHANNEL,
-    GOVERNANCE_CHANNEL: FALLBACK_GOVERNANCE_CHANNEL,
-    GOVERNANCE_BUDGET_CHANNEL: FALLBACK_GOVERNANCE_BUDGET_CHANNEL,
-    GOVERNANCE_TALK_CHANNEL: FALLBACK_GOVERNANCE_TALK_CHANNEL
-}
+
+# Attempt to get the preferred channel, if it fails, attempt to get the fallback channel, if it fails, attempt to get the default channel
+# The default channel is "general" this is a text channel that is created when a server is made.
+def get_channel(bot, guild_id, preferred_channel, fallback_channel):
+    try:
+        channel = discord.utils.get(
+            bot.get_guild(guild_id).channels, name=preferred_channel
+        )
+        if channel is None:
+            raise ValueError(f"Channel {preferred_channel} not found")
+        return channel
+    except ValueError:
+        channel = discord.utils.get(
+            bot.get_guild(guild_id).channels, name=fallback_channel
+        )
+        if channel is None:
+            channel = discord.utils.get(
+                bot.get_guild(guild_id).channels, name="general"
+            )
+            if channel is None:
+                raise ValueError(
+                    "Both preferred, fallback, and default channels not found"
+                )
+        return channel
+
 
 new_proposal_emoji = "💡"
 
 RULES_MESSAGE_ID = 1202059311681904661  # Set to ID of whatever message you want to be used as rules / to welcome a user
+
 DISCORD_ROLE_TRIGGERS = [
     {"name": "Client", "emoji_id": 1199583728129802322, "role": "Client Pod"},
-    {
-        "name": "Graphics & Design",
-        "emoji_id": 980752213347549234,
-        "role": "Graphics Pod",
-    },
+    {"name": "Graphics & Design", "emoji_id": 980752213347549234, "role": "Graphics Pod"},
     {"name": "Backend", "emoji_id": 846911453839228938, "role": "Backend Pod"},
-    {
-        "name": "Gameplay & Story Pod",
-        "emoji_id": 961338498525306980,
-        "role": "Gameplay & Story Pod",
-    },
+    {"name": "Gameplay & Story Pod", "emoji_id": 961338498525306980, "role": "Gameplay & Story Pod"},
     {"name": "Operations", "emoji_id": 945177584768004127, "role": "Policy & Ops Pod"},
     {"name": "Financial", "emoji_id": 887872297082449970, "role": "Donator"},
 ]
