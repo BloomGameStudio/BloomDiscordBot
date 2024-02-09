@@ -1,6 +1,13 @@
 import configparser
-from consts.constants import CONFIG_ID_MAP, CONFIG_ABSOLUTE_PATH
 from logger.logger import logger
+
+# Map of proposal types to their respective ID keys in the config file
+CONFIG_ID_MAP: dict[str, str] = {"governance": "governance_id", "budget": "budget_id"}
+CONFIG_ABSOLUTE_PATH = "config/config.ini"
+
+# File paths for JSON files containing information about contributors and posted events IDs
+CONTRIBUTORS_FILE_PATH = "./emotes/contributors.json"
+POSTED_EVENTS_FILE_PATH = "./events/posted_events.json"
 
 
 # Load configuration
