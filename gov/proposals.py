@@ -18,7 +18,6 @@ from discord.ext.commands import Bot
 from consts.constants import GOVERNANCE_BUDGET_CHANNEL, GOVERNANCE_CHANNEL
 from consts.types import GOVERNANCE_ID_TYPE, BUDGET_ID_TYPE
 from logger.logger import logger
-from shared.helpers import get_forum_channel_by_name
 
 proposals: List[Dict[str, Any]] = []
 
@@ -26,7 +25,9 @@ ongoing_votes: Dict[int, Dict[str, Any]] = {}
 
 
 # prepare the draft by setting the type, channel ID, and title based on the draft type
-async def prepare_draft(guild: discord.Guild, draft: Dict[str, Any]) -> Tuple[str, str, str]:
+async def prepare_draft(
+    bot: Bot, guild: discord.Guild, draft: Dict[str, Any]
+) -> Tuple[str, str, str]:
     """
     Prepare the draft by setting the type, channel ID, and title based on the draft type.
     Increment the current ID and update the config file.
@@ -39,7 +40,6 @@ async def prepare_draft(guild: discord.Guild, draft: Dict[str, Any]) -> Tuple[st
     Tuple[str, str, str]: The ID type, channel name, and title of the draft.
     """
     try:
-        logger.info("Prepare draft function called")
         draft_type = draft["type"].lower()
         if draft_type not in [BUDGET_ID_TYPE, GOVERNANCE_ID_TYPE]:
             raise ValueError(f"Invalid draft type: {draft_type}")
@@ -51,7 +51,9 @@ async def prepare_draft(guild: discord.Guild, draft: Dict[str, Any]) -> Tuple[st
             cfg.update_id_values(
                 cfg.current_budget_id, id_type
             )  # Update the governance ID in the config file
-            title = f"Bloom Budget Proposal (BBP) #{cfg.current_budget_id}: {draft['name']}"
+            title = (
+                f"Bloom Budget Proposal (BBP) #{cfg.current_budget_id}: {draft['name']}"
+            )
         else:
             id_type = GOVERNANCE_ID_TYPE
             channel_name = GOVERNANCE_CHANNEL
@@ -61,14 +63,15 @@ async def prepare_draft(guild: discord.Guild, draft: Dict[str, Any]) -> Tuple[st
             )  # Update the governance ID in the config file
             title = f"Bloom Governance Proposal (BGP) #{cfg.current_governance_id}: {draft['name']}"
 
-        # Use the helper function to get the channel based on the channel_name
-        channel = await get_forum_channel_by_name(guild, channel_name)
-        
-        logger.info("Draft preparation successful")
-        return id_type, channel.name, title  # Return the ID type, channel name, and title of the draft
+        return (
+            id_type,
+            channel_name,
+            title,
+        )  # Return the ID type, channel name, and title of the draft
     except Exception as e:
         logger.error(f"Error preparing draft: {e}")
         raise
+
 
 # publish the draft by creating a thread with the prepared content and starting a vote timer
 async def publish_draft(draft: Dict[str, Any], bot: Bot, guild_id: int) -> None:
@@ -80,7 +83,14 @@ async def publish_draft(draft: Dict[str, Any], bot: Bot, guild_id: int) -> None:
     bot (Bot): The bot instance.
     guild_id (int): The ID of the guild where the draft will be published.
     """
-    id_type, channel_name, title = await prepare_draft(bot.get_guild(guild_id), draft)
+
+    guild = bot.get_guild(guild_id)
+    if guild is None:
+        logger.error(f"Error: Guild with id {guild_id} not found.")
+        return
+
+    id_type, channel_name, title = await prepare_draft(bot, guild, draft)
+
     forum_channel = discord.utils.get(
         bot.get_guild(guild_id).channels, name=channel_name
     )
@@ -89,7 +99,6 @@ async def publish_draft(draft: Dict[str, Any], bot: Bot, guild_id: int) -> None:
             f"Error: Unable to publish draft, Forum Channel not found. Please verify a channel exists with the name {channel_name} and it aligns with shared/constants.py"
         )
         return
-
     # Store the content in a variable
     content = textwrap.dedent(
         f"""
