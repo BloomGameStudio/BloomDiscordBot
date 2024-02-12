@@ -63,6 +63,6 @@ async def handle_publishdraft(
     if draft_to_publish:
         await interaction.response.send_message(f"Publishing draft: {draft_to_publish['title']}")
         proposals.remove(draft_to_publish)
-        await publish_draft(draft_to_publish, bot, interaction.guild.id)
+        await publish_draft(draft_to_publish, bot, interaction.guild.id, interaction.guild)
     else:
         await interaction.response.send_message(f"Draft not found: {draft_name}")

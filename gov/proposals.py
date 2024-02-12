@@ -38,8 +38,6 @@ async def prepare_draft(guild: discord.Guild, draft: Dict[str, Any]) -> Tuple[st
     Returns:
     Tuple[str, str, str]: The ID type, channel name, and title of the draft.
     """
-
-    logger.info("Prepare draft function called")
     draft_type = draft["type"].lower()
     if draft_type not in [BUDGET_ID_TYPE, GOVERNANCE_ID_TYPE]:
         raise ValueError(f"Invalid draft type: {draft_type}")
@@ -64,7 +62,7 @@ async def prepare_draft(guild: discord.Guild, draft: Dict[str, Any]) -> Tuple[st
     return id_type, channel_name, title
 
 # publish the draft by creating a thread with the prepared content and starting a vote timer
-async def publish_draft(draft: Dict[str, Any], bot: Bot, guild_id: int) -> None:
+async def publish_draft(draft, bot, guild_id, guild):
     """
     Publish the draft by creating a thread with the prepared content and starting a vote timer.
 
@@ -73,7 +71,7 @@ async def publish_draft(draft: Dict[str, Any], bot: Bot, guild_id: int) -> None:
     bot (Bot): The bot instance.
     guild_id (int): The ID of the guild where the draft will be published.
     """
-    id_type, channel_name, title = await prepare_draft(draft)
+    id_type, channel_name, title = await prepare_draft(guild, draft)
     forum_channel = discord.utils.get(
         bot.get_guild(guild_id).channels, name=channel_name
     )
