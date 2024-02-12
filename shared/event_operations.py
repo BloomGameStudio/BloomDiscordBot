@@ -155,7 +155,7 @@ async def handle_reaction(
             (c for c in contributors if c["uid"] == emoji_dicts[contributor_emoji]),
             None,
         )
-        if contributor:
+        if contributor and str(contributor["uid"]) != str(user.id):  # Check if the user who reacted is not the contributor
             message_link = reaction.message.jump_url
             logger.info("Emoji react found, DMing contributor")
             await send_dm_once(bot, contributor, message_link)
