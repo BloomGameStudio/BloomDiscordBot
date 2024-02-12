@@ -4,6 +4,7 @@ from discord import Embed
 from .proposals import proposals
 from .command_operations import handle_publishdraft
 from consts.types import GOVERNANCE_ID_TYPE, BUDGET_ID_TYPE
+from typing import Dict, Any
 
 class ProposalModal(ui.Modal, title="Create/Edit Proposal"):
 
@@ -42,8 +43,8 @@ class ProposalModal(ui.Modal, title="Create/Edit Proposal"):
             self.background.default = proposal['background']
             self.abstract.default = proposal['abstract']
 
-    async def on_submit(self, interaction: discord.Interaction):
-        member_id = interaction.user.id
+    async def on_submit(self, interaction: discord.Interaction) -> None:
+        member_id: int = interaction.user.id
 
         # Check if the proposal type is valid
         if self.proposal_type.value not in [GOVERNANCE_ID_TYPE, BUDGET_ID_TYPE]:
@@ -51,7 +52,7 @@ class ProposalModal(ui.Modal, title="Create/Edit Proposal"):
             return
 
         if self.proposal is None:
-            new_proposal = {
+            new_proposal: Dict[str, Any] = {
                 'member_id': member_id,
                 'title': self.name.value,
                 'type': self.proposal_type.value,
@@ -70,7 +71,6 @@ class ProposalModal(ui.Modal, title="Create/Edit Proposal"):
         e.title = f"Thank you, proposal has been created/edited. Use the same command again to edit or delete an existing proposal"
         e.description = f"{self.name.value}"
         await interaction.response.send_message(embed=e)
-
     async def on_error(self, interaction: discord.Interaction, error: Exception) -> None:
         await interaction.response.send_message('Oops! Something went wrong.', ephemeral=True)
 

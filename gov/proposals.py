@@ -62,7 +62,7 @@ async def prepare_draft(guild: discord.Guild, draft: Dict[str, Any]) -> Tuple[st
     return id_type, channel_name, title
 
 # publish the draft by creating a thread with the prepared content and starting a vote timer
-async def publish_draft(draft, bot, guild_id, guild):
+async def publish_draft(draft: Dict[str, Any], bot: Bot, guild_id: int, guild: discord.Guild):
     """
     Publish the draft by creating a thread with the prepared content and starting a vote timer.
 
