@@ -3,6 +3,7 @@ from discord import ui
 from discord import Embed
 from .proposals import proposals
 from .command_operations import handle_publishdraft
+from consts.types import GOVERNANCE_ID_TYPE, BUDGET_ID_TYPE
 
 class ProposalModal(ui.Modal, title="Create/Edit Proposal"):
 
@@ -43,6 +44,11 @@ class ProposalModal(ui.Modal, title="Create/Edit Proposal"):
 
     async def on_submit(self, interaction: discord.Interaction):
         member_id = interaction.user.id
+
+        # Check if the proposal type is valid
+        if self.proposal_type.value not in [GOVERNANCE_ID_TYPE, BUDGET_ID_TYPE]:
+            await interaction.response.send_message('Invalid proposal type. It must be either "governance" or "budget".', ephemeral=True)
+            return
 
         if self.proposal is None:
             new_proposal = {
