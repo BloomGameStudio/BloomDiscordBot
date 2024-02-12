@@ -91,7 +91,7 @@ async def handle_message(
         )
         if emoji_id in message.content:
             logger.info("Emoji Found in message! %s", emoji_id)
-            if contributor:
+            if contributor and str(contributor["uid"]) != str(message.author.id):  # Convert both IDs to strings before comparing
                 try:
                     logger.info(f'Messaging the user, {contributor["uid"]}')
                     message_link = message.jump_url
