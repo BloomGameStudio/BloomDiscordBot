@@ -91,7 +91,7 @@ async def handle_message(
         )
         if emoji_id in message.content:
             logger.info("Emoji Found in message! %s", emoji_id)
-            if contributor:
+            if contributor and str(contributor["uid"]) != str(message.author.id):  # Convert both IDs to strings before comparing
                 try:
                     logger.info(f'Messaging the user, {contributor["uid"]}')
                     message_link = message.jump_url
@@ -155,7 +155,7 @@ async def handle_reaction(
             (c for c in contributors if c["uid"] == emoji_dicts[contributor_emoji]),
             None,
         )
-        if contributor:
+        if contributor and str(contributor["uid"]) != str(user.id):  # Check if the user who reacted is not the contributor
             message_link = reaction.message.jump_url
             logger.info("Emoji react found, DMing contributor")
             await send_dm_once(bot, contributor, message_link)
