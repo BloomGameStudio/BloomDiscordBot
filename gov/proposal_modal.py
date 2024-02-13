@@ -117,13 +117,13 @@ class DeleteProposalSelect(discord.ui.Select):
 class EditProposalSelect(discord.ui.Select):
     def __init__(self, proposals):
         self.proposals = proposals
-        options = [discord.SelectOption(label=proposal.title, value=proposal.title) for proposal in self.proposals]
+        options = [discord.SelectOption(label=proposal['title'], value=proposal['title']) for proposal in self.proposals]
         super().__init__(placeholder="Select a proposal to edit", options=options)
 
     async def callback(self, interaction: discord.Interaction):
         # Find the selected proposal
         for proposal in self.proposals:
-            if proposal.title == self.values[0]:
+            if proposal['title'] == self.values[0]:
                 selected_proposal = proposal
                 break
         else:
@@ -133,7 +133,7 @@ class EditProposalSelect(discord.ui.Select):
         # Open the ProposalModal with the selected proposal
         modal = ProposalModal(interaction.channel, selected_proposal)
         await interaction.response.send_modal(modal)
-                
+                        
 class ProposalButtonsView(discord.ui.View):
     def __init__(self, proposals):
         super().__init__()

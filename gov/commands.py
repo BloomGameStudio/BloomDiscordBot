@@ -13,7 +13,7 @@ def setup_gov_commands(bot: commands.Bot) -> None:
     async def votedraft(ctx):
         try: 
             view = ProposalButtonsView(proposals)
-            await ctx.send("Click create, edit, or delete to modify or create a new proposal.", view=view)
+            await ctx.send("Click create to create a new proposal, edit, or delete to modify an existing proposal.", view=view)
         except Exception as e:
             await ctx.send("Couldn't access proposal data.")
 
