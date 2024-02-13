@@ -70,7 +70,7 @@ async def get_forum_channel_by_name(guild: discord.Guild, channel_name: str) -> 
 
     return None  # Return None if neither the channel_name nor the fallback mapping is found
 
-async def get_guild_member_check_role(ctx: discord.ext.commands.Context) -> bool:
+async def get_guild_member_check_role(interaction: discord.Interaction):
     """
     Check if the guild member who invoked the command has the 'core' role.
 
@@ -81,7 +81,7 @@ async def get_guild_member_check_role(ctx: discord.ext.commands.Context) -> bool
     bool: True if the member has the 'core' role, False otherwise.
     """
     # Retrieve the guild member who invoked the command
-    member = ctx.guild.get_member(ctx.author.id)
+    member = interaction.guild.get_member(interaction.user.id)
     permitted = False  # default value
 
     # Check if they have the 'core' role.
@@ -89,6 +89,6 @@ async def get_guild_member_check_role(ctx: discord.ext.commands.Context) -> bool
         permitted = True
 
     if not permitted:
-        await ctx.send("You do not have permission to use this command.")
+        await interaction.response.send_message("You do not have permission to use this command.")
 
     return permitted
