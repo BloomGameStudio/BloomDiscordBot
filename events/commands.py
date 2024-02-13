@@ -4,57 +4,50 @@ The function calls related to the commands are located in command_operations.py
 
 setup_event_commands is used so that all event commands can be loaded at once. instead of individually.
 """
-
+import discord
 from discord.ext import commands
 from discord.ext.commands import Context
 from events.command_operations import list_events_operation, delete_event_operation
 
 
-def setup_event_commands(bot: commands.Bot) -> None:
+async def setup_event_commands(bot: commands.Bot) -> None:
     """
     Setup the event-related commands.
 
     Parameters:
     bot (commands.Bot): The bot instance.
     """
-
-    @bot.command(name="list_events")
-    async def list_events(ctx: Context) -> None:
+    @bot.tree.command()
+    async def list_events(interaction: discord.Interaction):
         """
         List all the events in the guild. list_events_operation from command_operations.py is invoked.
 
         Parameters:
-        ctx (Context): The context of the command invocation.
+        interaction (Interaction): The interaction of the command invocation.
         """
-        guild = ctx.guild
+        guild = interaction.guild
         formatted_string = await list_events_operation(guild)
-        await ctx.send(f"🗓️ **All Events**🗓️ \n\n{formatted_string}")
+        await interaction.response.send_message(f"🗓️ **All Events**🗓️ \n\n{formatted_string}")
+    
+    await bot.tree.delete_command('delete_event')
 
-    @bot.command(name="delete_event")
-    async def delete_event(ctx: Context, event_id: int = None) -> None:
+    @bot.tree.command(name="delete_event")
+    async def delete_event(interaction: discord.Interaction, event_name: str = None):
         """
         Deletes an event in the guild. delete_event_operation from command_operations.py is invoked.
 
         Parameters:
-        ctx (Context): The context of the command invocation.
-        event_id (int): The ID of the event to be deleted.
+        interaction (Interaction): The interaction of the command invocation.
+        event_name (str): The name of the event to be deleted.
 
         """
-        if event_id is None:
-            await ctx.send(
-                "Please enter an event_id with this command. Example: `!delete_event 1179241076016566272`"
+        if event_name is None:
+            await interaction.response.send_message(
+                "Please enter an event name with this command. Example: `/delete_event My Event`"
             )
             return
 
-        guild = ctx.guild
+        guild = interaction.guild
 
-        try:
-            event_id = int(event_id)
-        except ValueError:
-            await ctx.send(
-                "Invalid event_id. Please provide a valid ID. Use !list_events to get a list of events"
-            )
-            return
-
-        message = await delete_event_operation(ctx, guild, event_id)
-        await ctx.send(message)
+        message = await delete_event_operation(interaction, guild, event_name)
+        await interaction.response.send_message(message)

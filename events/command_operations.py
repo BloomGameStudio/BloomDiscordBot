@@ -4,7 +4,7 @@ This includes fetching events, and deleting events.
 """
 
 from discord import Guild
-from discord.ext.commands import Context
+import discord
 from shared.helpers import get_guild_member_check_role
 
 
@@ -35,27 +35,28 @@ async def list_events_operation(guild: Guild) -> str:
     return formatted_string
 
 
-async def delete_event_operation(ctx: Context, guild: Guild, event_id: int):
+async def delete_event_operation(interaction: discord.Interaction, guild: Guild, event_name: str):
     """
     Delete an event in the guild if the user has authorization to do so.
 
     Parameters:
-    ctx (Context): The context of the command invocation.
+    interaction (Interaction): The interaction of the command invocation.
     guild (Guild): The guild in which the event was created.
-    event_id (int): The ID of the event to be deleted.
+    event_name (str): The name of the event to be deleted.
 
     Returns:
     str: The result of the delete operation.
     """
-    permitted = await get_guild_member_check_role(ctx)
+    permitted = await get_guild_member_check_role(interaction)
     if not permitted:
         return
 
-    event = guild.get_scheduled_event(event_id)
+    events = await guild.fetch_scheduled_events()
+    event = next((e for e in events if e.name == event_name), None)
 
     if event:
         # Delete the event
         await event.delete()
-        return f"Event with ID {event_id} has been deleted 🗑️"
+        return f"Event '{event_name}' has been deleted 🗑️"
     else:
-        return f"No event found with ID {event_id}."
+        return f"No event found with name '{event_name}'."
