@@ -2,7 +2,6 @@ import discord
 from discord import ui
 from discord import Embed
 from .proposals import proposals
-from .command_operations import handle_publishdraft
 from consts.types import GOVERNANCE_ID_TYPE, BUDGET_ID_TYPE
 from typing import Dict, Any
 
@@ -17,11 +16,17 @@ class ProposalModal(ui.Modal, title="Create/Edit Proposal"):
     )
 
     abstract = ui.TextInput(
-        label="Proposal abstract:", style=discord.TextStyle.paragraph, required=True
+        label="Proposal abstract:",
+        style=discord.TextStyle.paragraph,
+        required=True,
+        max_length=400,
     )
 
     background = ui.TextInput(
-        label="Proposal background:", style=discord.TextStyle.paragraph, required=True
+        label="Proposal background:",
+        style=discord.TextStyle.paragraph,
+        required=True,
+        max_length=400,
     )
 
     def __init__(self, channel, proposal):
