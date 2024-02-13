@@ -1,27 +1,23 @@
 from discord.ext import commands
-from .command_operations import handle_votedraft, handle_publishdraft
 from .proposals import proposals
-from consts.constants import new_proposal_emoji
-from .proposal_modal import ProposalButtonsView, PublishDraftSelect
-from logger.logger import logger
-from typing import Optional
+from .proposal_buttons_view import ProposalButtonsView
+from .proposal_selects import PublishDraftSelect
 import discord
-from discord import ui
 
 def setup_gov_commands(bot: commands.Bot) -> None:
-    @bot.command(name="vote_draft", aliases=["v"], pass_context=True)
-    async def votedraft(ctx):
+    @bot.tree.command(name="vote_draft")
+    async def votedraft(interaction: discord.Interaction):
         try: 
             view = ProposalButtonsView(proposals)
-            await ctx.send("Click create to create a new proposal, edit, or delete to modify an existing proposal.", view=view)
+            await interaction.response.send_message("Click create to create a new proposal, edit, or delete to modify an existing proposal.", view=view)
         except Exception as e:
-            await ctx.send("Couldn't access proposal data.")
+            await interaction.response.send_message("Couldn't access proposal data.")
 
-    @bot.command(name="publish_draft")
-    async def publishdraft(ctx: commands.Context, *, draft_name: str = None) -> None:
+    @bot.tree.command(name="publish_draft")
+    async def publishdraft(interaction: discord.Interaction) -> None:
         try:
             view = discord.ui.View()
             view.add_item(PublishDraftSelect(proposals, bot))
-            await ctx.send("Select a proposal.", view=view)
+            await interaction.response.send_message("Select a proposal.", view=view)
         except Exception as e:
-            await ctx.send("Couldn't access proposal data.")
+            await interaction.response.send_message("Couldn't access proposal data.")
