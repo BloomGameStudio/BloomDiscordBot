@@ -43,13 +43,13 @@ Further support for additional servers, and merging of other bot functionality a
 1. To run the latest version from the main branch:
 
 ```
-    docker compose up
+    docker-compose up
 ```
 
 2. To run and build the checked out branch:
 
 ```
-    docker compose up --build
+    docker-compose up --build
 ```
 
 **Docker**
@@ -91,6 +91,12 @@ Proposals can be drafted by utilizing various commands.
 Upon completing a draft, it will automatically be posted so that you can view / make changes to it prior to publishing it.
 
 When you decide to publish the draft, you can request the bot to do this.
+
+If you wish to change the emojis used when drafting & reaching soft consensus prior to publishing to snapshot this can be done in consts/constants.py. Simply replace YES_VOTE / NO_VOTE or ABSTAIN_VOTE with the desired emoji id. For example: 
+
+```
+YES_VOTE = "<:gunta:1199583728129802322>"
+```
 
 # Commands
 

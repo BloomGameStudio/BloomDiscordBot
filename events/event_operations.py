@@ -74,7 +74,7 @@ def format_event(event: ScheduledEvent, guild_id: int) -> str:
         f"\n"
         f"To request someones attendance, react to this message with their emoji! \n"
         f"\n"
-        f":link:** Event Link** {event_url} :link:\n"
+        f":link: ** Event Link {event_url} **:link:\n"
     )
     return formatted_event
 

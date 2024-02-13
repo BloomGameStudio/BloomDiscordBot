@@ -1,9 +1,19 @@
 """
 consts/constants.py contains constants used throughout the bot.
 
+CONFIG_ID_MAP: A dictionary containing the valid ids and keys that can be selected to be incremented or in rare cases decremented in the config.ini file.
+
+CONFIG_ABSOLUTE_PATH: The absolute path to the config.ini file.
+
 GENERAL_CHANNEL, GOVERNANCE_CHANNEL, GOVERNANCE_BUDGET_CHANNEL, GOVERNANCE_TALK_CHANNEL
 are various channels used throughout the bot.
 Example usage is when posting information to Discord such as new events, new governance proposals, when members join, etc.
+
+YES_VOTE: The emoji used to vote yes on a proposal. Can be replaced with another emoji.
+
+NO_VOTE: The emoji used to vote no on a proposal.Can be replaced with another emoji.
+
+ABSTAIN_VOTE: The emoji used to abstain from voting on a proposal. Can be replaced with another emoji.
 
 new_proposal_emoji: The emoji used to inform the bot you wish to draft a new governance proposal.
 This is required when !v or !vote_draft command is invoked.
@@ -23,10 +33,6 @@ Each dictionary contains the following keys:
 
 MENU_COPY: A string containing the help menu for the bot. This menu lists all the available commands and their descriptions.
 
-CONFIG_ID_MAP: A dictionary containing the valid ids and keys that can be selected to be incremented or in rare cases decremented in the config.ini file.
-
-CONFIG_ABSOLUTE_PATH: The absolute path to the config.ini file.
-
 """
 
 # Preferred consts
@@ -34,6 +40,9 @@ GENERAL_CHANNEL = "🌺│home"
 GOVERNANCE_CHANNEL = "improvement-props"
 GOVERNANCE_BUDGET_CHANNEL = "budgetary-props"
 GOVERNANCE_TALK_CHANNEL = "🐬│governance"
+YES_VOTE = "👍"
+NO_VOTE = "👎"
+ABSTAIN_VOTE = "❌" 
 
 # fallback consts
 FALLBACK_GENERAL_CHANNEL = "🐘│announcements"
