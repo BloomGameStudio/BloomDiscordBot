@@ -105,7 +105,7 @@ async def list_contributors(
     server_name = interaction.guild.name
     emoji_dict = emoji_id_mapping.get(server_name)
     if emoji_dict is None:
-        await interaction.response.send_message(f"No emoji dictionary found for server: {server_name}")
+        await interaction.followup.send(f"No emoji dictionary found for server: {server_name}")
         return
 
     emoji_list = [emoji for emoji in emoji_dict.keys()]
@@ -138,7 +138,7 @@ async def remove_contributor(
         uid = user_mention.strip("<@!>").split(">")[0]
         server_contributors = contributors.get(interaction.guild.name)
         if server_contributors is None:
-            await interaction.response.send_message("No contributors found for server: " + interaction.guild.name)
+            await interaction.followup.send("No contributors found for server: " + interaction.guild.name)
             return
         for contributor in server_contributors:
             if contributor["uid"] == uid:
@@ -181,9 +181,10 @@ async def remove_contributor(
 
 async def add_contributor(
     interaction: discord.Interaction,
+    user_mention: str,
+    emoji: str,
     contributors: Dict[str, List[Dict[str, str]]],
     emoji_dicts: Dict[str, Dict[str, str]],
-    bot: discord.client,
 ) -> None:
     """
     Add a contributor to the list of contributors if the user invoking the command has the authorization to do so.
@@ -199,93 +200,28 @@ async def add_contributor(
     permitted = await get_guild_member_check_role(interaction)
     if not permitted:
         return
-    message = await interaction.response.send_message(
-        "**To add a contributor, reply to this message by tagging them with their emoji**\n"
-        "\n"
-        "**Example:** `@user <:emoji:123456789>`\n"
-        "\n"
-        "If you are adding yourself, simply react to this post with your emoji"
+    uid = user_mention.strip("<@!>")
+    emoji_id = emoji.strip("<:>")
+    server_contributors = contributors.get(interaction.guild.name)
+    if server_contributors is None:
+        await interaction.followup.send("No contributors found for server: " + interaction.guild.name)
+        return
+    existing_contributor: Optional[Dict[str, str]] = next(
+        (c for c in server_contributors if c["uid"] == uid), None
     )
 
-    def check_message(msg: discord.Message) -> bool:
-        return msg.author == interaction.user and msg.channel == interaction.channel
-
-    def check_reaction(reaction: discord.Reaction, user: discord.User) -> bool:
-        return user == interaction.user and reaction.message.id == message.id
-
-    # Wait 60 seconds for either a message or a reaction, whichever is done first.
-    done, pending = await asyncio.wait(
-        [
-            asyncio.create_task(
-                bot.wait_for("message", check=check_message, timeout=60)
-            ),
-            asyncio.create_task(
-                bot.wait_for("reaction_add", check=check_reaction, timeout=60)
-            ),
-        ],
-        return_when=asyncio.FIRST_COMPLETED,
-    )
-
-    # Cancel the task(s) that didn't finish.
-    for future in pending:
-        future.cancel()
-
-    result: tuple = done.pop().result()
-    if isinstance(result, discord.Message):
-        inputs: List[str] = result.content.split()
-        if len(inputs) == 2:
-            uid, emoji_id = inputs
-            uid = uid.strip("<@!>")
-            server_contributors = contributors.get(interaction.guild.name)
-            if server_contributors is None:
-                await interaction.response.send_message("No contributors found for server: " + interaction.guild.name)
-                return
-            existing_contributor: Optional[Dict[str, str]] = next(
-                (c for c in server_contributors if c["uid"] == uid), None
-            )
-
-            if existing_contributor:
-                await interaction.response.send_message(
-                    f"Contributor {existing_contributor['uid']} already exists"
-                )
-            else:
-                emoji_dict = emoji_dicts.get(interaction.guild.name)
-                if emoji_dict is None:
-                    await interaction.response.send_message(
-                        "Emoji dictionary not found for server: " + interaction.guild.name
-                    )
-                    return
-                await add_contributor_to_list(
-                    interaction, uid, emoji_id, server_contributors, emoji_dict
-                )
-                await interaction.response.send_message(f"Contributor added successfully!")
-        else:
-            await interaction.response.send_message("Invalid input. Please provide all required information.")
-    elif isinstance(result, tuple) and len(result) == 2:
-        reaction, user = result
-        emoji_id: str = str(reaction.emoji)
-        uid: str = str(user.id)
-        server_contributors = contributors.get(interaction.guild.name)
-        if server_contributors is None:
-            await interaction.response.send_message("No contributors found for server: " + interaction.guild.name)
-            return
-        existing_contributor: Optional[Dict[str, str]] = next(
-
-            (c for c in server_contributors if c["uid"] == uid), None
+    if existing_contributor:
+        await interaction.response.send_message(
+            f"Contributor {existing_contributor['uid']} already exists"
         )
-
-        if existing_contributor:
-            await interaction.response.send_message(f"Contributor {existing_contributor['uid']} already exists")
-        else:
-            emoji_dict = emoji_dicts.get(interaction.guild.name)
-            if emoji_dict is None:
-                await interaction.response.send_message(
-                    "Emoji dictionary not found for server: " + interaction.guild.name
-                )
-                return
-            await add_contributor_to_list(
-                interaction, uid, emoji_id, server_contributors, emoji_dict
-            )
-            await interaction.response.send_message(f"Contributor added successfully!")
     else:
-        await interaction.response.send_message("Timeout. Please run the command again.")
+        emoji_dict = emoji_dicts.get(interaction.guild.name)
+        if emoji_dict is None:
+            await interaction.response.send_message(
+                "Emoji dictionary not found for server: " + interaction.guild.name
+            )
+            return
+        await add_contributor_to_list(
+            interaction, uid, emoji_id, server_contributors, emoji_dict
+        )
+        await interaction.followup.send(f"Contributor added successfully!")
