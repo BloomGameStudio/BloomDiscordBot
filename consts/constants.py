@@ -60,8 +60,6 @@ CONSTANT_FALLBACK_MAPPING = {
     GOVERNANCE_TALK_CHANNEL: FALLBACK_GOVERNANCE_TALK_CHANNEL
 }
 
-new_proposal_emoji = "💡"
-
 RULES_MESSAGE_ID = 1202059311681904661  # Set to ID of whatever message you want to be used as rules / to welcome a user
 DISCORD_ROLE_TRIGGERS = [
     {"name": "Client", "emoji_id": 1199583728129802322, "role": "Client Pod"},
@@ -84,37 +82,37 @@ MENU_COPY = """
 __ 🌺 **Bloom Bot Commands** 🌺 __
 Commands can be prompted with **!**
 
-**!help**
+**/help**
 ```
 Procure this message. You knew that already, silly goose.
 ```
-**!add_contributor**
+**/add_contributor**
 ```
 Add a contributor to the list of contributors
 ```
-**!remove_contributor**
+**/remove_contributor**
 ```
 Remove a contributor from the list of contributors
 ```
-**!contributors**
+**/contributors**
 ```
 Display the list of contributors
 ```
-**!list_events**
+**/list_events**
 ```
 Display the list of events and their associated event ID
 ```
-**!remove_event**
+**/remove_event**
 ```
 Remove an event from the list of events
 Example: !remove_event 2583458345
 
 ```
-**!v or !vote_draft**
+**/vote_draft**
 ```
 Draft a vote proposal
 ```
-**!publish_draft**
+**/publish_draft**
 ```
 Publish a draft that has been worked on.
 Example: !publish_draft Budget Proposal
