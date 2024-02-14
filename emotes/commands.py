@@ -32,7 +32,7 @@ def setup_contrbitutor_commands(
     @bot.tree.command(name="contributors")
     async def listcontributors(interaction: discord.Interaction) -> None:
         """
-        Invokes list_contributors which lists all the contributors in a specific guild/s.
+        Lists the contributos associated with this guild.
 
         Parameters:
         interaction (Interaction): The interaction of the command invocation.
@@ -42,8 +42,7 @@ def setup_contrbitutor_commands(
     @bot.tree.command(name="remove_contributor")
     async def removecontributor(interaction: discord.Interaction, user_mention: str) -> None:
         """
-        Invokes remove_contributor which removes a contributor if applicable contributor exists
-        and the user invoking the command has the authorization to do so.
+        Removes a contributor from the list of contributors.
 
         Parameters:
         interaction (Interaction): The interaction of the command invocation.
@@ -54,8 +53,7 @@ def setup_contrbitutor_commands(
     @bot.tree.command(name="add_contributor")
     async def addcontributor(interaction: discord.Interaction, user_mention: str, emoji: str) -> None:
         """
-        Invokes add_contributor which adds a contributor,
-        if the user invoking the command has the authorization to do so.
+        Adds a contibutor to the list of contributors.
 
         Parameters:
         interaction (Interaction): The interaction of the command invocation.

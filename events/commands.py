@@ -20,7 +20,7 @@ def setup_event_commands(bot: commands.Bot) -> None:
     @bot.tree.command()
     async def list_events(interaction: discord.Interaction):
         """
-        List all the events in the guild. list_events_operation from command_operations.py is invoked.
+        Lists all of the events in the guild.
 
         Parameters:
         interaction (Interaction): The interaction of the command invocation.
@@ -34,7 +34,7 @@ def setup_event_commands(bot: commands.Bot) -> None:
     @bot.tree.command(name="delete_event")
     async def delete_event(interaction: discord.Interaction, event_name: str = None):
         """
-        Deletes an event in the guild. delete_event_operation from command_operations.py is invoked.
+        Deletes an event from the guild.
 
         Parameters:
         interaction (Interaction): The interaction of the command invocation.
