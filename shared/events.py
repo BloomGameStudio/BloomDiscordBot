@@ -19,7 +19,6 @@ def setup_shared_events(
         str, Dict[str, Dict[str, Union[List[Dict[str, str]], Dict[str, str]]]]
     ] = {},
     proposals: List[Dict[str, str]] = [],
-    new_proposal_emoji: str = "💡",
 ) -> None:
     """
     Sets up shared events for the bot.
@@ -59,7 +58,7 @@ def setup_shared_events(
         Returns:
         None
         """
-        await handle_reaction(bot, reaction, user, data, proposals, new_proposal_emoji)
+        await handle_reaction(bot, reaction, user, data, proposals)
 
     @bot.event
     async def on_raw_reaction_add(payload):

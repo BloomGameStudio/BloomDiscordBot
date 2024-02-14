@@ -18,7 +18,6 @@ from discord.ext.commands import Bot
 from consts.constants import GOVERNANCE_BUDGET_CHANNEL, GOVERNANCE_CHANNEL, YES_VOTE, NO_VOTE, ABSTAIN_VOTE
 from consts.types import GOVERNANCE_ID_TYPE, BUDGET_ID_TYPE
 from logger.logger import logger
-from shared.helpers import get_forum_channel_by_name
 
 proposals: List[Dict[str, Any]] = []
 
