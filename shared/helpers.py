@@ -70,7 +70,7 @@ async def get_forum_channel_by_name(guild: discord.Guild, channel_name: str) -> 
 
     return None  # Return None if neither the channel_name nor the fallback mapping is found
 
-async def get_guild_member_check_role(interaction: discord.Interaction):
+async def get_guild_member_check_role(interaction: discord.Interaction) -> bool:
     """
     Check if the guild member who invoked the command has the 'core' role.
 
