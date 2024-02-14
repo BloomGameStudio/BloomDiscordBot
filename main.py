@@ -54,7 +54,7 @@ class Bot:
         intents.message_content = True
         intents.reactions = True
         intents.members = True
-        self.bot = commands.Bot(command_prefix="!", intents=intents)
+        self.bot = commands.Bot(command_prefix="", intents=intents)
 
         # Setup commands and events for the bot
         setup_gov_commands(self.bot)
