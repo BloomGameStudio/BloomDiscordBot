@@ -38,17 +38,6 @@ async def handle_votedraft(
         )
         return
 
-    # Send a message
-    msg = "Would you like to work on an existing draft proposal, or do you wish to create a new one? \nExisting drafts are:"
-    await ctx.send(msg)
-
-    # List existing draft proposals
-    for proposal in proposals:
-        await ctx.send(f"📝 {proposal['name']}")
-
-    await ctx.send(f"{new_proposal_emoji} New")
-
-
 async def handle_publishdraft(
     interaction: discord.Interaction,
     draft_name: str,
