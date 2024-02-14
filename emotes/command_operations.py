@@ -8,7 +8,7 @@ import json
 import discord
 from config.config import CONTRIBUTORS_FILE_PATH
 from shared.helpers import get_guild_member_check_role
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 
 async def add_contributor_to_list(
@@ -240,7 +240,7 @@ async def add_contributor(
             if server_contributors is None:
                 await interaction.response.send_message("No contributors found for server: " + interaction.guild.name)
                 return
-            existing_contributor: [Dict[str, str], None] = next(
+            existing_contributor: Optional[Dict[str, str]] = next(
                 (c for c in server_contributors if c["uid"] == uid), None
             )
 
@@ -269,7 +269,8 @@ async def add_contributor(
         if server_contributors is None:
             await interaction.response.send_message("No contributors found for server: " + interaction.guild.name)
             return
-        existing_contributor: [Dict[str, str], None] = next(
+        existing_contributor: Optional[Dict[str, str]] = next(
+
             (c for c in server_contributors if c["uid"] == uid), None
         )
 
