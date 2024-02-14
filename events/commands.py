@@ -10,7 +10,7 @@ from discord.ext.commands import Context
 from events.command_operations import list_events_operation, delete_event_operation
 
 
-async def setup_event_commands(bot: commands.Bot) -> None:
+def setup_event_commands(bot: commands.Bot) -> None:
     """
     Setup the event-related commands.
 
@@ -29,7 +29,7 @@ async def setup_event_commands(bot: commands.Bot) -> None:
         formatted_string = await list_events_operation(guild)
         await interaction.response.send_message(f"🗓️ **All Events**🗓️ \n\n{formatted_string}")
     
-    await bot.tree.delete_command('delete_event')
+        bot.tree.delete_command('delete_event')
 
     @bot.tree.command(name="delete_event")
     async def delete_event(interaction: discord.Interaction, event_name: str = None):

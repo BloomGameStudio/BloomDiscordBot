@@ -72,10 +72,6 @@ async def handle_message(
         logger.warning(f"No data found for server: {server_name}")
         return
 
-    # If the message starts with "!help", send the menu copy
-    if message.content.startswith("!help"):
-        await message.channel.send(MENU_COPY)
-        return
 
     contributors = server_data["contributors"]
     emoji_dicts = server_data["emoji_dictionary"]
