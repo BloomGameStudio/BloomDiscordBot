@@ -52,12 +52,14 @@ def setup_contrbitutor_commands(
         await remove_contributor(interaction, contributors, emoji_dicts, user_mention)
 
     @bot.tree.command(name="add_contributor")
-    async def addcontributor(interaction: discord.Interaction) -> None:
+    async def addcontributor(interaction: discord.Interaction, user_mention: str, emoji: str) -> None:
         """
         Invokes add_contributor which adds a contributor,
         if the user invoking the command has the authorization to do so.
 
         Parameters:
         interaction (Interaction): The interaction of the command invocation.
+        user_mention (str): The mention of the user to be added as a contributor.
+        emoji (str): The emoji associated with the user.
         """
-        await add_contributor(interaction, contributors, emoji_dicts, bot)
+        await add_contributor(interaction, user_mention, emoji, contributors, emoji_dicts, bot)
