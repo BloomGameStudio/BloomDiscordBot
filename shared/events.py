@@ -10,7 +10,12 @@ from typing import Dict, Union, List
 from discord.ext import commands
 from discord import Message, Reaction, User
 from consts.constants import RULES_MESSAGE_ID
-from .event_operations import handle_message, handle_reaction, process_new_member, process_reaction_add
+from .event_operations import (
+    handle_message,
+    handle_reaction,
+    process_new_member,
+    process_reaction_add,
+)
 
 
 def setup_shared_events(
@@ -19,7 +24,6 @@ def setup_shared_events(
         str, Dict[str, Dict[str, Union[List[Dict[str, str]], Dict[str, str]]]]
     ] = {},
     proposals: List[Dict[str, str]] = [],
-    new_proposal_emoji: str = "💡",
 ) -> None:
     """
     Sets up shared events for the bot.
@@ -59,7 +63,7 @@ def setup_shared_events(
         Returns:
         None
         """
-        await handle_reaction(bot, reaction, user, data, proposals, new_proposal_emoji)
+        await handle_reaction(bot, reaction, user, data, proposals)
 
     @bot.event
     async def on_raw_reaction_add(payload):

@@ -5,8 +5,9 @@ modules.
 """
 
 import discord
-import consts.constants as constants 
+import consts.constants as constants
 from typing import Optional
+
 
 def get_channel_by_name(guild: discord.Guild, channel_name: str) -> discord.TextChannel:
     """
@@ -31,9 +32,14 @@ def get_channel_by_name(guild: discord.Guild, channel_name: str) -> discord.Text
 
     # If the preferred channel is not found, try to use the fallback mapping
     fallback_channel_name = constants.CONSTANT_FALLBACK_MAPPING.get(channel_name)
-    if fallback_channel_name:  # If a fallback name is defined for the given channel_name
+    if (
+        fallback_channel_name
+    ):  # If a fallback name is defined for the given channel_name
         for channel in guild.channels:
-            if isinstance(channel, discord.TextChannel) and channel.name == fallback_channel_name:
+            if (
+                isinstance(channel, discord.TextChannel)
+                and channel.name == fallback_channel_name
+            ):
                 return channel
 
     raise ValueError(
@@ -41,7 +47,10 @@ def get_channel_by_name(guild: discord.Guild, channel_name: str) -> discord.Text
         "\n Check the channel names in consts/constants.py and make sure they match the channel names in your Discord server."
     )
 
-async def get_forum_channel_by_name(guild: discord.Guild, channel_name: str) -> Optional[discord.ForumChannel]:
+
+async def get_forum_channel_by_name(
+    guild: discord.Guild, channel_name: str
+) -> Optional[discord.ForumChannel]:
     """
     Retrieve a ForumChannel in a guild based on its name, with support for a fallback channel name.
 
@@ -63,14 +72,20 @@ async def get_forum_channel_by_name(guild: discord.Guild, channel_name: str) -> 
 
     # If the preferred forum channel is not found, try to use the fallback mapping
     fallback_channel_name = constants.CONSTANT_FALLBACK_MAPPING.get(channel_name)
-    if fallback_channel_name:  # If a fallback name is defined for the given channel_name
+    if (
+        fallback_channel_name
+    ):  # If a fallback name is defined for the given channel_name
         for channel in guild.channels:
-            if isinstance(channel, discord.ForumChannel) and channel.name == fallback_channel_name:
+            if (
+                isinstance(channel, discord.ForumChannel)
+                and channel.name == fallback_channel_name
+            ):
                 return channel
 
     return None  # Return None if neither the channel_name nor the fallback mapping is found
 
-async def get_guild_member_check_role(ctx: discord.ext.commands.Context) -> bool:
+
+async def get_guild_member_check_role(interaction: discord.Interaction) -> bool:
     """
     Check if the guild member who invoked the command has the 'core' role.
 
@@ -81,7 +96,7 @@ async def get_guild_member_check_role(ctx: discord.ext.commands.Context) -> bool
     bool: True if the member has the 'core' role, False otherwise.
     """
     # Retrieve the guild member who invoked the command
-    member = ctx.guild.get_member(ctx.author.id)
+    member = interaction.guild.get_member(interaction.user.id)
     permitted = False  # default value
 
     # Check if they have the 'core' role.
@@ -89,6 +104,8 @@ async def get_guild_member_check_role(ctx: discord.ext.commands.Context) -> bool
         permitted = True
 
     if not permitted:
-        await ctx.send("You do not have permission to use this command.")
+        await interaction.response.send_message(
+            "You do not have permission to use this command."
+        )
 
     return permitted

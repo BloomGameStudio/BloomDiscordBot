@@ -33,6 +33,10 @@ def setup_event_events(bot: commands.Bot) -> None:
         logger.info(f"Logged in as {bot.user.name} ({bot.user.id})")
         await bot.change_presence()
         logger.info(f"Starting background task for all guilds")
+        try:
+            await bot.tree.sync()
+        except Exception as e:
+            logger.error(e)
         check_events.start(bot)
 
     @bot.event
