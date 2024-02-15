@@ -29,8 +29,6 @@ def setup_event_commands(bot: commands.Bot) -> None:
         formatted_string = await list_events_operation(guild)
         await interaction.response.send_message(f"🗓️ **All Events**🗓️ \n\n{formatted_string}")
     
-        bot.tree.delete_command('delete_event')
-
     @bot.tree.command(name="delete_event")
     async def delete_event(interaction: discord.Interaction, event_name: str = None):
         """
@@ -42,12 +40,9 @@ def setup_event_commands(bot: commands.Bot) -> None:
 
         """
         if event_name is None:
-            await interaction.response.send_message(
-                "Please enter an event name with this command. Example: `/delete_event My Event`"
-            )
-            return
+            message = "Please enter an event name with this command. Example: `/delete_event My Event`"
+        else:
+            guild = interaction.guild
+            message = await delete_event_operation(interaction, guild, event_name)
 
-        guild = interaction.guild
-
-        message = await delete_event_operation(interaction, guild, event_name)
         await interaction.response.send_message(message)
