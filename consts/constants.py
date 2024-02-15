@@ -105,7 +105,7 @@ Display the list of events and their associated event ID
 **/remove_event**
 ```
 Remove an event from the list of events
-Example: !remove_event 2583458345
+Example: /remove_event my_event
 
 ```
 **/vote_draft**
@@ -115,6 +115,5 @@ Draft a vote proposal
 **/publish_draft**
 ```
 Publish a draft that has been worked on.
-Example: !publish_draft Budget Proposal
 ```
 """
