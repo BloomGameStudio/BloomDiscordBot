@@ -10,7 +10,12 @@ from typing import Dict, Union, List
 from discord.ext import commands
 from discord import Message, Reaction, User
 from consts.constants import RULES_MESSAGE_ID
-from .event_operations import handle_message, handle_reaction, process_new_member, process_reaction_add
+from .event_operations import (
+    handle_message,
+    handle_reaction,
+    process_new_member,
+    process_reaction_add,
+)
 
 
 def setup_shared_events(

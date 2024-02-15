@@ -15,7 +15,13 @@ import config.config as cfg
 import discord
 from typing import Dict, Any, List, Tuple
 from discord.ext.commands import Bot
-from consts.constants import GOVERNANCE_BUDGET_CHANNEL, GOVERNANCE_CHANNEL, YES_VOTE, NO_VOTE, ABSTAIN_VOTE
+from consts.constants import (
+    GOVERNANCE_BUDGET_CHANNEL,
+    GOVERNANCE_CHANNEL,
+    YES_VOTE,
+    NO_VOTE,
+    ABSTAIN_VOTE,
+)
 from consts.types import GOVERNANCE_ID_TYPE, BUDGET_ID_TYPE
 from logger.logger import logger
 
@@ -25,7 +31,9 @@ ongoing_votes: Dict[int, Dict[str, Any]] = {}
 
 
 # prepare the draft by setting the type, channel ID, and title based on the draft type
-async def prepare_draft(guild: discord.Guild, draft: Dict[str, Any]) -> Tuple[str, str, str]:
+async def prepare_draft(
+    guild: discord.Guild, draft: Dict[str, Any]
+) -> Tuple[str, str, str]:
     """
     Prepare the draft by setting the type, channel ID, and title based on the draft type.
     Increment the current ID and update the config file.
@@ -48,7 +56,9 @@ async def prepare_draft(guild: discord.Guild, draft: Dict[str, Any]) -> Tuple[st
         cfg.update_id_values(
             cfg.current_budget_id, id_type
         )  # Update the governance ID in the config file
-        title = f"Bloom Budget Proposal (BBP) #{cfg.current_budget_id}: {draft['title']}"
+        title = (
+            f"Bloom Budget Proposal (BBP) #{cfg.current_budget_id}: {draft['title']}"
+        )
     else:
         id_type = GOVERNANCE_ID_TYPE
         channel_name = GOVERNANCE_CHANNEL
@@ -60,8 +70,11 @@ async def prepare_draft(guild: discord.Guild, draft: Dict[str, Any]) -> Tuple[st
 
     return id_type, channel_name, title
 
+
 # publish the draft by creating a thread with the prepared content and starting a vote timer
-async def publish_draft(draft: Dict[str, Any], bot: Bot, guild_id: int, guild: discord.Guild):
+async def publish_draft(
+    draft: Dict[str, Any], bot: Bot, guild_id: int, guild: discord.Guild
+):
     """
     Publish the draft by creating a thread with the prepared content and starting a vote timer.
 

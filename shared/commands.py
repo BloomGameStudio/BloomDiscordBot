@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 from consts.constants import MENU_COPY
 
+
 async def setupsharedcommands(bot: commands.Bot) -> None:
     @bot.tree.command(name="help")
     async def help_commands(interaction: discord.Interaction):

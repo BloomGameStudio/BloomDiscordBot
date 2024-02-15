@@ -47,6 +47,7 @@ async def add_contributor_to_list(
     )
     return new_contributor
 
+
 async def send_dm_once(
     bot: discord.Client, contributor: Dict[str, str], message_link: str
 ) -> None:
@@ -104,7 +105,9 @@ async def list_contributors(
     server_name = interaction.guild.name
     emoji_dict = emoji_id_mapping.get(server_name)
     if emoji_dict is None:
-        await interaction.followup.send(f"No emoji dictionary found for server: {server_name}")
+        await interaction.followup.send(
+            f"No emoji dictionary found for server: {server_name}"
+        )
         return
 
     emoji_list = [emoji for emoji in emoji_dict.keys()]
@@ -137,14 +140,17 @@ async def remove_contributor(
         uid = user_mention.strip("<@!>").split(">")[0]
         server_contributors = contributors.get(interaction.guild.name)
         if server_contributors is None:
-            await interaction.followup.send("No contributors found for server: " + interaction.guild.name)
+            await interaction.followup.send(
+                "No contributors found for server: " + interaction.guild.name
+            )
             return
         for contributor in server_contributors:
             if contributor["uid"] == uid:
                 emoji_dict = emoji_dicts.get(interaction.guild.name)
                 if emoji_dict is None:
                     await interaction.response.send_message(
-                        "Emoji dictionary not found for server: " + interaction.guild.name
+                        "Emoji dictionary not found for server: "
+                        + interaction.guild.name
                     )
                     return
                 emoji_id_to_remove = next(
@@ -171,11 +177,15 @@ async def remove_contributor(
                         "emoji_dictionary": emoji_dict,
                     },
                 )
-                await interaction.response.send_message(f"Contributor removed successfully!")
+                await interaction.response.send_message(
+                    f"Contributor removed successfully!"
+                )
                 return
         await interaction.response.send_message("Contributor not found.")
     else:
-        await interaction.response.send_message("Please provide the mention of the contributor to remove.")
+        await interaction.response.send_message(
+            "Please provide the mention of the contributor to remove."
+        )
 
 
 async def add_contributor(
@@ -203,7 +213,9 @@ async def add_contributor(
     emoji_id = emoji
     server_contributors = contributors.get(interaction.guild.name)
     if server_contributors is None:
-        await interaction.followup.send("No contributors found for server: " + interaction.guild.name)
+        await interaction.followup.send(
+            "No contributors found for server: " + interaction.guild.name
+        )
         return
     existing_contributor: Optional[Dict[str, str]] = next(
         (c for c in server_contributors if c["uid"] == uid), None

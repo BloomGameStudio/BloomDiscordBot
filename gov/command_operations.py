@@ -11,6 +11,7 @@ from shared.helpers import get_channel_by_name
 from logger.logger import logger
 import discord
 
+
 async def handle_votedraft(
     ctx: commands.Context, proposals: List[Dict[str, str]], new_proposal_emoji: str
 ) -> None:
@@ -38,6 +39,7 @@ async def handle_votedraft(
         )
         return
 
+
 async def handle_publishdraft(
     interaction: discord.Interaction,
     draft_name: str,
@@ -45,13 +47,21 @@ async def handle_publishdraft(
     bot: commands.Bot,
 ) -> None:
     draft_to_publish = next(
-        (item for item in proposals if item.get("title", "").strip() == draft_name.strip()),
+        (
+            item
+            for item in proposals
+            if item.get("title", "").strip() == draft_name.strip()
+        ),
         None,
     )
 
     if draft_to_publish:
-        await interaction.response.send_message(f"Publishing draft: {draft_to_publish['title']}")
+        await interaction.response.send_message(
+            f"Publishing draft: {draft_to_publish['title']}"
+        )
         proposals.remove(draft_to_publish)
-        await publish_draft(draft_to_publish, bot, interaction.guild.id, interaction.guild)
+        await publish_draft(
+            draft_to_publish, bot, interaction.guild.id, interaction.guild
+        )
     else:
         await interaction.response.send_message(f"Draft not found: {draft_name}")

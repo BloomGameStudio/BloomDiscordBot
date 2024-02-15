@@ -17,6 +17,7 @@ def setup_event_commands(bot: commands.Bot) -> None:
     Parameters:
     bot (commands.Bot): The bot instance.
     """
+
     @bot.tree.command()
     async def list_events(interaction: discord.Interaction):
         """
@@ -27,8 +28,10 @@ def setup_event_commands(bot: commands.Bot) -> None:
         """
         guild = interaction.guild
         formatted_string = await list_events_operation(guild)
-        await interaction.response.send_message(f"🗓️ **All Events**🗓️ \n\n{formatted_string}")
-    
+        await interaction.response.send_message(
+            f"🗓️ **All Events**🗓️ \n\n{formatted_string}"
+        )
+
     @bot.tree.command(name="delete_event")
     async def delete_event(interaction: discord.Interaction, event_name: str = None):
         """
@@ -51,4 +54,6 @@ def setup_event_commands(bot: commands.Bot) -> None:
         await interaction.response.defer()
 
         message = await delete_event_operation(interaction, guild, event_name)
-        await interaction.followup.send(message)  # Use followup.send instead of response.send_message
+        await interaction.followup.send(
+            message
+        )  # Use followup.send instead of response.send_message

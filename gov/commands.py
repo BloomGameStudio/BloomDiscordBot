@@ -4,6 +4,7 @@ from .proposal_buttons_view import ProposalButtonsView
 from .proposal_selects import PublishDraftSelect
 import discord
 
+
 def setup_gov_commands(bot: commands.Bot) -> None:
     """
     Setup the government-related commands for the bot.
@@ -20,9 +21,12 @@ def setup_gov_commands(bot: commands.Bot) -> None:
         Parameters:
         interaction (discord.Interaction): The interaction of the command invocation.
         """
-        try: 
+        try:
             view = ProposalButtonsView(proposals)
-            await interaction.response.send_message("Click create to create a new proposal, edit, or delete to modify an existing proposal.", view=view)
+            await interaction.response.send_message(
+                "Click create to create a new proposal, edit, or delete to modify an existing proposal.",
+                view=view,
+            )
         except Exception as e:
             await interaction.response.send_message("Couldn't access proposal data.")
 

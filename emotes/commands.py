@@ -40,7 +40,9 @@ def setup_contrbitutor_commands(
         await list_contributors(interaction, contributors, emoji_dicts)
 
     @bot.tree.command(name="remove_contributor")
-    async def removecontributor(interaction: discord.Interaction, user_mention: str) -> None:
+    async def removecontributor(
+        interaction: discord.Interaction, user_mention: str
+    ) -> None:
         """
         Removes a contributor from the list of contributors.
 
@@ -51,7 +53,9 @@ def setup_contrbitutor_commands(
         await remove_contributor(interaction, contributors, emoji_dicts, user_mention)
 
     @bot.tree.command(name="add_contributor")
-    async def addcontributor(interaction: discord.Interaction, user_mention: str, emoji: str) -> None:
+    async def addcontributor(
+        interaction: discord.Interaction, user_mention: str, emoji: str
+    ) -> None:
         """
         Adds a contibutor to the list of contributors.
 
@@ -60,4 +64,6 @@ def setup_contrbitutor_commands(
         user_mention (str): The mention of the user to be added as a contributor.
         emoji (str): The emoji associated with the user.
         """
-        await add_contributor(interaction, user_mention, emoji, contributors, emoji_dicts)
+        await add_contributor(
+            interaction, user_mention, emoji, contributors, emoji_dicts
+        )
