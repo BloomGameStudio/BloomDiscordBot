@@ -3,7 +3,6 @@ emotes/command_operations.py is responsible for handling the business logic asso
 This includes adding, removing, listing, and direct messaging contributors.
 """
 
-import asyncio
 import json
 import discord
 from config.config import CONTRIBUTORS_FILE_PATH
@@ -224,4 +223,4 @@ async def add_contributor(
         await add_contributor_to_list(
             interaction, uid, emoji_id, server_contributors, emoji_dict
         )
-        await interaction.followup.send(f"Contributor added successfully!")
+        await interaction.response.send_message(f"Contributor added successfully!")
