@@ -200,7 +200,7 @@ async def add_contributor(
     if not permitted:
         return
     uid = user_mention.strip("<@!>")
-    emoji_id = emoji.strip("<:>")
+    emoji_id = emoji
     server_contributors = contributors.get(interaction.guild.name)
     if server_contributors is None:
         await interaction.followup.send("No contributors found for server: " + interaction.guild.name)
