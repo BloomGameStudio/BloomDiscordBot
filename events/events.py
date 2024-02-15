@@ -36,7 +36,7 @@ def setup_event_events(bot: commands.Bot) -> None:
         try:
             await bot.tree.sync()
         except Exception as e:
-            logger.info(e)
+            logger.error(e)
         check_events.start(bot)
 
     @bot.event
