@@ -46,6 +46,22 @@ async def handle_publishdraft(
     proposals: List[Dict[str, str]],
     bot: commands.Bot,
 ) -> None:
+    """
+    Handle the publishing of a draft.
+
+    This function searches for a draft with the given name in the list of proposals.
+    If the draft is found, it is published and removed from the list of proposals.
+    If the draft is not found, a message is sent to the interaction.
+
+    Parameters:
+    interaction (discord.Interaction): The interaction that triggered the command.
+    draft_name (str): The name of the draft to publish.
+    proposals (List[Dict[str, str]]): The list of proposals.
+    bot (commands.Bot): The bot instance.
+
+    Returns:
+    None
+    """
     draft_to_publish = next(
         (
             item
