@@ -60,4 +60,4 @@ def setup_contrbitutor_commands(
         user_mention (str): The mention of the user to be added as a contributor.
         emoji (str): The emoji associated with the user.
         """
-        await add_contributor(interaction, user_mention, emoji, contributors, emoji_dicts, bot)
+        await add_contributor(interaction, user_mention, emoji, contributors, emoji_dicts)
