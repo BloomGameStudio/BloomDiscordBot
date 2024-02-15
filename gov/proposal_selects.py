@@ -33,7 +33,7 @@ class DeleteProposalSelect(discord.ui.Select):
     def __init__(self, proposals):
         self.proposals = proposals
         options = [
-            discord.SelectOption(label=proposal.title, value=proposal.title)
+            discord.SelectOption(label=proposal['title'], value=proposal['title'])
             for proposal in self.proposals
         ]
         super().__init__(placeholder="Select a proposal to delete", options=options)
@@ -41,7 +41,7 @@ class DeleteProposalSelect(discord.ui.Select):
     async def callback(self, interaction: discord.Interaction):
         # Find the selected proposal
         for proposal in self.proposals:
-            if proposal.title == self.values[0]:
+            if proposal['title'] == self.values[0]:
                 selected_proposal = proposal
                 break
         else:
@@ -51,7 +51,7 @@ class DeleteProposalSelect(discord.ui.Select):
         # Remove the selected proposal from the proposals list
         self.proposals.remove(selected_proposal)
         await interaction.response.send_message(
-            f'Proposal "{selected_proposal.title}" has been deleted.'
+            f'Proposal "{selected_proposal['title']}" has been deleted.'
         )
 
 
