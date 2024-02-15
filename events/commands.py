@@ -40,9 +40,15 @@ def setup_event_commands(bot: commands.Bot) -> None:
 
         """
         if event_name is None:
-            message = "Please enter an event name with this command. Example: `/delete_event My Event`"
-        else:
-            guild = interaction.guild
-            message = await delete_event_operation(interaction, guild, event_name)
+            await interaction.response.send_message(
+                "Please enter an event name with this command. Example: `/delete_event My Event`"
+            )
+            return
 
-        await interaction.response.send_message(message)
+        guild = interaction.guild
+
+        # Defer the interaction response
+        await interaction.response.defer()
+
+        message = await delete_event_operation(interaction, guild, event_name)
+        await interaction.followup.send(message)  # Use followup.send instead of response.send_message
