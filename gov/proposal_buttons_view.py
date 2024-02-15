@@ -15,6 +15,15 @@ class ProposalButtonsView(discord.ui.View):
         # Send the modal as a response to the interaction
         await interaction.response.send_modal(modal)
 
+    @discord.ui.button(label="Edit", style=discord.ButtonStyle.blurple)
+    async def edit(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if not self.proposals:
+            await interaction.response.send_message("No proposals to edit.")
+        else:
+            self.clear_items()
+            self.add_item(EditProposalSelect(self.proposals))
+            await interaction.response.edit_message(view=self)
+
     @discord.ui.button(label="Delete", style=discord.ButtonStyle.red)
     async def delete(self, interaction: discord.Interaction, button: discord.ui.Button):
         # Check if there are any proposals to delete
@@ -23,13 +32,4 @@ class ProposalButtonsView(discord.ui.View):
         else:
             self.clear_items()
             self.add_item(DeleteProposalSelect(self.proposals))
-            await interaction.response.edit_message(view=self)
-
-    @discord.ui.button(label="Edit", style=discord.ButtonStyle.blurple)
-    async def edit(self, interaction: discord.Interaction, button: discord.ui.Button):
-        if not self.proposals:
-            await interaction.response.send_message("No proposals to edit.")
-        else:
-            self.clear_items()
-            self.add_item(EditProposalSelect(self.proposals))
             await interaction.response.edit_message(view=self)
