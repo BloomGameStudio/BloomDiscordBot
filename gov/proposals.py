@@ -30,7 +30,7 @@ proposals: List[Dict[str, Any]] = []
 
 ongoing_votes: Dict[int, Dict[str, Any]] = {}
 
-async def check_ongoing_proposals(bot: Bot, guild_id: int):
+async def check_ongoing_proposals(bot: Bot):
     while True:
         try:
             current_time = time.time()
