@@ -13,6 +13,7 @@ import subprocess
 import textwrap
 import config.config as cfg
 import discord
+import time
 from typing import Dict, Any, List, Tuple
 from discord.ext.commands import Bot
 from consts.constants import (
@@ -29,6 +30,47 @@ proposals: List[Dict[str, Any]] = []
 
 ongoing_votes: Dict[int, Dict[str, Any]] = {}
 
+async def check_ongoing_proposals(bot: Bot, guild_id: int):
+    while True:
+        try:
+            current_time = time.time()
+            for proposal_id, proposal_data in bot.ongoing_proposals.items():
+                end_time = proposal_data["end_time"]
+                if current_time >= end_time:
+                    # Process the concluded vote
+                    yes_count = proposal_data["yes_count"]
+                    if yes_count >= 5:  # Set to quorum needed
+                        # Call the snapshot creation function
+                        subprocess.run(
+                            [
+                                "node",
+                                "./snapshot/wrapper.js",
+                                proposal_data["title"],
+                                proposal_data["draft"]["abstract"],
+                                proposal_data["draft"]["background"],
+                                "Yes",
+                                "No",
+                                "Abstain",
+                            ],
+                            check=True,
+                        )
+                    
+                    # Post the result message
+                    if yes_count >= 5:
+                        result_message = f"The vote for '{proposal_data['title']}' has passed!"
+                    else:
+                        result_message = f"The vote for '{proposal_data['title']}' has failed."
+
+                    channel = bot.get_channel(proposal_data["channel_id"])
+                    await channel.send(result_message)
+
+                    # Remove the concluded vote from ongoing_proposals
+                    del bot.ongoing_proposals[proposal_id]
+                    
+            # Sleep for a while before checking again
+            await asyncio.sleep(300)  # Check every 5 minutes
+        except Exception as e:
+            logger.error(f"An error occurred while checking ongoing proposals: {e}")
 
 # prepare the draft by setting the type, channel ID, and title based on the draft type
 async def prepare_draft(
@@ -84,9 +126,7 @@ async def publish_draft(
     guild_id (int): The ID of the guild where the draft will be published.
     """
     id_type, channel_name, title = await prepare_draft(guild, draft)
-    forum_channel = discord.utils.get(
-        bot.get_guild(guild_id).channels, name=channel_name
-    )
+    forum_channel = discord.utils.get(bot.get_guild(guild_id).channels, name=channel_name)
     if not forum_channel:
         logger.error(
             f"Error: Unable to publish draft, Forum Channel not found. Please verify a channel exists with the name {channel_name} and it aligns with shared/constants.py"
@@ -115,6 +155,15 @@ async def publish_draft(
     )
     thread_with_message = await forum_channel.create_thread(name=title, content=content)
 
+    proposal_id = str(thread_with_message.thread.id)
+    proposal_data = {
+        "draft": draft,
+        "end_time": time.time() + 48 * 3600,  # Calculate end time for 48 hours
+        "yes_count": 0,
+        "title": title,
+    }
+    bot.ongoing_proposals[proposal_id] = proposal_data
+
     ongoing_votes[thread_with_message.thread.id] = {
         "draft": draft,  # Store the draft info
         "yes_count": 0,  # Initialize counts
@@ -122,11 +171,6 @@ async def publish_draft(
         "abstain_count": 0,
     }
     await react_to_vote(thread_with_message.thread.id, bot, guild_id, channel_name)
-
-    await vote_timer(
-        thread_with_message.thread.id, bot, guild_id, channel_name, title, draft
-    )
-
 
 async def react_to_vote(
     thread_id: int, bot: Bot, guild_id: int, channel_name: str
