@@ -24,23 +24,27 @@ from emotes.commands import setup_contrbitutor_commands
 from events.commands import setup_event_commands
 from events.events import setup_event_events
 from events.event_operations import load_posted_events
-from config.config import CONTRIBUTORS_FILE_PATH
+from config.config import CONTRIBUTORS_FILE_PATH, ONGOING_VOTES_FILE_PATH
 from shared.events import setup_shared_events
 
 
 class Bot:
     def main(self):
+        # Load the proposals data from the JSON file gov/ongoing_votes.json
+        with open(ONGOING_VOTES_FILE_PATH, "r") as json_file:
+            self.ongoing_proposals = json.load(json_file)
+
         # Load the contributor and dictionary data from the JSON file emotes/contributors.json
         with open(CONTRIBUTORS_FILE_PATH, "r") as json_file:
             self.data = json.load(json_file)
             self.contributors = {
-                "priv-server": self.data["servers"]["priv-server"]["contributors"],
+                "Bloom Studio": self.data["servers"]["Bloom Studio"]["contributors"],
                 "Bloom Collective": self.data["servers"]["Bloom Collective"][
                     "contributors"
                 ],
             }
             self.emoji_dicts = {
-                "priv-server": self.data["servers"]["priv-server"]["emoji_dictionary"],
+                "Bloom Studio": self.data["servers"]["Bloom Studio"]["emoji_dictionary"],
                 "Bloom Collective": self.data["servers"]["Bloom Collective"][
                     "emoji_dictionary"
                 ],
