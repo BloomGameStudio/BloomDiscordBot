@@ -5,14 +5,12 @@ are added here.
 """
 
 import discord
-import textwrap
 from typing import List, Dict, Union
 from discord.ext import commands
 from discord import Message, Reaction, User
 from discord.utils import get
 from emotes.command_operations import send_dm_once
-from consts.constants import MENU_COPY, DISCORD_ROLE_TRIGGERS, RULES_MESSAGE_ID, GENERAL_CHANNEL
-from consts.types import BUDGET_ID_TYPE, GOVERNANCE_ID_TYPE
+from consts.constants import DISCORD_ROLE_TRIGGERS, RULES_MESSAGE_ID, GENERAL_CHANNEL
 from .helpers import get_channel_by_name
 from logger.logger import logger
 
@@ -72,17 +70,8 @@ async def handle_message(
         logger.warning(f"No data found for server: {server_name}")
         return
 
-    # If the message starts with "!help", send the menu copy
-    if message.content.startswith("!help"):
-        await message.channel.send(MENU_COPY)
-        return
-
     contributors = server_data["contributors"]
     emoji_dicts = server_data["emoji_dictionary"]
-
-    fmt_proposals = ""
-    for proposal in proposals:
-        fmt_proposals += f"📝 {proposal['name']}\n"
 
     # Check if any emoji in the message matches an emoji in the emoji dictionary
     for emoji_id, contributor_uid in emoji_dicts.items():
@@ -91,7 +80,9 @@ async def handle_message(
         )
         if emoji_id in message.content:
             logger.info("Emoji Found in message! %s", emoji_id)
-            if contributor:
+            if contributor and str(contributor["uid"]) != str(
+                message.author.id
+            ):  # Convert both IDs to strings before comparing
                 try:
                     logger.info(f'Messaging the user, {contributor["uid"]}')
                     message_link = message.jump_url
@@ -108,12 +99,10 @@ async def handle_reaction(
     user: User,
     data: Dict[str, Dict[str, Union[List[Dict[str, str]], Dict[str, str]]]],
     proposals: List[Dict[str, Union[str, int]]],
-    new_proposal_emoji: str,
 ) -> None:
     """
     Handles a new reaction in the server.
     If a contributors emoji is found, a DM is sent to the contributor.
-    Proposals are edited if 📝 is used
 
     Args:
         bot (commands.Bot): The bot instance.
@@ -155,165 +144,12 @@ async def handle_reaction(
             (c for c in contributors if c["uid"] == emoji_dicts[contributor_emoji]),
             None,
         )
-        if contributor:
+        if contributor and str(contributor["uid"]) != str(
+            user.id
+        ):  # Check if the user who reacted is not the contributor
             message_link = reaction.message.jump_url
             logger.info("Emoji react found, DMing contributor")
             await send_dm_once(bot, contributor, message_link)
-
-    # check function for bot.wait_for
-    def check(m):
-        return m.author == user and m.channel == reaction.message.channel
-
-    channel = reaction.message.channel
-
-    # If the reaction emoji is "📝", edit the proposal
-    if reaction.emoji == "📝":
-        edit_proposal = next(
-            (
-                item
-                for item in proposals
-                if reaction.message.content.strip().endswith(item["name"].strip())
-            ),
-            None,
-        )
-
-        if edit_proposal:
-            await reaction.message.channel.send(
-                f"You are editing: {edit_proposal['name']}"
-            )
-            await reaction.message.channel.send(
-                "**Draft Details:**\n"
-                f"**Title:** {edit_proposal['name']}\n"
-                f"**Abstract:** {edit_proposal['abstract']}\n"
-                f"**Background:** {edit_proposal['background']}\n"
-            )
-
-            change_selection = await bot.wait_for("message", check=check)
-            change_selection = change_selection.content.lower()
-
-            while True:
-                if change_selection == "title":
-                    await channel.send("What will be the new title?")
-                    change_answer = await bot.wait_for("message", check=check)
-                    edit_proposal["name"] = change_answer.content
-
-                if change_selection == "type":
-                    await channel.send("What will be the new type?")
-                    change_answer = await bot.wait_for("message", check=check)
-                    edit_proposal["type"] = change_answer.content
-
-                if change_selection == "abstract":
-                    await channel.send("What will be the new abstract?")
-                    change_answer = await bot.wait_for("message", check=check)
-                    edit_proposal["abstract"] = change_answer.content
-
-                if change_selection == "background":
-                    await channel.send("What will be the new background?")
-                    change_answer = await bot.wait_for("message", check=check)
-                    edit_proposal["background"] = change_answer.content
-
-                await channel.send(
-                    "You can edit further by repeating the previous step. If you are finished type 'save' without the single quotes \n"
-                    "If you wish to publish your draft, please use command ``!publish_draft``"
-                )
-
-                change_selection = await bot.wait_for("message", check=check)
-                change_selection = change_selection.content.lower()
-
-                if change_selection.lower() == "save":
-                    await channel.send("Changes have been saved")
-
-                    if edit_proposal["type"].lower() == "budget":
-                        title = (
-                            f"**Bloom Budget Proposal Draft: {edit_proposal['name']}**"
-                        )
-                    else:
-                        title = (
-                            f"**Bloom General Proposal Draft: {edit_proposal['name']}**"
-                        )
-
-                    msg = textwrap.dedent(
-                        f"""
-                    {title}
-
-                    __**Abstract**__
-                    {edit_proposal["abstract"]}
-
-                    **__Background__**
-                    {edit_proposal["background"]}
-
-                    ** 👍 Yes**
-
-                    ** 👎 Reassess**
-
-                    ** ❌ Abstain**
-
-                    If you wish to publish your draft proposal, please use command ``!publish_draft``.
-                    """
-                    ).strip()
-
-                    await channel.send(msg)
-                    break
-
-                elif change_selection.lower() == "cancel":
-                    await channel.send("Editing has been cancelled")
-                    break
-        else:
-            await channel.send("Draft not found")
-
-    elif reaction.emoji == new_proposal_emoji:
-        await reaction.message.channel.send("What is the title of this draft?")
-
-        proposal = {}
-
-        name = await bot.wait_for("message", check=check)
-        proposal["name"] = name.content
-        proposals.append(proposal)
-
-        def is_valid_type(message):
-            return message.content.lower() in [BUDGET_ID_TYPE, GOVERNANCE_ID_TYPE]
-
-        await channel.send("Is this budget or governance?")
-
-        type_message = await bot.wait_for("message", check=is_valid_type)
-        proposal["type"] = type_message.content
-
-        await channel.send(f"Great! What is the abstract?")
-
-        abstract = await bot.wait_for("message", check=check)
-        proposal["abstract"] = abstract.content
-
-        await channel.send("Can you provide some background?")
-
-        background = await bot.wait_for("message", check=check)
-        proposal["background"] = background.content
-
-        if proposal["type"].lower() == "budget":
-            title = f"**Bloom Budget Proposal (BBP) Draft: {name.content}**"
-
-        else:
-            title = f"**Bloom Governance Proposal (BGP) Draft: {name.content}**"
-
-        msg = f"""
-        {title}
-
-        __**Abstract**__
-        {abstract.content}
-
-        **__Background__**
-        {background.content}
-
-        ** 👍 Yes**
-
-        ** 👎 Reassess**
-
-        ** ❌ Abstain**
-
-    
-        If you wish to publish your draft proposal, please use command ``!publish_draft``
-        """
-
-        await channel.send(textwrap.dedent(msg))
 
 
 async def process_reaction_add(bot, payload):

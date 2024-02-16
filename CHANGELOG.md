@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Modal for proposal drafting
+
+- / commands instead of using ! or $ prefixes
+
+- Drop down menus for editing, deleting, publishing drafts.
+
 - Check to prevent abuse of specific commands
 
 - on_member_join added to greet a new potential Bloomer, advising them where to start and how to allocate a role to themselves if they are an existing cXP token holder. 
