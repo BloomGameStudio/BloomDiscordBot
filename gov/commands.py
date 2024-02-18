@@ -1,24 +1,46 @@
 from discord.ext import commands
-from .command_operations import handle_votedraft, handle_publishdraft
 from .proposals import proposals
-from shared.constants import new_proposal_emoji
-
-"""
-When the bot is initiated the command list below will be loaded so that they can be called.
-The function calls related to the commands are located in command_operations.py
-
-setup_gov_commands is used so that all event commands can be loaded at once. instead of individually.
-"""
+from .proposal_buttons_view import ProposalButtonsView
+from .proposal_selects import PublishDraftSelect
+import discord
 
 
 def setup_gov_commands(bot: commands.Bot) -> None:
-    @bot.command(name="vote_draft", aliases=["v"], pass_context=True)
-    async def votedraft(ctx):
-        await handle_votedraft(ctx, proposals, new_proposal_emoji)
+    """
+    Setup the government-related commands for the bot.
 
-    @bot.command(name="publish_draft")
-    async def publishdraft(ctx: commands.Context, *, draft_name: str) -> None:
-        if not draft_name:
-            await ctx.send("Please provide a draft name.")
-            return
-        await handle_publishdraft(ctx, draft_name, proposals, bot)
+    Parameters:
+    bot (commands.Bot): The bot to add commands to.
+    """
+
+    @bot.tree.command(name="vote_draft")
+    async def votedraft(interaction: discord.Interaction) -> None:
+        """
+        Draft, edit, or delete a vote proposal
+
+        Parameters:
+        interaction (discord.Interaction): The interaction of the command invocation.
+        """
+        try:
+            view = ProposalButtonsView(proposals)
+            await interaction.response.send_message(
+                "Click create to create a new proposal, edit, or delete to modify an existing proposal.",
+                view=view,
+            )
+        except Exception as e:
+            await interaction.response.send_message("Couldn't access proposal data.")
+
+    @bot.tree.command(name="publish_draft")
+    async def publishdraft(interaction: discord.Interaction) -> None:
+        """
+        Publish an existing draft proposal.
+
+        Parameters:
+        interaction (discord.Interaction): The interaction of the command invocation.
+        """
+        try:
+            view = discord.ui.View()
+            view.add_item(PublishDraftSelect(proposals, bot))
+            await interaction.response.send_message("Select a proposal.", view=view)
+        except Exception as e:
+            await interaction.response.send_message("Couldn't access proposal data.")

@@ -1,14 +1,35 @@
+/**
+ * This file contains the code for creating a proposal on Snapshot.
+ * It uses the ethers.js library to interact with the Ethereum blockchain.
+ * The proposal is created using the Snapshot.js library.
+ * The environment variables ETH_ADDRESS and ETH_PRIVATE_KEY must be set in a .env file.
+ * The ETH_ADDRESS is the address of the account that will create the proposal.
+ * The ETH_PRIVATE_KEY is the private key of the ETH_ADDRESS account.
+ * wrapper.js is responsible for calling this function with the correct arguments.
+ */
 const { ethers } = require('ethers');
 const snapshot = require('@snapshot-labs/snapshot.js');
 const dotenv = require('dotenv');
 
 dotenv.config();
 
+/**
+ * 
+ * @param {string} text - The text to remove markdown from 
+ * @returns {string} - The text with markdown removed.
+ */
 function removeMarkdown(text) {
   const markdownRegex = /([_*~`]|(\\r\\n|\\n))/g;
   return text.replace(markdownRegex, '');
 }
 
+/**
+ * 
+ * @param {string} title - The title of the proposal 
+ * @param {*} abstract  - The abstract of the proposal
+ * @param {*} background - The background of the proposal
+ * @param {*} choices - The choices for the proposal
+ */
 async function createProposal(title, abstract, background, choices) {
   try {
     const ethAddress = process.env.ETH_ADDRESS;

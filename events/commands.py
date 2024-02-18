@@ -1,66 +1,59 @@
-from discord.ext import commands
-from discord.ext.commands import Context
-from events.command_operations import list_events_operation, delete_event_operation
-
 """
-When the bot is initiated the command list below will be loaded so that they can be called.
+When the bot is initiated the command list below will be loaded so that they can be invoked.
 The function calls related to the commands are located in command_operations.py
 
 setup_event_commands is used so that all event commands can be loaded at once. instead of individually.
 """
+import discord
+from discord.ext import commands
+from discord.ext.commands import Context
+from events.command_operations import list_events_operation, delete_event_operation
 
 
 def setup_event_commands(bot: commands.Bot) -> None:
-    @bot.command(name="list_events")
-    async def list_events(ctx: Context) -> None:
-        guild = ctx.guild
+    """
+    Setup the event-related commands.
+
+    Parameters:
+    bot (commands.Bot): The bot instance.
+    """
+
+    @bot.tree.command()
+    async def list_events(interaction: discord.Interaction):
+        """
+        Lists all of the events in the guild.
+
+        Parameters:
+        interaction (Interaction): The interaction of the command invocation.
+        """
+        guild = interaction.guild
         formatted_string = await list_events_operation(guild)
-        await ctx.send(f"🗓️ **All Events**🗓️ \n\n{formatted_string}")
-
-    @bot.command(name="delete_event")
-    async def delete_event(ctx: Context, event_id: int = None) -> None:
-        if event_id is None:
-            await ctx.send(
-                "Please enter an event_id with this command. Example: `$deleteevent 1179241076016566272`"
-            )
-            return
-
-        guild = ctx.guild
-
-        try:
-            event_id = int(event_id)
-        except ValueError:
-            await ctx.send(
-                "Invalid event_id. Please provide a valid integer. Use $listevents to get a list of events"
-            )
-            return
-
-        message = await delete_event_operation(guild, event_id)
-        await ctx.send(message)
-
-    @bot.command(name="bot_help")
-    async def help_command(ctx: Context) -> None:
-        help_message = (
-            "**Here are the available commands this bot supports:**\n\n"
-            "```\n"
-            "$list_events: List all upcoming events.\n"
-            "```\n"
-            "$delete_event [event_id]: Delete an event with the specified ID.\n"
-            "```\n"
-            "$contributors: List all stored contributors, Name, UID.\n"
-            "```\n"
-            "$add_contributor: Allows you to add a contributor to stored contributors\n"
-            "  you provide the following after the bot responds: name, UID, EmojiID\n"
-            "```\n"
-            "$remove_contributor: Allows you to remove a contributor; you must provide a contributor's UID with this command\n"
-            "```\n"
-            "$publish_draft: Allows you to publish a draft and start a vote coutdown."
-            "```\n"
-            "$v or $vote_draft: Allows you to start drafting a proposal. These can be edited by using the same command and reacting with 📝"
-            "```\n"
-            "$bot_help: This will give you the list of commands available.\n"
-            "```\n"
-            "This bot will also DM contributors if you react to a message with their respective emoji, or include it in a message"
+        await interaction.response.send_message(
+            f"🗓️ **All Events**🗓️ \n\n{formatted_string}"
         )
 
-        await ctx.send(help_message)
+    @bot.tree.command(name="delete_event")
+    async def delete_event(interaction: discord.Interaction, event_name: str = None):
+        """
+        Deletes an event from the guild.
+
+        Parameters:
+        interaction (Interaction): The interaction of the command invocation.
+        event_name (str): The name of the event to be deleted.
+
+        """
+        if event_name is None:
+            await interaction.response.send_message(
+                "Please enter an event name with this command. Example: `/delete_event My Event`"
+            )
+            return
+
+        guild = interaction.guild
+
+        # Defer the interaction response
+        await interaction.response.defer()
+
+        message = await delete_event_operation(interaction, guild, event_name)
+        await interaction.followup.send(
+            message
+        )  # Use followup.send instead of response.send_message

@@ -1,18 +1,18 @@
+"""
+When the bot is initiated the command list below will be loaded so that they can be invoked.
+The function calls related to the commands are located in command_operations.py
+
+setup_contributor_commands is used so that all event commands can be loaded at once. instead of individually.
+"""
+
+import discord
 from typing import List, Dict
 from discord.ext import commands
-from discord.ext.commands import Context
 from emotes.command_operations import (
     list_contributors,
     remove_contributor,
     add_contributor,
 )
-
-"""
-When the bot is initiated the command list below will be loaded so that they can be called.
-The function calls related to the commands are located in command_operations.py
-
-setup_contributor_commands is used so that all event commands can be loaded at once. instead of individually.
-"""
 
 
 def setup_contrbitutor_commands(
@@ -20,14 +20,50 @@ def setup_contrbitutor_commands(
     contributors: Dict[str, List[Dict[str, str]]],
     emoji_dicts: Dict[str, Dict[str, str]],
 ) -> None:
-    @bot.command(name="contributors")
-    async def listcontributors(ctx: Context) -> None:
-        await list_contributors(ctx, contributors, emoji_dicts)
+    """
+    Setup the contributor-related commands for the bot.
 
-    @bot.command(name="remove_contributor")
-    async def removecontributor(ctx: Context, user_mention: str) -> None:
-        await remove_contributor(ctx, contributors, emoji_dicts, user_mention)
+    Parameters:
+    bot (commands.Bot): The bot to add commands to.
+    contributors (Dict[str, List[Dict[str, str]]]): The contributors to manage.
+    emoji_dicts (Dict[str, Dict[str, str]]): The emojis to use in the commands.
+    """
 
-    @bot.command(name="add_contributor")
-    async def addcontributor(ctx: Context) -> None:
-        await add_contributor(ctx, contributors, emoji_dicts, bot)
+    @bot.tree.command(name="contributors")
+    async def listcontributors(interaction: discord.Interaction) -> None:
+        """
+        Lists the contributos associated with this guild.
+
+        Parameters:
+        interaction (Interaction): The interaction of the command invocation.
+        """
+        await list_contributors(interaction, contributors, emoji_dicts)
+
+    @bot.tree.command(name="remove_contributor")
+    async def removecontributor(
+        interaction: discord.Interaction, user_mention: str
+    ) -> None:
+        """
+        Removes a contributor from the list of contributors.
+
+        Parameters:
+        interaction (Interaction): The interaction of the command invocation.
+        user_mention (str): The mention of the user to remove.
+        """
+        await remove_contributor(interaction, contributors, emoji_dicts, user_mention)
+
+    @bot.tree.command(name="add_contributor")
+    async def addcontributor(
+        interaction: discord.Interaction, user_mention: str, emoji: str
+    ) -> None:
+        """
+        Adds a contibutor to the list of contributors.
+
+        Parameters:
+        interaction (Interaction): The interaction of the command invocation.
+        user_mention (str): The mention of the user to be added as a contributor.
+        emoji (str): The emoji associated with the user.
+        """
+        await add_contributor(
+            interaction, user_mention, emoji, contributors, emoji_dicts
+        )
