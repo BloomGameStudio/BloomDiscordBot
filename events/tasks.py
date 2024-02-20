@@ -13,7 +13,7 @@ from consts.constants import GENERAL_CHANNEL
 
 
 @tasks.loop(minutes=60)
-async def check_events(bot: commands.Bot) -> None:
+async def check_events(discord_bot: commands.Bot, custom_bot) -> None:
     """
     Check for upcoming events every 60 minutes. If there are any new events, they are posted to Discord.
     Interested users are identified and event details are formatted in a message and sent to the general channel.
@@ -22,12 +22,13 @@ async def check_events(bot: commands.Bot) -> None:
     The posted events are then saved to a JSON file to prevent duplicate posts.
 
     Parameters:
-    bot (commands.Bot): The bot instance.
+    discord_bot (commands.Bot): The discord bot instance.
+    custom_bot: The custom bot instance.
     """
-    if not bot.guilds:
+    if not discord_bot.guilds:
         logger.warning("Guild not found")
 
-    for guild in bot.guilds:
+    for guild in discord_bot.guilds:
         try:
             channel = get_channel_by_name(guild, GENERAL_CHANNEL)
         except ValueError as e:
@@ -41,7 +42,7 @@ async def check_events(bot: commands.Bot) -> None:
             continue
 
         # Check if it's the initial run or not
-        if not bot.posted_events:
+        if not discord_bot.posted_events:
             # Initial run, post events to Discord
             for event in upcoming_events:
                 # Fetch subscribed users for each event
@@ -52,7 +53,7 @@ async def check_events(bot: commands.Bot) -> None:
         else:
             # Subsequent runs, filter out already posted events
             new_events = [
-                event for event in upcoming_events if event.id not in bot.posted_events
+                event for event in upcoming_events if event.id not in discord_bot.posted_events
             ]
 
             if new_events:
@@ -62,8 +63,8 @@ async def check_events(bot: commands.Bot) -> None:
                     await format_and_send_message(event, users, channel)
 
                 # Update the bot.posted_events list only for newly posted events
-                bot.posted_events.extend([event.id for event in new_events])
-                save_posted_events(bot.posted_events)
+                discord_bot.posted_events.extend([event.id for event in new_events])
+                save_posted_events(discord_bot.posted_events)
             else:
                 logger.info(
                     f"No new upcoming events in the next 24 hours for guild {guild}."
