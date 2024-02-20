@@ -30,9 +30,15 @@ from shared.events import setup_shared_events
 
 class Bot:
     def main(self):
-        # Load the proposals data from the JSON file gov/ongoing_votes.json
-        with open(ONGOING_VOTES_FILE_PATH, "r") as json_file:
-            self.ongoing_proposals = json.load(json_file)
+
+        try:
+            with open(ONGOING_VOTES_FILE_PATH, "r") as json_file:
+                try:
+                    self.ongoing_votes = json.load(json_file)
+                except json.JSONDecodeError:
+                    self.ongoing_votes = {}
+        except FileNotFoundError:
+            self.ongoing_votes = {}
 
         # Load the contributor and dictionary data from the JSON file emotes/contributors.json
         with open(CONTRIBUTORS_FILE_PATH, "r") as json_file:
@@ -63,7 +69,7 @@ class Bot:
         setup_shared_events(self.bot, self.data, proposals)
         self.bot.posted_events = load_posted_events()
         setup_event_commands(self.bot)
-        setup_event_events(self.bot)
+        setup_event_events(self.bot, self)
 
         # Run the bot
         self.bot.run(os.getenv("DISCORD_BOT_TOKEN"))
