@@ -28,50 +28,57 @@ from logger.logger import logger
 
 proposals: List[Dict[str, Any]] = []
 
-ongoing_votes: Dict[int, Dict[str, Any]] = {}
+async def check_ongoing_proposals(bot):
+    """
+    This function checks ongoing proposals and processes them if they have ended.
+    It iterates over all ongoing votes, checks if the current time is past the end time of the vote,
+    and if so, processes the vote. The processing includes running a snapshot creation function,
+    posting a result message, and removing the concluded vote from ongoing_proposals.
 
-async def check_ongoing_proposals(bot: Bot):
-    while True:
-        try:
-            current_time = time.time()
-            for proposal_id, proposal_data in bot.ongoing_proposals.items():
-                end_time = proposal_data["end_time"]
-                if current_time >= end_time:
-                    # Process the concluded vote
-                    yes_count = proposal_data["yes_count"]
-                    if yes_count >= 5:  # Set to quorum needed
-                        # Call the snapshot creation function
-                        subprocess.run(
-                            [
-                                "node",
-                                "./snapshot/wrapper.js",
-                                proposal_data["title"],
-                                proposal_data["draft"]["abstract"],
-                                proposal_data["draft"]["background"],
-                                "Yes",
-                                "No",
-                                "Abstain",
-                            ],
-                            check=True,
-                        )
-                    
-                    # Post the result message
-                    if yes_count >= 5:
-                        result_message = f"The vote for '{proposal_data['title']}' has passed!"
-                    else:
-                        result_message = f"The vote for '{proposal_data['title']}' has failed."
+    Parameters:
+    bot (Bot): The bot instance, which contains ongoing_votes attribute.
 
-                    channel = bot.get_channel(proposal_data["channel_id"])
-                    await channel.send(result_message)
+    Returns:
+    None
+    """
+    logger.info("Checking to see if proposals have ended")
+    try:
+        current_time = time.time()
+        for proposal_id, proposal_data in bot.ongoing_votes.items():
+            end_time = proposal_data["end_time"]
+            if current_time >= end_time:
+                # Process the concluded vote
+                yes_count = proposal_data["yes_count"]
+                if yes_count >= 2:  # Set to quorum needed
+                    # Call the snapshot creation function
+                    subprocess.run(
+                        [
+                            "node",
+                            "./snapshot/wrapper.js",
+                            proposal_data["title"],
+                            proposal_data["draft"]["abstract"],
+                            proposal_data["draft"]["background"],
+                            "Yes",
+                            "No",
+                            "Abstain",
+                        ],
+                        check=True,
+                    )
+                
+                # Post the result message
+                if yes_count >= 5:
+                    result_message = f"The vote for '{proposal_data['title']}' has passed!"
+                else:
+                    result_message = f"The vote for '{proposal_data['title']}' has failed."
 
-                    # Remove the concluded vote from ongoing_proposals
-                    del bot.ongoing_proposals[proposal_id]
-                    
-            # Sleep for a while before checking again
-            await asyncio.sleep(300)  # Check every 5 minutes
-        except Exception as e:
-            logger.error(f"An error occurred while checking ongoing proposals: {e}")
+                channel = bot.get_channel(proposal_data["channel_id"])
+                await channel.send(result_message)
 
+                # Remove the concluded vote from ongoing_proposals
+                del bot.ongoing_votes[proposal_id]
+    except Exception as e:
+        logger.error(f"An error occurred while checking ongoing proposals: {e}")
+        
 # prepare the draft by setting the type, channel ID, and title based on the draft type
 async def prepare_draft(
     guild: discord.Guild, draft: Dict[str, Any]
@@ -122,8 +129,9 @@ async def publish_draft(
 
     Parameters:
     draft (Dict[str, Any]): The draft to be published.
-    bot (Bot): The bot instance.
+    bot (commands.Bot): The bot instance.
     guild_id (int): The ID of the guild where the draft will be published.
+    guild (discord.Guild): The guild object.
     """
     id_type, channel_name, title = await prepare_draft(guild, draft)
     forum_channel = discord.utils.get(bot.get_guild(guild_id).channels, name=channel_name)
@@ -158,18 +166,12 @@ async def publish_draft(
     proposal_id = str(thread_with_message.thread.id)
     proposal_data = {
         "draft": draft,
-        "end_time": time.time() + 48 * 3600,  # Calculate end time for 48 hours
+        "end_time": time.time() + 1 * 60,  # Calculate end time for 1 minute (for testing)
         "yes_count": 0,
         "title": title,
     }
-    bot.ongoing_proposals[proposal_id] = proposal_data
 
-    ongoing_votes[thread_with_message.thread.id] = {
-        "draft": draft,  # Store the draft info
-        "yes_count": 0,  # Initialize counts
-        "reassess_count": 0,
-        "abstain_count": 0,
-    }
+    bot.ongoing_votes[proposal_id] = proposal_data
     await react_to_vote(thread_with_message.thread.id, bot, guild_id, channel_name)
 
 async def react_to_vote(
@@ -201,79 +203,3 @@ async def react_to_vote(
     await message.add_reaction(YES_VOTE)
     await message.add_reaction(NO_VOTE)
     await message.add_reaction(ABSTAIN_VOTE)
-
-
-async def vote_timer(
-    thread_id: int,
-    bot: Bot,
-    guild_id: int,
-    channel_name: str,
-    title: str,
-    draft: Dict[str, Any],
-) -> None:
-    """
-    NOTE: This should be changed as a long sleep time is unideal, IE if the bot is restarted while sleeping.
-
-    Start a timer for the vote. After 48 hours, the vote is concluded and the result is posted.
-
-    Parameters:
-    thread_id (int): The ID of the thread where the vote is taking place.
-    bot (Bot): The bot instance.
-    guild_id (int): The ID of the guild where the vote is taking place.
-    channel_name (str): The name of the channel where the vote is taking place.
-    title (str): The title of the vote.
-    draft (Dict[str, Any]): The draft that is being voted on.
-    """
-    # Sleep until the vote ends
-    await asyncio.sleep(48 * 3600)
-
-    # Fetch the guild using the guild_id
-    guild = bot.get_guild(guild_id)
-    if not guild:
-        logger.error(f"Error: Guild with id {guild_id} not found.")
-        return
-
-    # Fetch the channel by name
-    channel = discord.utils.get(guild.channels, name=channel_name)
-    thread = channel.get_thread(thread_id)
-
-    # Fetch the initial message in the thread using the thread ID
-    message = await thread.fetch_message(thread_id)
-    for reaction in message.reactions:
-        if str(reaction.emoji) == f"{YES_VOTE}":
-            ongoing_votes[message.id]["yes_count"] = reaction.count - 1
-        elif str(reaction.emoji) == f"{NO_VOTE}":
-            ongoing_votes[message.id]["reassess_count"] = reaction.count - 1
-        elif str(reaction.emoji) == f"{ABSTAIN_VOTE}":
-            ongoing_votes[message.id]["abstain_count"] = reaction.count - 1
-
-    # Check the result and post it
-    result_message = f"Vote for '{title}' has concluded:\n\n"
-
-    if ongoing_votes[message.id]["yes_count"] >= 5:  # Set to quorum needed
-        result_message += (
-            "The vote passes! :tada:, snapshot proposal will now be created"
-        )
-        # Call the snapshot creation function
-        subprocess.run(
-            [
-                "node",
-                "./snapshot/wrapper.js",
-                title,
-                draft["abstract"],
-                draft["background"],
-                "Yes",
-                "No",
-                "Abstain",
-            ],
-            check=True,
-        )
-    else:
-        result_message += "The vote fails. :disappointed:"
-
-    result_message += f"\n\nYes: {ongoing_votes[message.id]['yes_count']}\nReassess: {ongoing_votes[message.id]['reassess_count']}\nAbstain: {ongoing_votes[message.id]['abstain_count']}"
-
-    await bot.get_channel(thread_id).send(result_message)
-
-    # Remove the vote from ongoing_votes
-    del ongoing_votes[message.id]
