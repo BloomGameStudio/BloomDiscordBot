@@ -8,7 +8,7 @@ CONFIG_ABSOLUTE_PATH = "config/config.ini"
 # File paths for JSON files containing information about contributors and posted events IDs
 CONTRIBUTORS_FILE_PATH = "./emotes/contributors.json"
 POSTED_EVENTS_FILE_PATH = "./events/posted_events.json"
-
+ONGOING_VOTES_FILE_PATH = "./gov/ongoing_votes.json"
 
 # Load configuration
 config: configparser.ConfigParser = configparser.ConfigParser()
