@@ -63,13 +63,15 @@ class Bot:
         intents.members = True
         self.bot = commands.Bot(command_prefix="", intents=intents)
 
+        self.bot.ongoing_votes = self.ongoing_votes
+        self.bot.posted_events = load_posted_events()
+
         # Setup commands and events for the bot
         setup_gov_commands(self.bot)
         setup_contrbitutor_commands(self.bot, self.contributors, self.emoji_dicts)
         setup_shared_events(self.bot, self.data, proposals)
-        self.bot.posted_events = load_posted_events()
         setup_event_commands(self.bot)
-        setup_event_events(self.bot, self)
+        setup_event_events(self.bot)
 
         # Run the bot
         self.bot.run(os.getenv("DISCORD_BOT_TOKEN"))
