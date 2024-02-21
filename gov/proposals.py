@@ -7,8 +7,7 @@ they are published to snapshot through a node.js script.
 Refer to snapshot for more information on how the snapshot is created.
 """
 
-
-import asyncio
+import json
 import subprocess
 import textwrap
 import config.config as cfg
@@ -25,8 +24,21 @@ from consts.constants import (
 )
 from consts.types import GOVERNANCE_ID_TYPE, BUDGET_ID_TYPE
 from logger.logger import logger
+from config.config import ONGOING_VOTES_FILE_PATH
 
 proposals: List[Dict[str, Any]] = []
+
+def update_ongoing_votes_file(data, file_path):
+    """
+    Update ongoing_votes.json with the new data.
+
+    Parameters:
+    data (Dict): The data to update the ongoing_votes with.
+    file_path (str): The file path to ongoing_votes.json.
+    """
+    # Write the updated data to the file
+    with open(file_path, "w") as json_file:
+        json.dump(data, json_file, indent=4)
 
 async def check_ongoing_proposals(bot):
     """
@@ -36,49 +48,52 @@ async def check_ongoing_proposals(bot):
     posting a result message, and removing the concluded vote from ongoing_proposals.
 
     Parameters:
-    bot (Bot): The bot instance, which contains ongoing_votes attribute.
+    bot (commands.Bot): The bot instance, which contains ongoing_votes attribute.
 
     Returns:
     None
     """
     logger.info("Checking to see if proposals have ended")
     try:
-        current_time = time.time()
         for proposal_id, proposal_data in bot.ongoing_votes.items():
+            current_time = time.time()
             end_time = proposal_data["end_time"]
             if current_time >= end_time:
                 # Process the concluded vote
                 yes_count = proposal_data["yes_count"]
                 if yes_count >= 2:  # Set to quorum needed
                     # Call the snapshot creation function
-                    subprocess.run(
-                        [
-                            "node",
-                            "./snapshot/wrapper.js",
-                            proposal_data["title"],
-                            proposal_data["draft"]["abstract"],
-                            proposal_data["draft"]["background"],
-                            "Yes",
-                            "No",
-                            "Abstain",
-                        ],
-                        check=True,
-                    )
-                
-                # Post the result message
-                if yes_count >= 5:
-                    result_message = f"The vote for '{proposal_data['title']}' has passed!"
-                else:
-                    result_message = f"The vote for '{proposal_data['title']}' has failed."
+                    subprocess.run([
+                        "node",
+                        "./snapshot/wrapper.js",
+                        proposal_data["title"],
+                        proposal_data["draft"]["abstract"],
+                        proposal_data["draft"]["background"],
+                        "Yes",
+                        "No",
+                        "Abstain",
+                    ], check=True)
 
-                channel = bot.get_channel(proposal_data["channel_id"])
-                await channel.send(result_message)
+                # Post the result message
+                result_message = f"The vote for '{proposal_data['title']}' has passed!" if yes_count >= 2 else f"The vote for '{proposal_data['title']}' has failed."
+
+                found_channel = None
+                for guild in bot.guilds:
+                    channel = guild.get_channel(int(proposal_data["channel_id"]))
+                    if channel:
+                        found_channel = channel
+                        break
+                    
+                if found_channel:
+                    await found_channel.send(result_message)
+                else:
+                    logger.error(f"Unable to find the channel with id: {proposal_data['channel_id']} ")
 
                 # Remove the concluded vote from ongoing_proposals
                 del bot.ongoing_votes[proposal_id]
     except Exception as e:
         logger.error(f"An error occurred while checking ongoing proposals: {e}")
-        
+
 # prepare the draft by setting the type, channel ID, and title based on the draft type
 async def prepare_draft(
     guild: discord.Guild, draft: Dict[str, Any]
@@ -169,9 +184,17 @@ async def publish_draft(
         "end_time": time.time() + 1 * 60,  # Calculate end time for 1 minute (for testing)
         "yes_count": 0,
         "title": title,
+        "channel_id": str(forum_channel.id)
     }
 
+    # Update ongoing_votes with new proposal data
+    if not hasattr(bot, 'ongoing_votes'):
+        bot.ongoing_votes = {}  # In case ongoing_votes is not initialized
     bot.ongoing_votes[proposal_id] = proposal_data
+
+    # Save to ongoing_votes.json
+    update_ongoing_votes_file(bot.ongoing_votes, ONGOING_VOTES_FILE_PATH)
+
     await react_to_vote(thread_with_message.thread.id, bot, guild_id, channel_name)
 
 async def react_to_vote(
