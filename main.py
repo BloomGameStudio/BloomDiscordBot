@@ -34,13 +34,13 @@ class Bot:
         with open(CONTRIBUTORS_FILE_PATH, "r") as json_file:
             self.data = json.load(json_file)
             self.contributors = {
-                "priv-server": self.data["servers"]["priv-server"]["contributors"],
+                "Bloom Studio": self.data["servers"]["Bloom Studio"]["contributors"],
                 "Bloom Collective": self.data["servers"]["Bloom Collective"][
                     "contributors"
                 ],
             }
             self.emoji_dicts = {
-                "priv-server": self.data["servers"]["priv-server"]["emoji_dictionary"],
+                "Bloom Studio": self.data["servers"]["Bloom Studio"]["emoji_dictionary"],
                 "Bloom Collective": self.data["servers"]["Bloom Collective"][
                     "emoji_dictionary"
                 ],
