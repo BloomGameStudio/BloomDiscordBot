@@ -22,6 +22,7 @@ from gov.commands import setup_gov_commands
 from gov.proposals import proposals
 from emotes.commands import setup_contrbitutor_commands
 from events.commands import setup_event_commands
+from shared.commands import setup_shared_commands
 from events.events import setup_event_events
 from events.event_operations import load_posted_events
 from config.config import CONTRIBUTORS_FILE_PATH
@@ -60,7 +61,8 @@ class Bot:
         self.bot.posted_events = load_posted_events()
         setup_event_commands(self.bot)
         setup_event_events(self.bot)
-
+        setup_shared_commands(self.bot)
+        
         # Run the bot
         self.bot.run(os.getenv("DISCORD_BOT_TOKEN"))
 
