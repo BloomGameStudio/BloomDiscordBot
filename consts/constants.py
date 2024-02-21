@@ -18,11 +18,6 @@ ABSTAIN_VOTE: The emoji used to abstain from voting on a proposal. Can be replac
 new_proposal_emoji: The emoji used to inform the bot you wish to draft a new governance proposal.
 This is required when !v or !vote_draft command is invoked.
 
-CONTRIBUTORS_FILE_PATH: File path to the JSON file containing a dictionary of contributors and emoji dictionaries for both Bloom Studio and Bloom Collective.
-
-POSTED_EVENTS_FILE_PATH: File path to the JSON file containing a list of posted events (events that have been posted to Discord). 
-This is used to prevent duplicate events from being posted.
-
 RULES_MESSAGE_ID: The ID of the message that contains the rules/welcome message.
 
 DISCORD_ROLE_TRIGGERS: A list of dictionaries. Each dictionary represents a role that can be assigned to a bloomer.
