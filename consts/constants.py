@@ -67,7 +67,7 @@ DISCORD_ROLE_TRIGGERS = [
 
 MENU_COPY = """
 __ 🌺 **Bloom Bot Commands** 🌺 __
-Commands can be prompted with **!**
+Commands can be prompted with **/**
 
 **/help**
 ```
