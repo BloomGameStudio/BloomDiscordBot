@@ -43,12 +43,10 @@ def update_ongoing_votes_file(data, file_path):
 async def check_ongoing_proposals(bot):
     """
     This function checks ongoing proposals and processes them if they have ended.
-    It iterates over all ongoing votes, checks if the current time is past the end time of the vote,
-    and if so, processes the vote. The processing includes running a snapshot creation function,
-    posting a result message, and removing the concluded vote from ongoing_proposals.
+    If a proposal has ended, and meets the criteria of passing, a snapshot proposal will be created.
 
     Parameters:
-    bot (commands.Bot): The bot instance, which contains the ongoing_votes attribute.
+    bot (commands.Bot): The bot instance containing the ongoing_votes attribute.
 
     Returns:
     None
@@ -56,59 +54,80 @@ async def check_ongoing_proposals(bot):
     logger.info("Checking to see if proposals have ended")
     try:
         keys_to_remove = []  # Initialize list to store keys for removal
+
         for proposal_id, proposal_data in bot.ongoing_votes.items():
-            current_time = time.time()
-            end_time = proposal_data["end_time"]
-            if current_time >= end_time:
-                # Retrieve the channel by the channel_id stored in the ongoing votes
-                channel_id = int(proposal_data["channel_id"])
-                channel = bot.get_channel(channel_id)
+            if time.time() < proposal_data["end_time"]:
+                continue
 
-                if channel:
-                    # Use proposal_id as int to retrieve the thread
-                    thread_id = int(proposal_id)
-                    thread = channel.get_thread(thread_id)
-                    if thread:
-                        message = await thread.fetch_message(thread_id)
+            channel = bot.get_channel(int(proposal_data["channel_id"]))
+            if not channel:
+                logger.error(f"Unable to find the channel with id: {proposal_data['channel_id']}")
+                continue
 
-                        # Update the Yes/No/Abstain counts from message reactions
-                        for reaction in message.reactions:
-                            if str(reaction.emoji) == f"{YES_VOTE}":
-                                proposal_data["yes_count"] = reaction.count - 1  # Subtract the bot's reaction
-                            elif str(reaction.emoji) == f"{NO_VOTE}":
-                                proposal_data["no_count"] = reaction.count - 1
-                            elif str(reaction.emoji) == f"{ABSTAIN_VOTE}":
-                                proposal_data["abstain_count"] = reaction.count - 1
+            thread = channel.get_thread(int(proposal_id))
+            if not thread:
+                logger.error(f"Unable to find the thread with id: {proposal_id} in the channel: {channel.name}")
+                continue
 
-                        # Process the concluded vote
-                        if proposal_data["yes_count"] >= 1:  # Set to quorum needed
-                            # Call the snapshot creation function
-                            subprocess.run([
-                                "node",
-                                "./snapshot/wrapper.js",
-                                proposal_data["title"],
-                                proposal_data["draft"]["abstract"],
-                                proposal_data["draft"]["background"],
-                                "Yes",
-                                "No",
-                                "Abstain",
-                            ], check=True)
+            message = await thread.fetch_message(int(proposal_id))
+            if not message:
+                logger.error(f"Unable to find the message with id: {proposal_id} in the thread: {thread.name}")
+                continue
 
-                        logger.info("Yes vote count: " + str(proposal_data["yes_count"]) + " No vote count: " + str(proposal_data["no_count"]) + " Abstain vote count: " + str(proposal_data["abstain_count"]))
+            # Update the Yes/No/Abstain counts from message reactions
+            for reaction in message.reactions:
+                emoji = str(reaction.emoji)
+                if emoji == f"{YES_VOTE}":
+                    proposal_data["yes_count"] = reaction.count - 1  # Subtract the bot's reaction
+                elif emoji == f"{NO_VOTE}":
+                    proposal_data["no_count"] = reaction.count - 1
+                elif emoji == f"{ABSTAIN_VOTE}":
+                    proposal_data["abstain_count"] = reaction.count - 1
 
-                        # Post the result message to the corresponding thread
-                        result_message = f"The vote for '{proposal_data['title']}' has passed!" if proposal_data["yes_count"] >= 1 else f"The vote for '{proposal_data['title']}' has failed."
-                        await thread.send(result_message)  # Send the result message to the corresponding thread
+            # Check if the proposal has passed based off the yes and no count, and quorum of 5.
+            if proposal_data["yes_count"] > proposal_data["no_count"] and proposal_data["yes_count"] >= 5:
+                passed = True
+            else:
+                passed = False
 
-                        keys_to_remove.append(proposal_id)  # Add the key for removal
-                    else:
-                        logger.error(f"Unable to find the thread with id: {thread_id} in the channel: {channel.name}")
-                else:
-                    logger.error(f"Unable to find the channel with id: {channel_id}")
+            # Modify the result message based on the new condition
+            result_message = f"Vote for '{proposal_data['title']}' has concluded:\n\n"
+            if passed:
+                # Call the snapshot creation function
+                subprocess.run(
+                    [
+                        "node",
+                        "./snapshot/wrapper.js",
+                        proposal_data["title"],
+                        proposal_data["draft"]["abstract"],
+                        proposal_data["draft"]["background"],
+                        "Yes",
+                        "No",
+                        "Abstain",
+                    ],
+                    check=True,
+                )
+                result_message += "The vote passes! :tada: Snapshot proposal will now be created."
+            else:
+                result_message += "The vote fails. :disappointed:"
 
-        # Remove the concluded vote from ongoing_proposals after the iteration
+            result_message += f"\n\nYes: {proposal_data['yes_count']}\nNo: {proposal_data['no_count']}\nAbstain: {proposal_data['abstain_count']}"
+
+            logger.info(
+                f"Yes vote count: {proposal_data['yes_count']} No vote count: {proposal_data['no_count']} Abstain vote count: {proposal_data['abstain_count']}"
+            )
+
+            # Post the result message to the corresponding thread
+            try:
+                await thread.send(result_message)
+            except discord.HTTPException as e:
+                logger.error(f"An error occurred while posting the result message: {e}")
+
+            keys_to_remove.append(proposal_id)  # Add the key for removal
+
+        # Remove the concluded votes from ongoing_proposals
         for key in keys_to_remove:
-            del bot.ongoing_votes[key]
+            bot.ongoing_votes.pop(key)
 
         # Save to ongoing_votes.json
         update_ongoing_votes_file(bot.ongoing_votes, ONGOING_VOTES_FILE_PATH)
