@@ -221,7 +221,7 @@ async def publish_draft(
     proposal_id = str(thread_with_message.thread.id)
     proposal_data = {
         "draft": draft,
-        "end_time": time.time() + 1 * 60,  # Calculate end time for 1 minute (for testing)
+        "end_time": time.time() + 48 * 60 * 60,
         "yes_count": 0,
         "title": title,
         "channel_id": str(forum_channel.id)
