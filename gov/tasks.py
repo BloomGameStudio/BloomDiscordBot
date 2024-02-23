@@ -7,7 +7,7 @@ from discord.ext import tasks, commands
 async def concluded_proposals_task(bot: commands.Bot):
     """
     This function is a task that runs every 5 minutes. It calls the check_ongoing_proposals function
-    to check and process any proposals that have ended. If an error occurs during the execution of 
+    to check and process any proposals that have ended. If an error occurs during the execution of
     check_ongoing_proposals, it logs the error.
 
     Parameters:
