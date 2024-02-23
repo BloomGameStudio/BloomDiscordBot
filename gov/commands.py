@@ -41,6 +41,6 @@ def setup_gov_commands(bot: commands.Bot) -> None:
         try:
             view = discord.ui.View()
             view.add_item(PublishDraftSelect(proposals, bot))
-            await interaction.response.send_message("Select a proposal.", view=view)
+            await interaction.response.send_message("Select a proposal to publish.", view=view)
         except Exception as e:
             await interaction.response.send_message("Couldn't access proposal data.")
