@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Discord Task Decorator that invokes check_ongoing_proposals to see if a proposal has finished.
+
 - Modal for proposal drafting
 
 - / commands instead of using ! or $ prefixes
