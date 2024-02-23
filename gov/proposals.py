@@ -198,24 +198,24 @@ async def publish_draft(
 
     # Store the content in a variable
     content = textwrap.dedent(
-        f"""
-    **{title}**
+f"""
+**{title}**
 
-    __**Abstract**__
-    {draft["abstract"]}
+__**Abstract**__
+{draft["abstract"]}
 
-    **__Background__**
-    {draft["background"]}
+**__Background__**
+{draft["background"]}
 
-    **{YES_VOTE} Yes**
+**{YES_VOTE} Yes**
 
-    **{NO_VOTE} Reassess**
+**{NO_VOTE} Reassess**
 
-    **{ABSTAIN_VOTE} Abstain**
+**{ABSTAIN_VOTE} Abstain**
 
-    Vote will conclude in 48h from now.
-    """
-    )
+Vote will conclude in 48h from now.
+"""
+)
     thread_with_message = await forum_channel.create_thread(name=title, content=content)
 
     proposal_id = str(thread_with_message.thread.id)
