@@ -56,16 +56,16 @@ class ProposalModal(ui.Modal, title="Create/Edit Proposal"):
                 "member_id": member_id,
                 "title": self.name.value,
                 "type": self.proposal_type.value,
-                "abstract": self.abstract.value.strip(),
-                "background": self.background.value.strip(),
+                "abstract": self.abstract.value,
+                "background": self.background.value,
             }
             # Add the created proposal to the global proposals list
             proposals.append(new_proposal)
         else:
             self.proposal["title"] = self.name.value
             self.proposal["type"] = self.proposal_type.value
-            self.proposal["abstract"] = self.abstract.value.strip()
-            self.proposal["background"] = self.background.value.strip()
+            self.proposal["abstract"] = self.abstract.value
+            self.proposal["background"] = self.background.value
 
         e = Embed()
         e.title = f"Thank you, proposal has been created/edited. Use the same command again to edit or delete an existing proposal"
