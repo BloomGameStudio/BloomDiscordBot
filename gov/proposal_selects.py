@@ -11,7 +11,7 @@ class PublishDraftSelect(discord.ui.Select):
             discord.SelectOption(label=proposal["title"], value=proposal["title"])
             for proposal in self.proposals
         ]
-        super().__init__(placeholder="Select a proposal to publish", options=options)
+        super().__init__(placeholder="proposals..", options=options)
 
     async def callback(self, interaction: discord.Interaction):
         # Find the selected proposal
