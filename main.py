@@ -31,7 +31,6 @@ from shared.events import setup_shared_events
 
 class Bot:
     def main(self):
-
         try:
             with open(ONGOING_VOTES_FILE_PATH, "r") as json_file:
                 try:
@@ -51,7 +50,9 @@ class Bot:
                 ],
             }
             self.emoji_dicts = {
-                "Bloom Studio": self.data["servers"]["Bloom Studio"]["emoji_dictionary"],
+                "Bloom Studio": self.data["servers"]["Bloom Studio"][
+                    "emoji_dictionary"
+                ],
                 "Bloom Collective": self.data["servers"]["Bloom Collective"][
                     "emoji_dictionary"
                 ],
@@ -74,7 +75,7 @@ class Bot:
         setup_event_commands(self.bot)
         setup_event_events(self.bot)
         setup_shared_commands(self.bot)
-        
+
         # Run the bot
         self.bot.run(os.getenv("DISCORD_BOT_TOKEN"))
 

@@ -28,6 +28,7 @@ from config.config import ONGOING_VOTES_FILE_PATH
 
 proposals: List[Dict[str, Any]] = []
 
+
 def update_ongoing_votes_file(data, file_path):
     """
     Update ongoing_votes.json with the new data.
@@ -39,6 +40,7 @@ def update_ongoing_votes_file(data, file_path):
     # Write the updated data to the file
     with open(file_path, "w") as json_file:
         json.dump(data, json_file, indent=4)
+
 
 async def check_ongoing_proposals(bot):
     """
@@ -61,31 +63,42 @@ async def check_ongoing_proposals(bot):
 
             channel = bot.get_channel(int(proposal_data["channel_id"]))
             if not channel:
-                logger.error(f"Unable to find the channel with id: {proposal_data['channel_id']}")
+                logger.error(
+                    f"Unable to find the channel with id: {proposal_data['channel_id']}"
+                )
                 continue
 
             thread = channel.get_thread(int(proposal_id))
             if not thread:
-                logger.error(f"Unable to find the thread with id: {proposal_id} in the channel: {channel.name}")
+                logger.error(
+                    f"Unable to find the thread with id: {proposal_id} in the channel: {channel.name}"
+                )
                 continue
 
             message = await thread.fetch_message(int(proposal_id))
             if not message:
-                logger.error(f"Unable to find the message with id: {proposal_id} in the thread: {thread.name}")
+                logger.error(
+                    f"Unable to find the message with id: {proposal_id} in the thread: {thread.name}"
+                )
                 continue
 
             # Update the Yes/No/Abstain counts from message reactions
             for reaction in message.reactions:
                 emoji = str(reaction.emoji)
                 if emoji == f"{YES_VOTE}":
-                    proposal_data["yes_count"] = reaction.count - 1  # Subtract the bot's reaction
+                    proposal_data["yes_count"] = (
+                        reaction.count - 1
+                    )  # Subtract the bot's reaction
                 elif emoji == f"{NO_VOTE}":
                     proposal_data["no_count"] = reaction.count - 1
                 elif emoji == f"{ABSTAIN_VOTE}":
                     proposal_data["abstain_count"] = reaction.count - 1
 
             # Check if the proposal has passed based off the yes and no count, and quorum of 5.
-            if proposal_data["yes_count"] > proposal_data["no_count"] and proposal_data["yes_count"] >= 5:
+            if (
+                proposal_data["yes_count"] > proposal_data["no_count"]
+                and proposal_data["yes_count"] >= 5
+            ):
                 passed = True
             else:
                 passed = False
@@ -107,7 +120,9 @@ async def check_ongoing_proposals(bot):
                     ],
                     check=True,
                 )
-                result_message += "The vote passes! :tada: Snapshot proposal will now be created."
+                result_message += (
+                    "The vote passes! :tada: Snapshot proposal will now be created."
+                )
             else:
                 result_message += "The vote fails. :disappointed:"
 
@@ -134,6 +149,7 @@ async def check_ongoing_proposals(bot):
 
     except Exception as e:
         logger.error(f"An error occurred while checking ongoing proposals: {e}")
+
 
 async def prepare_draft(
     guild: discord.Guild, draft: Dict[str, Any]
@@ -189,7 +205,9 @@ async def publish_draft(
     guild (discord.Guild): The guild object.
     """
     id_type, channel_name, title = await prepare_draft(guild, draft)
-    forum_channel = discord.utils.get(bot.get_guild(guild_id).channels, name=channel_name)
+    forum_channel = discord.utils.get(
+        bot.get_guild(guild_id).channels, name=channel_name
+    )
     if not forum_channel:
         logger.error(
             f"Error: Unable to publish draft, Forum Channel not found. Please verify a channel exists with the name {channel_name} and it aligns with shared/constants.py"
@@ -198,7 +216,7 @@ async def publish_draft(
 
     # Store the content in a variable
     content = textwrap.dedent(
-f"""
+        f"""
 **{title}**
 
 __**Abstract**__
@@ -215,7 +233,7 @@ __**Abstract**__
 
 Vote will conclude in 48h from now.
 """
-)
+    )
     thread_with_message = await forum_channel.create_thread(name=title, content=content)
 
     proposal_id = str(thread_with_message.thread.id)
@@ -224,11 +242,11 @@ Vote will conclude in 48h from now.
         "end_time": time.time() + 48 * 60 * 60,
         "yes_count": 0,
         "title": title,
-        "channel_id": str(forum_channel.id)
+        "channel_id": str(forum_channel.id),
     }
 
     # Update ongoing_votes with new proposal data
-    if not hasattr(bot, 'ongoing_votes'):
+    if not hasattr(bot, "ongoing_votes"):
         bot.ongoing_votes = {}  # In case ongoing_votes is not initialized
     bot.ongoing_votes[proposal_id] = proposal_data
 
@@ -236,6 +254,7 @@ Vote will conclude in 48h from now.
     update_ongoing_votes_file(bot.ongoing_votes, ONGOING_VOTES_FILE_PATH)
 
     await react_to_vote(thread_with_message.thread.id, bot, guild_id, channel_name)
+
 
 async def react_to_vote(
     thread_id: int, bot: Bot, guild_id: int, channel_name: str
