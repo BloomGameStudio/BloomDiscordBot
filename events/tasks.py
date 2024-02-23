@@ -22,8 +22,7 @@ async def check_events(bot: commands.Bot) -> None:
     The posted events are then saved to a JSON file to prevent duplicate posts.
 
     Parameters:
-    discord_bot (commands.Bot): The discord bot instance.
-    custom_bot: The custom bot instance.
+    bot (commands.Bot): The bot instance.
     """
     if not bot.guilds:
         logger.warning("Guild not found")
