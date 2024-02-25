@@ -20,7 +20,7 @@ import json
 from discord.ext import commands
 from gov.commands import setup_gov_commands
 from gov.proposals import proposals
-from emotes.commands import setup_contrbitutor_commands
+from emotes.commands import setup_contributor_commands
 from events.commands import setup_event_commands
 from shared.commands import setup_shared_commands
 from events.events import setup_event_events
@@ -56,7 +56,7 @@ class Bot:
 
         # Setup commands and events for the bot
         setup_gov_commands(self.bot)
-        setup_contrbitutor_commands(self.bot, self.contributors, self.emoji_dicts)
+        setup_contributor_commands(self.bot, self.contributors, self.emoji_dicts)
         setup_shared_events(self.bot, self.data, proposals)
         self.bot.posted_events = load_posted_events()
         setup_event_commands(self.bot)

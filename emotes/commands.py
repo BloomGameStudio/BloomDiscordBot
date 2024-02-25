@@ -15,7 +15,7 @@ from emotes.command_operations import (
 )
 
 
-def setup_contrbitutor_commands(
+def setup_contributor_commands(
     bot: commands.Bot,
     contributors: Dict[str, List[Dict[str, str]]],
     emoji_dicts: Dict[str, Dict[str, str]],
