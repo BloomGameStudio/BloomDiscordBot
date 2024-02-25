@@ -89,9 +89,6 @@ async def handle_message(
                     await send_dm_once(bot, contributor, message_link)
                 except discord.errors.NotFound:
                     logger.warning(f'User not found: {contributor["uid"]}')
-    # Process commands
-    await bot.process_commands(message)
-
 
 async def handle_reaction(
     bot: commands.Bot,
