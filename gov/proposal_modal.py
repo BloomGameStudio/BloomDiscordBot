@@ -67,14 +67,13 @@ class ProposalModal(ui.Modal, title="Create/Edit Proposal"):
             self.proposal["abstract"] = self.abstract.value
             self.proposal["background"] = self.background.value
 
-        e = Embed()
+        # Clear the buttons and show the response when a proposal is created/edited
+        e = discord.Embed()
         e.title = f"Thank you, proposal has been created/edited. Use the same command again to edit or delete an existing proposal"
         e.description = f"{self.name.value}"
-        await interaction.response.send_message(embed=e)
-
-    async def on_error(
-        self, interaction: discord.Interaction, error: Exception
-    ) -> None:
-        await interaction.response.send_message(
-            "Oops! Something went wrong.", ephemeral=True
+        e.set_author(
+            name="Proposal Creation/Editing",
+            icon_url=interaction.user.display_avatar.url,
         )
+        e.color = discord.Color.green()
+        await interaction.response.edit_message(content=" ", embed=e, view=None)
