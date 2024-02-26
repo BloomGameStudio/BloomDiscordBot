@@ -1,36 +1,21 @@
-"""
-The Bot class contains the bot's functionality. It has methods to load data from a JSON file, 
-set up the bot with the necessary intents, set up commands and events, and runs the bot.
-
-The JSON file located at emotes/contributors.json contains a list of contributors, and emoji_id => UID dictionaries
-for two servers: 
-"Bloom Studio" and "Bloom Collective". This data is loaded into the Bot instance when it's created.
-
-The bot uses the following Discord Intents : message content, reactions, and members.
-
-The bot has several commands and events, which are set up in the main method. 
-These commands and events are defined in separate modules, which are imported at the tope of this code.
-Refer to the specific files for more information.
-
-"""
-
 import discord
 import os
 import json
+import asyncio
 from discord.ext import commands
 from gov.commands import setup_gov_commands
 from gov.proposals import proposals
 from emotes.commands import setup_contributor_commands
 from events.commands import setup_event_commands
-from shared.commands import setup_shared_commands
 from events.events import setup_event_events
 from events.event_operations import load_posted_events
 from config.config import CONTRIBUTORS_FILE_PATH
 from shared.events import setup_shared_events
+from logger.logger import logger
 
 
 class Bot:
-    def main(self):
+    async def main(self):
         # Load the contributor and dictionary data from the JSON file emotes/contributors.json
         with open(CONTRIBUTORS_FILE_PATH, "r") as json_file:
             self.data = json.load(json_file)
@@ -61,12 +46,17 @@ class Bot:
         self.bot.posted_events = load_posted_events()
         setup_event_commands(self.bot)
         setup_event_events(self.bot)
-        setup_shared_commands(self.bot)
-        
-        # Run the bot
-        self.bot.run(os.getenv("DISCORD_BOT_TOKEN"))
 
+        # Perform tree synchronization
+        try:
+            await self.bot.tree.sync()
+        except Exception as e:
+            logger.error(e)
+
+        # Run the bot
+        await self.bot.start(os.getenv("DISCORD_BOT_TOKEN"))
+       
 
 if __name__ == "__main__":
-    # Create an instance of the bot and run main func
-    Bot().main()
+    bot = Bot()
+    asyncio.run(bot.main())
