@@ -5,9 +5,11 @@ modules.
 """
 
 import discord
+import json
 import consts.constants as constants
-from typing import Optional
-
+from typing import Optional, Dict, Any
+from config.config import CONTRIBUTORS_FILE_PATH
+from logger.logger import logger
 
 def get_channel_by_name(guild: discord.Guild, channel_name: str) -> discord.TextChannel:
     """
@@ -95,8 +97,9 @@ async def get_guild_member_check_role(interaction: discord.Interaction) -> bool:
     Returns:
     bool: True if the member has the 'core' role, False otherwise.
     """
+
     # Retrieve the guild member who invoked the command
-    member = interaction.guild.get_member(interaction.user.id)
+    member = await interaction.guild.fetch_member(interaction.user.id)
     permitted = False  # default value
 
     # Check if they have the 'core' role.
@@ -104,8 +107,27 @@ async def get_guild_member_check_role(interaction: discord.Interaction) -> bool:
         permitted = True
 
     if not permitted:
-        await interaction.response.send_message(
+        await interaction.followup.send(
             "You do not have permission to use this command."
         )
 
     return permitted
+
+def update_json_file(server_name: str, server_data: Dict[str, Any]) -> None:
+    """
+    Update emotes/contributors.json with the new contributor and emoji ID mapping.
+
+    Parameters:
+    server_name (str): The name of the server to update.
+    server_data (Dict[str, Any]): The data to update the server with.
+    """
+    # Read the existing data
+    with open(CONTRIBUTORS_FILE_PATH, "r") as json_file:
+        data = json.load(json_file)
+
+    # Update the specific server's data
+    data["servers"][server_name] = server_data
+
+    # Write the updated data back to the file
+    with open(CONTRIBUTORS_FILE_PATH, "w") as json_file:
+        json.dump(data, json_file, indent=4)
