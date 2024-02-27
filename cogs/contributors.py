@@ -1,7 +1,8 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-from shared.helpers import get_guild_member_check_role, update_json_file
+from shared.helpers import get_guild_member_check_role, update_json_file, add_contributor_to_list
+from typing import Dict, Optional
 
 class ContributorCommandsCog(commands.Cog):
     def __init__(self, bot, contributors, emoji_dicts):
@@ -96,3 +97,48 @@ class ContributorCommandsCog(commands.Cog):
             await interaction.followup.send(
                 "Please provide the mention of the contributor to remove."
             )
+    
+    @app_commands.command(name="add_contributor")
+    async def add_contributor(self, interaction: discord.Interaction, user_mention: str, emoji: str):
+        """
+        Add a contributor to the list of contributors if the user invoking the command has the authorization to do so.
+        The contributor is added by either tagging them with their emoji, or reacting to the message with their emoji.
+
+        Parameters:
+        interaction (Interaction): The interaction of the command invocation.
+        user_mention (str): The mention of the user to add.
+        emoji (str): The emoji to associate with the user.
+        """
+        
+        await interaction.response.defer()
+
+        permitted = await get_guild_member_check_role(interaction)
+        if not permitted:
+            return
+        uid = user_mention.strip("<@!>")
+        emoji_id = emoji
+        server_contributors = self.contributors.get(interaction.guild.name)
+        if server_contributors is None:
+            await interaction.followup.send(
+                "No contributors found for server: " + interaction.guild.name
+            )
+            return
+        existing_contributor: Optional[Dict[str, str]] = next(
+            (c for c in server_contributors if c["uid"] == uid), None
+        )
+
+        if existing_contributor:
+            await interaction.followup.send(
+                f"Contributor {existing_contributor['uid']} already exists"
+            )
+        else:
+            emoji_dict = self.emoji_dicts.get(interaction.guild.name)
+            if emoji_dict is None:
+                await interaction.followup.send(
+                    "Emoji dictionary not found for server: " + interaction.guild.name
+                )
+                return
+            await add_contributor_to_list(
+                interaction, uid, emoji_id, server_contributors, emoji_dict
+            )
+            await interaction.followup.send(f"Contributor added successfully!")
