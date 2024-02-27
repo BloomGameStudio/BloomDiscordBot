@@ -13,7 +13,6 @@ class HelpCommandCog(commands.Cog):
         """
         Lis1t all available commands that the bot can perform.
         """
-        logger.info("Command fired")
         await interaction.response.send_message(MENU_COPY)
 
 def setup(bot: commands.Bot):
