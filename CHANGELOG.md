@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Discord.Embed with colors when using proposal related commands
+
 - Modal for proposal drafting
 
 - / commands instead of using ! or $ prefixes

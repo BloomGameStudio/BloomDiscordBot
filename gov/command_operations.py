@@ -72,9 +72,16 @@ async def handle_publishdraft(
     )
 
     if draft_to_publish:
-        await interaction.response.send_message(
-            f"Publishing draft: {draft_to_publish['title']}"
+        embed = discord.Embed(
+            title=f"Published Draft: {draft_to_publish['title']}",
+            description=f"The draft '{draft_to_publish['title']}' has been published.",
+            color=discord.Color.green(),
         )
+        embed.set_author(
+            name="Draft Publishing", icon_url=interaction.user.display_avatar.url
+        )
+        await interaction.response.send_message(embed=embed)
+
         proposals.remove(draft_to_publish)
         await publish_draft(
             draft_to_publish, bot, interaction.guild.id, interaction.guild
