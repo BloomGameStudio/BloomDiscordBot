@@ -4,8 +4,9 @@ from discord.ext import commands
 from events.event_operations import notify_new_event
 from events.tasks import check_events
 from cogs.help import HelpCommandCog
+from cogs.contributors import ContributorCommandsCog
 
-def setup_event_events(bot: commands.Bot) -> None:
+def setup_event_events(bot: commands.Bot, contributors, emoji_dicts: dict) -> None:
     """
     Set up the event handlers for the bot.
 
@@ -27,6 +28,8 @@ def setup_event_events(bot: commands.Bot) -> None:
         # Load the HelpCommandCog
         await bot.add_cog(HelpCommandCog(bot))
         logger.info("HelpCommandCog loaded")
+        await bot.add_cog(ContributorCommandsCog(bot, contributors, emoji_dicts))
+        logger.info("ContributorCommandsCog loaded")
         # Perform tree synchronization
         try:
             await bot.tree.sync()
