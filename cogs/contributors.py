@@ -19,7 +19,7 @@ class ContributorCommandsCog(commands.Cog):
         await interaction.response.defer()
 
         server_name = interaction.guild.name
-        emoji_dict = self.emoji_id_mapping.get(server_name)
+        emoji_dict = self.emoji_dicts.get(server_name)
         if emoji_dict is None:
             await interaction.followup.send(
                 f"No emoji dictionary found for server: {server_name}"
