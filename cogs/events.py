@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 from shared.helpers import get_guild_member_check_role
+from logger.logger import logger
 
 class EventCommandsCog(commands.Cog):
     def __init__(self, bot):
@@ -33,7 +34,6 @@ class EventCommandsCog(commands.Cog):
             for url in event_urls
         ]
         formatted_string = "\n\n".join(formatted_events)
-
         await interaction.response.send_message(
             f"🗓️ **All Events**🗓️ \n\n{formatted_string}"
         )
@@ -56,7 +56,7 @@ class EventCommandsCog(commands.Cog):
         guild = interaction.guild
 
         # Defer the interaction response
-        #await interaction.response.defer()
+        await interaction.response.defer()
 
         # Check if the member has the required role
         permitted = await get_guild_member_check_role(interaction)
@@ -72,6 +72,6 @@ class EventCommandsCog(commands.Cog):
         if event:
             # Delete the event
             await event.delete()
-            await interaction.response.send_message(f"Event '{event_name}' has been deleted 🗑️")
+            await interaction.followup.send(f"Event '{event_name}' has been deleted 🗑️")
         else:
-            await interaction.response.send_message(f"No event found with name '{event_name}'.")
+            await interaction.followup.send(f"No event found with name '{event_name}'.")
