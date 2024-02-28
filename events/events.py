@@ -5,6 +5,8 @@ from events.event_operations import notify_new_event
 from events.tasks import check_events
 from cogs.help import HelpCommandCog
 from cogs.contributors import ContributorCommandsCog
+from cogs.gov import GovCommandsCog
+from cogs.events import EventCommandsCog
 
 def setup_event_events(bot: commands.Bot, contributors, emoji_dicts: dict) -> None:
     """
@@ -30,6 +32,10 @@ def setup_event_events(bot: commands.Bot, contributors, emoji_dicts: dict) -> No
         logger.info("HelpCommandCog loaded")
         await bot.add_cog(ContributorCommandsCog(bot, contributors, emoji_dicts))
         logger.info("ContributorCommandsCog loaded")
+        await bot.add_cog(GovCommandsCog(bot))
+        logger.info("GovCommandsCog loaded")
+        await bot.add_cog(EventCommandsCog(bot))
+        logger.info("EventCommandsCog loaded")
         # Perform tree synchronization
         try:
             await bot.tree.sync()
