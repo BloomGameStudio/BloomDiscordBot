@@ -1,3 +1,8 @@
+"""
+This module contains the main class for the bot, which sets up the bot with intents, loads the contributors, emoji dicts, 
+and posted events, loads the cogs, sets up commands and events for the bot, and then starts the bot.
+"""
+
 import discord
 import os
 import asyncio
