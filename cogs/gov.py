@@ -5,10 +5,11 @@ from proposals.proposal_buttons_view import ProposalButtonsView
 from proposals.proposal_selects import PublishDraftSelect
 from proposals.proposals import proposals
 
+
 class GovCommandsCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-    
+
     @app_commands.command(name="vote_draft")
     async def vote_draft(self, interaction: discord.Interaction) -> None:
         """

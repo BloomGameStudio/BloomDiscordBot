@@ -4,6 +4,7 @@ from discord import app_commands
 from helpers import get_guild_member_check_role, update_json_file
 from typing import Dict, Optional
 
+
 class ContributorCommandsCog(commands.Cog):
     def __init__(self, bot, contributors, emoji_dicts):
         self.bot = bot
@@ -30,7 +31,7 @@ class ContributorCommandsCog(commands.Cog):
         emoji_text = "\n".join(emoji_list)
         message = f" :fire: **List of Contributors** :fire: \n" f"{emoji_text}"
         await interaction.followup.send(message)
-        
+
     @app_commands.command(name="remove_contributor")
     async def remove_contributor(
         self, interaction: discord.Interaction, user_mention: str
@@ -97,9 +98,11 @@ class ContributorCommandsCog(commands.Cog):
             await interaction.followup.send(
                 "Please provide the mention of the contributor to remove."
             )
-    
+
     @app_commands.command(name="add_contributor")
-    async def add_contributor(self, interaction: discord.Interaction, user_mention: str, emoji: str):
+    async def add_contributor(
+        self, interaction: discord.Interaction, user_mention: str, emoji: str
+    ):
         """
         Add a contributor to the list of contributors if the user invoking the command has the authorization to do so.
         The contributor is added by either tagging them with their emoji, or reacting to the message with their emoji.
@@ -109,7 +112,7 @@ class ContributorCommandsCog(commands.Cog):
         user_mention (str): The mention of the user to add.
         emoji (str): The emoji to associate with the user.
         """
-    
+
         await interaction.response.defer()
 
         permitted = await get_guild_member_check_role(interaction)
@@ -145,7 +148,9 @@ class ContributorCommandsCog(commands.Cog):
 
             new_contributor = {"uid": uid, "note": note}
             server_contributors.append(new_contributor)
-            emoji_dict[emoji_id] = uid  # Use the UID directly as the value in emoji_id_mapping
+            emoji_dict[
+                emoji_id
+            ] = uid  # Use the UID directly as the value in emoji_id_mapping
 
             update_json_file(
                 interaction.guild.name,

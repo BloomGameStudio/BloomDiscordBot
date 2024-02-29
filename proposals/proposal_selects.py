@@ -1,5 +1,5 @@
 import discord
-from helpers import handle_publishdraft
+from proposals.proposals import handle_publishdraft
 from .proposal_modal import ProposalModal
 
 

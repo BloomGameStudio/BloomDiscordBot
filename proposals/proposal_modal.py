@@ -1,6 +1,6 @@
 import discord
 from discord import ui
-from helpers import proposals
+from proposals.proposals import proposals
 from consts.types import GOVERNANCE_ID_TYPE, BUDGET_ID_TYPE
 from typing import Dict, Any
 

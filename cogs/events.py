@@ -3,6 +3,7 @@ from discord.ext import commands
 from discord import app_commands
 from helpers import get_guild_member_check_role
 
+
 class EventCommandsCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -36,9 +37,11 @@ class EventCommandsCog(commands.Cog):
         await interaction.response.send_message(
             f"🗓️ **All Events**🗓️ \n\n{formatted_string}"
         )
-    
+
     @app_commands.command(name="delete_event")
-    async def delete_event(self, interaction: discord.Interaction, event_name: str = None):
+    async def delete_event(
+        self, interaction: discord.Interaction, event_name: str = None
+    ):
         """
         Deletes an event from the guild.
 
@@ -61,9 +64,11 @@ class EventCommandsCog(commands.Cog):
         permitted = await get_guild_member_check_role(interaction)
 
         if not permitted:
-            await interaction.response.send_message("You do not have permission to use this command.")
+            await interaction.response.send_message(
+                "You do not have permission to use this command."
+            )
             return
-    
+
         # Fetch the list of events
         events = await guild.fetch_scheduled_events()
         event = next((e for e in events if e.name == event_name), None)

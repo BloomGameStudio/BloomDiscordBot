@@ -17,6 +17,7 @@ proposals: List[Dict[str, Any]] = []
 
 ongoing_votes: Dict[int, Dict[str, Any]] = {}
 
+
 async def handle_votedraft(
     ctx: commands.Context, proposals: List[Dict[str, str]], new_proposal_emoji: str
 ) -> None:

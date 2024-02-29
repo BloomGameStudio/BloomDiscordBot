@@ -1,6 +1,6 @@
 """
 events/event_operations.py is responsible for handling the business logic associated with events
-This includes fetching events, loading posted events, saving posted events, notifying guild of new events. 
+This includes fetching events, loading posted events, saving posted events, notifying guild of new events, and more 
 """
 
 
@@ -19,22 +19,6 @@ from discord.utils import get
 from discord.ext.commands import Bot
 from discord.ext import commands
 from logger.logger import logger
-
-
-# Load the stored events from the JSON file
-def load_posted_events() -> List[int]:
-    """
-    Load the event IDs that have already been posted to Discord from the JSON file.
-
-    Returns:
-    List[int]: The list of event IDs that have already been posted to Discord.
-    """
-    try:
-        logger.info(f"Loading events from: {POSTED_EVENTS_FILE_PATH}")
-        with open(POSTED_EVENTS_FILE_PATH, "r") as file:
-            return json.load(file)
-    except FileNotFoundError:
-        return []
 
 
 # Save the posted events to the JSON file
@@ -185,6 +169,7 @@ async def fetch_upcoming_events(guild):
 
     return upcoming_events
 
+
 async def process_new_member(member: discord.Member) -> None:
     """
     Sends a welcome message to a new member in the welcome channel.
@@ -259,6 +244,7 @@ async def handle_message(
                     await send_dm_once(bot, contributor, message_link)
                 except discord.errors.NotFound:
                     logger.warning(f'User not found: {contributor["uid"]}')
+
 
 async def handle_reaction(
     bot: commands.Bot,

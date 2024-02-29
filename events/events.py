@@ -3,14 +3,16 @@ from discord import ScheduledEvent, Message, Reaction, User
 from discord.ext import commands
 from events.event_operations import notify_new_event
 from tasks.tasks import check_events
-from cogs.help import HelpCommandCog
-from cogs.contributors import ContributorCommandsCog
-from cogs.gov import GovCommandsCog
-from cogs.events import EventCommandsCog
-from .event_operations import handle_message, handle_reaction, process_reaction_add, process_new_member
+from .event_operations import (
+    handle_message,
+    handle_reaction,
+    process_reaction_add,
+    process_new_member,
+)
 from consts.constants import RULES_MESSAGE_ID
 
-def setup_event_events(bot: commands.Bot, contributors, emoji_dicts: dict, data, proposals) -> None:
+
+def setup_event_events(bot: commands.Bot) -> None:
     """
     Set up the event handlers for the bot.
 
@@ -28,16 +30,7 @@ def setup_event_events(bot: commands.Bot, contributors, emoji_dicts: dict, data,
         await bot.change_presence()
         logger.info(f"Starting background task for all guilds")
         check_events.start(bot)
-        
-        # Load the HelpCommandCog
-        await bot.add_cog(HelpCommandCog(bot))
-        logger.info("HelpCommandCog loaded")
-        await bot.add_cog(ContributorCommandsCog(bot, contributors, emoji_dicts))
-        logger.info("ContributorCommandsCog loaded")
-        await bot.add_cog(GovCommandsCog(bot))
-        logger.info("GovCommandsCog loaded")
-        await bot.add_cog(EventCommandsCog(bot))
-        logger.info("EventCommandsCog loaded")
+
         # Perform tree synchronization
         try:
             await bot.tree.sync()
@@ -67,7 +60,7 @@ def setup_event_events(bot: commands.Bot, contributors, emoji_dicts: dict, data,
         Returns:
         None
         """
-        await handle_message(bot, message, data, proposals)
+        await handle_message(bot, message)
 
     @bot.event
     async def on_reaction_add(reaction: Reaction, user: User) -> None:
@@ -81,7 +74,7 @@ def setup_event_events(bot: commands.Bot, contributors, emoji_dicts: dict, data,
         Returns:
         None
         """
-        await handle_reaction(bot, reaction, user, data, proposals)
+        await handle_reaction(bot, reaction, user)
 
     @bot.event
     async def on_raw_reaction_add(payload):
@@ -96,7 +89,7 @@ def setup_event_events(bot: commands.Bot, contributors, emoji_dicts: dict, data,
         """
         if payload.message_id == RULES_MESSAGE_ID:
             await process_reaction_add(bot, payload)
-    
+
     @bot.event
     async def on_member_join(member):
         """

@@ -9,7 +9,9 @@ import json
 import consts.constants as constants
 import config.config as cfg
 import discord
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List, Tuple
+from logger.logger import logger
+
 
 def get_channel_by_name(guild: discord.Guild, channel_name: str) -> discord.TextChannel:
     """
@@ -113,6 +115,7 @@ async def get_guild_member_check_role(interaction: discord.Interaction) -> bool:
 
     return permitted
 
+
 def update_json_file(server_name: str, server_data: Dict[str, Any]) -> None:
     """
     Update emotes/contributors.json with the new contributor and emoji ID mapping.
@@ -131,6 +134,7 @@ def update_json_file(server_name: str, server_data: Dict[str, Any]) -> None:
     # Write the updated data back to the file
     with open(cfg.CONTRIBUTORS_FILE_PATH, "w") as json_file:
         json.dump(data, json_file, indent=4)
+
 
 async def send_dm_once(
     bot: discord.Client, contributor: Dict[str, str], message_link: str
@@ -151,3 +155,42 @@ async def send_dm_once(
     if user:
         dm_message = f"Hello {user.name}! You have been mentioned in this message! {message_link}"
         await user.send(dm_message)
+
+
+# Load the stored events from the JSON file
+def load_posted_events() -> List[int]:
+    """
+    Load the event IDs that have already been posted to Discord from the JSON file.
+
+    Returns:
+    List[int]: The list of event IDs that have already been posted to Discord.
+    """
+    try:
+        logger.info(f"Loading events from: {cfg.POSTED_EVENTS_FILE_PATH}")
+        with open(cfg.POSTED_EVENTS_FILE_PATH, "r") as file:
+            return json.load(file)
+    except FileNotFoundError:
+        return []
+
+
+# NOTE: Should this be part of the configuration (config/config.py)?
+def load_contributors_and_emoji_dicts() -> (
+    Tuple[Dict[str, List[Dict[str, str]]], Dict[str, Dict[str, str]]]
+):
+    """
+    Load the contributors and emoji dictionaries from the JSON file.
+
+    Returns:
+    Tuple[Dict[str, List[Dict[str, str]]], Dict[str, Dict[str, str]]]: The contributors and emoji dictionaries.
+    """
+    with open(cfg.CONTRIBUTORS_FILE_PATH, "r") as json_file:
+        data = json.load(json_file)
+        contributors = {
+            "priv-server": data["servers"]["priv-server"]["contributors"],
+            "Bloom Collective": data["servers"]["Bloom Collective"]["contributors"],
+        }
+        emoji_dicts = {
+            "priv-server": data["servers"]["priv-server"]["emoji_dictionary"],
+            "Bloom Collective": data["servers"]["Bloom Collective"]["emoji_dictionary"],
+        }
+    return contributors, emoji_dicts
