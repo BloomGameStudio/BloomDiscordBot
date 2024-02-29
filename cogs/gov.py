@@ -1,9 +1,9 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-from gov.proposal_buttons_view import ProposalButtonsView
-from gov.proposal_selects import PublishDraftSelect
-from gov.proposals import proposals
+from proposals.proposal_buttons_view import ProposalButtonsView
+from proposals.proposal_selects import PublishDraftSelect
+from proposals.proposals import proposals
 
 class GovCommandsCog(commands.Cog):
     def __init__(self, bot):
