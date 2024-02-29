@@ -3,16 +3,10 @@ import os
 import json
 import asyncio
 from discord.ext import commands
-from gov.commands import setup_gov_commands
-from gov.proposals import proposals
-from emotes.commands import setup_contributor_commands
-from events.commands import setup_event_commands
+from proposals.proposals import proposals
 from events.events import setup_event_events
 from events.event_operations import load_posted_events
 from config.config import CONTRIBUTORS_FILE_PATH
-from shared.events import setup_shared_events
-from logger.logger import logger
-
 
 class Bot:
     async def main(self):
@@ -40,18 +34,8 @@ class Bot:
         self.bot = commands.Bot(command_prefix="", intents=intents)
 
         # Setup commands and events for the bot
-        setup_gov_commands(self.bot)
-        setup_contributor_commands(self.bot, self.contributors, self.emoji_dicts)
-        setup_shared_events(self.bot, self.data, proposals)
         self.bot.posted_events = load_posted_events()
-        setup_event_commands(self.bot)
-        setup_event_events(self.bot)
-
-        # Perform tree synchronization
-        try:
-            await self.bot.tree.sync()
-        except Exception as e:
-            logger.error(e)
+        setup_event_events(self.bot, self.contributors, self.emoji_dicts, self.data, proposals)
 
         # Run the bot
         await self.bot.start(os.getenv("DISCORD_BOT_TOKEN"))
