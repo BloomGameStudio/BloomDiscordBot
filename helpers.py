@@ -115,7 +115,7 @@ async def get_guild_member_check_role(interaction: discord.Interaction) -> bool:
     permitted = False  # default value
 
     # Check if they have the 'core' role.
-    if any(role.name == "core" for role in member.roles):
+    if any(role.name.lower() == "core" for role in member.roles):
         permitted = True
 
     if not permitted:
