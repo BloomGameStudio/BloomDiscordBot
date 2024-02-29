@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-from shared.helpers import get_guild_member_check_role, update_json_file, add_contributor_to_list
+from helpers import get_guild_member_check_role, update_json_file
 from typing import Dict, Optional
 
 class ContributorCommandsCog(commands.Cog):
@@ -109,7 +109,7 @@ class ContributorCommandsCog(commands.Cog):
         user_mention (str): The mention of the user to add.
         emoji (str): The emoji to associate with the user.
         """
-        
+    
         await interaction.response.defer()
 
         permitted = await get_guild_member_check_role(interaction)
@@ -138,7 +138,18 @@ class ContributorCommandsCog(commands.Cog):
                     "Emoji dictionary not found for server: " + interaction.guild.name
                 )
                 return
-            await add_contributor_to_list(
-                interaction, uid, emoji_id, server_contributors, emoji_dict
+
+            # Get the user's username
+            user = await interaction.guild.fetch_member(int(uid))
+            note = user.name if user else "User not found"
+
+            new_contributor = {"uid": uid, "note": note}
+            server_contributors.append(new_contributor)
+            emoji_dict[emoji_id] = uid  # Use the UID directly as the value in emoji_id_mapping
+
+            update_json_file(
+                interaction.guild.name,
+                {"contributors": server_contributors, "emoji_dictionary": emoji_dict},
             )
+
             await interaction.followup.send(f"Contributor added successfully!")

@@ -1,8 +1,7 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-from shared.helpers import get_guild_member_check_role
-from logger.logger import logger
+from helpers import get_guild_member_check_role
 
 class EventCommandsCog(commands.Cog):
     def __init__(self, bot):
