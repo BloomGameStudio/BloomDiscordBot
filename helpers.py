@@ -2,6 +2,16 @@
 shared/helpers.py is responsible for setting up helper functions for the bot.
 helper functions may be functions that contain functionality that is used by multiple
 modules.
+
+The functions in this module are:
+- get_channel_by_name: Soft match a channel name from consts/constants.py to a channel in the guild.
+- get_forum_channel_by_name: Retrieve a ForumChannel in a guild based on its name, with support for a fallback channel name.
+- get_guild_member_check_role: Check if the guild member who invoked the command has the 'core' role.
+- update_json_file: Update emotes/contributors.json with the new contributor and emoji ID mapping.
+- send_dm_once: Sends a direct message to a contributor if they are mentioned in a message.
+- load_posted_events: Load the event IDs that have already been posted to Discord from the JSON file.
+- load_contributors_and_emoji_dicts: Load the contributors and emoji dictionaries from the JSON file.
+
 """
 
 import discord

@@ -1,3 +1,9 @@
+"""
+HelpCommandCog class is a cog that contains the help command for the bot.
+It contains the following command:
+- help: List all available commands that the bot can perform.
+"""
+
 import discord
 from discord.ext import commands
 from discord import app_commands

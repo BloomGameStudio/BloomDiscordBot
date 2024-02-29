@@ -1,3 +1,11 @@
+""" 
+The ContributorCommandsCog class is a cog for handling the contributor commands.
+It contains the following commands:
+- list_contributors: Lists the contributors associated with this guild.
+- remove_contributor: Removes a contributor from the list of contributors.
+- add_contributor: Add a contributor to the list of contributors if the user invoking the command has the authorization to do so.
+"""
+
 import discord
 from discord.ext import commands
 from discord import app_commands
@@ -15,6 +23,9 @@ class ContributorCommandsCog(commands.Cog):
     async def list_contributors(self, interaction: discord.Interaction):
         """
         Lists the contributors associated with this guild.
+
+        Parameters:
+        interaction (Interaction): The interaction of the command invocation.
         """
         # Defer the response
         await interaction.response.defer()

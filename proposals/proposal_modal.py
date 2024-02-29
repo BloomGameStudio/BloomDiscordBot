@@ -1,3 +1,7 @@
+"""
+proposal_modal is a discord.ui.Modal that is used to create or edit a proposal. It is used in the ProposalButtonsView class.
+"""
+
 import discord
 from discord import ui
 from proposals.proposals import proposals

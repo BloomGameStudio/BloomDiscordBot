@@ -1,3 +1,12 @@
+"""
+The GovCommandsCog class is a cog that contains the commands for the governance commands.
+It contains the following commands:
+- vote_draft: Draft, edit, or delete a vote proposal.
+- publish_draft: Publish an existing draft proposal.
+
+"""
+
+
 import discord
 from discord.ext import commands
 from discord import app_commands

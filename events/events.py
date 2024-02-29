@@ -1,3 +1,9 @@
+"""
+Events module for the bot. This module contains the event handlers for the bot.
+The logic for these events is implemented in the event_operations module.
+"""
+
+
 from logger.logger import logger
 from discord import ScheduledEvent, Message, Reaction, User
 from discord.ext import commands
