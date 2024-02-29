@@ -1,14 +1,16 @@
 from logger.logger import logger
-from discord import ScheduledEvent
+from discord import ScheduledEvent, Message, Reaction, User
 from discord.ext import commands
 from events.event_operations import notify_new_event
-from events.tasks import check_events
+from tasks.tasks import check_events
 from cogs.help import HelpCommandCog
 from cogs.contributors import ContributorCommandsCog
 from cogs.gov import GovCommandsCog
 from cogs.events import EventCommandsCog
+from .event_operations import handle_message, handle_reaction, process_reaction_add, process_new_member
+from consts.constants import RULES_MESSAGE_ID
 
-def setup_event_events(bot: commands.Bot, contributors, emoji_dicts: dict) -> None:
+def setup_event_events(bot: commands.Bot, contributors, emoji_dicts: dict, data, proposals) -> None:
     """
     Set up the event handlers for the bot.
 
@@ -53,3 +55,73 @@ def setup_event_events(bot: commands.Bot, contributors, emoji_dicts: dict) -> No
         """
         logger.info(f"New scheduled event created: {event.name}")
         await notify_new_event(bot, event, event.guild_id)
+
+    @bot.event
+    async def on_message(message: Message) -> None:
+        """
+        Event triggered when a message is sent in a server the bot is in.
+
+        Parameters:
+        message (Message): The message that was sent.
+
+        Returns:
+        None
+        """
+        await handle_message(bot, message, data, proposals)
+
+    @bot.event
+    async def on_reaction_add(reaction: Reaction, user: User) -> None:
+        """
+        Event triggered when a reaction is added to a message in a server the bot is in.
+
+        Parameters:
+        reaction (Reaction): The reaction that was added.
+        user (User): The user who added the reaction.
+
+        Returns:
+        None
+        """
+        await handle_reaction(bot, reaction, user, data, proposals)
+
+    @bot.event
+    async def on_raw_reaction_add(payload):
+        """
+        Event triggered when a raw reaction is added to a message in a server the bot is in.
+
+        Parameters:
+        payload: The payload for the raw reaction add event.
+
+        Returns:
+        None
+        """
+        if payload.message_id == RULES_MESSAGE_ID:
+            await process_reaction_add(bot, payload)
+    
+    @bot.event
+    async def on_member_join(member):
+        """
+        Event triggered when a new member joins a server the bot is in.
+
+        Parameters:
+        member: The member who joined.
+
+        Returns:
+        None
+        """
+        logger.info(f"New member: {member.name} has joined: {member.guild.name}")
+        await process_new_member(member)
+
+    @bot.event
+    async def on_command_error(ctx, error):
+        """
+        Event triggered when a command error occurs.
+
+        Parameters:
+        ctx: The context in which the command was invoked.
+        error: The error that occurred.
+
+        Returns:
+        None
+        """
+        if isinstance(error, commands.CommandNotFound):
+            await ctx.message.channel.send("Command not found")
