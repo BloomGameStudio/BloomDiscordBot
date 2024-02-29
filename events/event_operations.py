@@ -11,7 +11,7 @@ import os
 import discord
 from consts.constants import GENERAL_CHANNEL, RULES_MESSAGE_ID, DISCORD_ROLE_TRIGGERS
 from config.config import POSTED_EVENTS_FILE_PATH
-from shared.helpers import get_channel_by_name, send_dm_once
+from helpers import get_channel_by_name, send_dm_once
 from datetime import datetime, timezone
 from typing import List, Optional, Any, Dict, Union
 from discord import ScheduledEvent, Reaction, User, Message
