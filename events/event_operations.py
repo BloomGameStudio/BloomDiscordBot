@@ -128,7 +128,7 @@ async def notify_new_event(bot: Bot, event: ScheduledEvent, guild_id: int) -> No
 
     if guild:
         # Wait for 30 mins before sending the notification
-        await asyncio.sleep(1 * 60)
+        await asyncio.sleep(30 * 60)
 
         # Fetch the event again to get the updated details
         event = await guild.fetch_scheduled_event(event.id)
