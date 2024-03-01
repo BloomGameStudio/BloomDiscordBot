@@ -1,5 +1,9 @@
+"""
+proposal_selects is a discord.ui.select that contains the select menus for the publish_draft, delete_draft, and edit_draft commands. It is used in the vote_draft command in the GovCommandsCog class.
+"""
+
 import discord
-from .command_operations import handle_publishdraft
+from proposals.proposals import handle_publishdraft
 from .proposal_modal import ProposalModal
 
 
