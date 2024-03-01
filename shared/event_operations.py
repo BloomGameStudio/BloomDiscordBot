@@ -10,7 +10,7 @@ from discord.ext import commands
 from discord import Message, Reaction, User
 from discord.utils import get
 from emotes.command_operations import send_dm_once
-from consts.constants import DISCORD_ROLE_TRIGGERS, RULES_MESSAGE_ID, GENERAL_CHANNEL
+from consts.constants import DISCORD_ROLE_TRIGGERS, RULES_MESSAGE_ID, GENERAL_CHANNEL, COLLAB_LAND_CHANNEL, START_HERE_CHANNEL
 from .helpers import get_channel_by_name
 from logger.logger import logger
 
@@ -25,8 +25,8 @@ async def process_new_member(member: discord.Member) -> None:
     try:
         # Get the welcome channel
         welcome_channel = get_channel_by_name(member.guild, GENERAL_CHANNEL)
-        collab_land_join_channel = get_channel_by_name(member.guild, "collabland-join")
-        start_here_channel = get_channel_by_name(member.guild, "start-here")
+        collab_land_join_channel = get_channel_by_name(member.guild, COLLAB_LAND_CHANNEL)
+        start_here_channel = get_channel_by_name(member.guild, START_HERE_CHANNEL)
 
         # Send the welcome message
         await welcome_channel.send(
