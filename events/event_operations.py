@@ -9,7 +9,7 @@ import requests
 import asyncio
 import os
 import discord
-from consts.constants import GENERAL_CHANNEL, RULES_MESSAGE_ID, DISCORD_ROLE_TRIGGERS
+from consts.constants import GENERAL_CHANNEL, RULES_MESSAGE_ID, DISCORD_ROLE_TRIGGERS, COLLAB_LAND_CHANNEL, START_HERE_CHANNEL
 from config.config import POSTED_EVENTS_FILE_PATH
 from helpers import get_channel_by_name, send_dm_once
 from datetime import datetime, timezone
@@ -180,8 +180,8 @@ async def process_new_member(member: discord.Member) -> None:
     try:
         # Get the welcome channel
         welcome_channel = get_channel_by_name(member.guild, GENERAL_CHANNEL)
-        collab_land_join_channel = get_channel_by_name(member.guild, "collabland-join")
-        start_here_channel = get_channel_by_name(member.guild, "start-here")
+        collab_land_join_channel = get_channel_by_name(member.guild, COLLAB_LAND_CHANNEL)
+        start_here_channel = get_channel_by_name(member.guild, START_HERE_CHANNEL)
 
         # Send the welcome message
         await welcome_channel.send(
