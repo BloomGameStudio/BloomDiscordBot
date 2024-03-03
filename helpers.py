@@ -208,11 +208,11 @@ def load_contributors_and_emoji_dicts() -> (
     with open(cfg.CONTRIBUTORS_FILE_PATH, "r") as json_file:
         data = json.load(json_file)
         contributors = {
-            "priv-server": data["servers"]["priv-server"]["contributors"],
+            "Bloom Studio": data["servers"]["Bloom Studio"]["contributors"],
             "Bloom Collective": data["servers"]["Bloom Collective"]["contributors"],
         }
         emoji_dicts = {
-            "priv-server": data["servers"]["priv-server"]["emoji_dictionary"],
+            "Bloom Studio": data["servers"]["Bloom Studio"]["emoji_dictionary"],
             "Bloom Collective": data["servers"]["Bloom Collective"]["emoji_dictionary"],
         }
     return contributors, emoji_dicts
