@@ -1,3 +1,7 @@
+"""
+ProposalButtonsView is a discord.ui.View that contains buttons for creating, editing, and deleting proposals. It is used in the vote_draft command in the GovCommandsCog class.
+"""
+
 import discord
 from .proposal_modal import ProposalModal
 from .proposal_selects import DeleteProposalSelect, EditProposalSelect

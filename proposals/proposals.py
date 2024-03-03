@@ -1,33 +1,116 @@
 """
-gov/proposals.py is responsible for handling the publishing of proposals.
+Proposals module handles the logic associated with proposals. These functions are invoked when the gov commands
+in cogs/gov.py are invoked and the relevant buttons or selects are clicked.
 
-Proposals are tracked through a timer, and if the posted proposal passes the sniff test (quorum of yes reacts)
-they are published to snapshot through a node.js script.
+The module contains the following functions:
+- handle_votedraft: Handles the vote draft command.
+- handle_publishdraft: Handles the publish draft command.
+- prepare_draft: Prepare the draft by setting the type, channel ID, and title based on the draft type.
+- publish_draft: Publish the draft by creating a thread with the prepared content and starting a vote timer.
+- react_to_vote: React to the published draft with the vote emojis.
+- vote_timer: Start a timer for the vote. After 48 hours, the vote is concluded and the result is posted.
 
-Refer to snapshot for more information on how the snapshot is created.
+The module also contains the following variables:
+- proposals: A list of proposals.
+- ongoing_votes: A dictionary of ongoing votes.
 """
-
 
 import asyncio
 import subprocess
 import textwrap
-import config.config as cfg
 import discord
-from typing import Dict, Any, List, Tuple
+import consts.constants as constants
+import config.config as cfg
+from logger.logger import logger
 from discord.ext.commands import Bot
-from consts.constants import (
-    GOVERNANCE_BUDGET_CHANNEL,
-    GOVERNANCE_CHANNEL,
-    YES_VOTE,
-    NO_VOTE,
-    ABSTAIN_VOTE,
-)
+from discord.ext import commands
 from consts.types import GOVERNANCE_ID_TYPE, BUDGET_ID_TYPE
 from logger.logger import logger
+from typing import Any, Dict, List, Tuple
+from helpers import get_channel_by_name
+
 
 proposals: List[Dict[str, Any]] = []
 
 ongoing_votes: Dict[int, Dict[str, Any]] = {}
+
+
+async def handle_votedraft(
+    ctx: commands.Context, proposals: List[Dict[str, str]], new_proposal_emoji: str
+) -> None:
+    """
+    Handles the vote draft command. This command allows users to draft a proposal.
+
+    Parameters:
+    ctx (commands.Context): The context in which the command was called.
+    proposals (List[Dict[str, str]]): The list of proposals.
+    new_proposal_emoji (str): The emoji for new proposals.
+    """
+    try:
+        # Get the channel with the name 'governance' in the server
+        governance_talk_channel = get_channel_by_name(
+            ctx.guild, constants.GOVERNANCE_TALK_CHANNEL
+        )
+    except ValueError as e:
+        await ctx.send(f"Cannot find governance channel in this server.")
+        logger.error(f"Error drafting a vote: {str(e)}")
+        return
+
+    if ctx.channel.id != governance_talk_channel.id:
+        await ctx.send(
+            f"This command can only be used in <#{governance_talk_channel.id}>"
+        )
+        return
+
+
+async def handle_publishdraft(
+    interaction: discord.Interaction,
+    draft_name: str,
+    proposals: List[Dict[str, str]],
+    bot: commands.Bot,
+) -> None:
+    """
+    Handle the publishing of a draft.
+
+    This function searches for a draft with the given name in the list of proposals.
+    If the draft is found, it is published and removed from the list of proposals.
+    If the draft is not found, a message is sent to the interaction.
+
+    Parameters:
+    interaction (discord.Interaction): The interaction that triggered the command.
+    draft_name (str): The name of the draft to publish.
+    proposals (List[Dict[str, str]]): The list of proposals.
+    bot (commands.Bot): The bot instance.
+
+    Returns:
+    None
+    """
+    draft_to_publish = next(
+        (
+            item
+            for item in proposals
+            if item.get("title", "").strip() == draft_name.strip()
+        ),
+        None,
+    )
+
+    if draft_to_publish:
+        embed = discord.Embed(
+            title=f"Published Draft: {draft_to_publish['title']}",
+            description=f"The draft '{draft_to_publish['title']}' has been published.",
+            color=discord.Color.green(),
+        )
+        embed.set_author(
+            name="Draft Publishing", icon_url=interaction.user.display_avatar.url
+        )
+        await interaction.response.send_message(embed=embed)
+
+        proposals.remove(draft_to_publish)
+        await publish_draft(
+            draft_to_publish, bot, interaction.guild.id, interaction.guild
+        )
+    else:
+        await interaction.response.send_message(f"Draft not found: {draft_name}")
 
 
 # prepare the draft by setting the type, channel ID, and title based on the draft type
@@ -51,7 +134,7 @@ async def prepare_draft(
 
     if draft_type == BUDGET_ID_TYPE:
         id_type = BUDGET_ID_TYPE
-        channel_name = GOVERNANCE_BUDGET_CHANNEL
+        channel_name = constants.GOVERNANCE_BUDGET_CHANNEL
         cfg.current_budget_id += 1
         cfg.update_id_values(
             cfg.current_budget_id, id_type
@@ -61,7 +144,7 @@ async def prepare_draft(
         )
     else:
         id_type = GOVERNANCE_ID_TYPE
-        channel_name = GOVERNANCE_CHANNEL
+        channel_name = constants.GOVERNANCE_CHANNEL
         cfg.current_governance_id += 1
         cfg.update_id_values(
             cfg.current_governance_id, id_type
@@ -104,11 +187,11 @@ async def publish_draft(
     **__Background__**
     {draft["background"]}
 
-    **{YES_VOTE} Yes**
+    **{constants.YES_VOTE} Yes**
 
-    **{NO_VOTE} Reassess**
+    **{constants.NO_VOTE} Reassess**
 
-    **{ABSTAIN_VOTE} Abstain**
+    **{constants.ABSTAIN_VOTE} Abstain**
 
     Vote will conclude in 48h from now.
     """
@@ -154,9 +237,9 @@ async def react_to_vote(
     # Fetch the initial message in the thread using the thread ID
     message = await thread.fetch_message(thread_id)
 
-    await message.add_reaction(YES_VOTE)
-    await message.add_reaction(NO_VOTE)
-    await message.add_reaction(ABSTAIN_VOTE)
+    await message.add_reaction(constants.YES_VOTE)
+    await message.add_reaction(constants.NO_VOTE)
+    await message.add_reaction(constants.ABSTAIN_VOTE)
 
 
 async def vote_timer(
@@ -196,11 +279,11 @@ async def vote_timer(
     # Fetch the initial message in the thread using the thread ID
     message = await thread.fetch_message(thread_id)
     for reaction in message.reactions:
-        if str(reaction.emoji) == f"{YES_VOTE}":
+        if str(reaction.emoji) == f"{constants.YES_VOTE}":
             ongoing_votes[message.id]["yes_count"] = reaction.count - 1
-        elif str(reaction.emoji) == f"{NO_VOTE}":
+        elif str(reaction.emoji) == f"{constants.NO_VOTE}":
             ongoing_votes[message.id]["reassess_count"] = reaction.count - 1
-        elif str(reaction.emoji) == f"{ABSTAIN_VOTE}":
+        elif str(reaction.emoji) == f"{constants.ABSTAIN_VOTE}":
             ongoing_votes[message.id]["abstain_count"] = reaction.count - 1
 
     # Check the result and post it
