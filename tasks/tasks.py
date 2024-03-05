@@ -141,7 +141,7 @@ async def check_concluded_proposals_task(bot: commands.Bot):
             # Check if the proposal has passed based off the yes and no count, and quorum of 5.
             if (
                 proposal_data["yes_count"] > proposal_data["no_count"]
-                and proposal_data["yes_count"] >= 1
+                and proposal_data["yes_count"] >= 5
             ):
                 passed = True
             else:
