@@ -184,11 +184,11 @@ __**Abstract**__
 **__Background__**
 {draft["background"]}
 
-**{cfg.YES_VOTE} Yes**
+**{constants.YES_VOTE} Yes**
 
-**{cfg.NO_VOTE} Reassess**
+**{constants.NO_VOTE} Reassess**
 
-**{cfg.ABSTAIN_VOTE} Abstain**
+**{constants.ABSTAIN_VOTE} Abstain**
 
 Vote will conclude in 48h from now.
 """
