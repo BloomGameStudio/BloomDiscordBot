@@ -8,7 +8,11 @@ import os
 import asyncio
 from discord.ext import commands
 from events.events import setup_event_events
-from helpers import load_posted_events, load_contributors_and_emoji_dicts, load_ongoing_votes
+from helpers import (
+    load_posted_events,
+    load_contributors_and_emoji_dicts,
+    load_ongoing_votes,
+)
 from cogs.help import HelpCommandCog
 from cogs.contributors import ContributorCommandsCog
 from cogs.events import EventCommandsCog
@@ -18,7 +22,6 @@ from cogs.gov import GovCommandsCog
 
 class Bot:
     async def main(self):
-
         # Setup the bot with intents
         intents = discord.Intents.default()
         intents.message_content = True

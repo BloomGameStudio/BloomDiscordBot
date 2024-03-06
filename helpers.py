@@ -181,7 +181,8 @@ def load_posted_events() -> List[int]:
             return json.load(file)
     except FileNotFoundError:
         return []
-    
+
+
 def update_ongoing_votes_file(data, file_path):
     """
     Update ongoing_votes.json with the new data.
@@ -216,6 +217,7 @@ def load_contributors_and_emoji_dicts() -> (
             "Bloom Collective": data["servers"]["Bloom Collective"]["emoji_dictionary"],
         }
     return contributors, emoji_dicts
+
 
 def load_ongoing_votes() -> Dict[str, Any]:
     """
