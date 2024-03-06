@@ -8,6 +8,7 @@ name = "pypi"
 "pytz" = "*"
 "requests" = "*"
 "configparser" = "*"
+tinydb = "*"
 
 [dev-packages]
 
