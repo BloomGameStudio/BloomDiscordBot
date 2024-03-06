@@ -216,3 +216,20 @@ def load_contributors_and_emoji_dicts() -> (
             "Bloom Collective": data["servers"]["Bloom Collective"]["emoji_dictionary"],
         }
     return contributors, emoji_dicts
+
+def load_ongoing_votes() -> Dict[str, Any]:
+    """
+    Load the ongoing votes from the JSON file.
+
+    Returns:
+    Dict[str, Any]: The dictionary of ongoing votes.
+    """
+    try:
+        logger.info(f"Loading ongoing votes from: {cfg.ONGOING_VOTES_FILE_PATH}")
+        with open(cfg.ONGOING_VOTES_FILE_PATH, "r") as file:
+            try:
+                return json.load(file)
+            except json.JSONDecodeError:
+                return {}
+    except FileNotFoundError:
+        return {}
