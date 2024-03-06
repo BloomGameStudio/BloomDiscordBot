@@ -181,7 +181,8 @@ def load_posted_events() -> List[int]:
             return json.load(file)
     except FileNotFoundError:
         return []
-    
+
+
 def update_ongoing_votes_file(data, file_path):
     """
     Update ongoing_votes.json with the new data.
@@ -205,6 +206,10 @@ def load_contributors_and_emoji_dicts() -> (
     Returns:
     Tuple[Dict[str, List[Dict[str, str]]], Dict[str, Dict[str, str]]]: The contributors and emoji dictionaries.
     """
+    logger.info(
+        "Loading contributors and emoji dictionaries from: "
+        + cfg.CONTRIBUTORS_FILE_PATH
+    )
     with open(cfg.CONTRIBUTORS_FILE_PATH, "r") as json_file:
         data = json.load(json_file)
         contributors = {
@@ -216,3 +221,21 @@ def load_contributors_and_emoji_dicts() -> (
             "Bloom Collective": data["servers"]["Bloom Collective"]["emoji_dictionary"],
         }
     return contributors, emoji_dicts
+
+
+def load_ongoing_votes() -> Dict[str, Any]:
+    """
+    Load the ongoing votes from the JSON file.
+
+    Returns:
+    Dict[str, Any]: The dictionary of ongoing votes.
+    """
+    try:
+        logger.info(f"Loading ongoing votes from: {cfg.ONGOING_VOTES_FILE_PATH}")
+        with open(cfg.ONGOING_VOTES_FILE_PATH, "r") as file:
+            try:
+                return json.load(file)
+            except json.JSONDecodeError:
+                return {}
+    except FileNotFoundError:
+        return {}
