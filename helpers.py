@@ -206,6 +206,10 @@ def load_contributors_and_emoji_dicts() -> (
     Returns:
     Tuple[Dict[str, List[Dict[str, str]]], Dict[str, Dict[str, str]]]: The contributors and emoji dictionaries.
     """
+    logger.info(
+        "Loading contributors and emoji dictionaries from: "
+        + cfg.CONTRIBUTORS_FILE_PATH
+    )
     with open(cfg.CONTRIBUTORS_FILE_PATH, "r") as json_file:
         data = json.load(json_file)
         contributors = {
