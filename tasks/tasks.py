@@ -39,7 +39,7 @@ async def check_events(bot: commands.Bot) -> None:
         if not bot.posted_events:
             for event in upcoming_events:
                 users = get_guild_scheduled_event_users(guild.id, event.id)
-                
+
                 guild_id = event.guild.id
                 user_mentions = [f"<@{user['user_id']}>" for user in users]
                 user_list_string = ", ".join(user_mentions)
@@ -63,7 +63,7 @@ async def check_events(bot: commands.Bot) -> None:
             if new_events:
                 for event in new_events:
                     users = get_guild_scheduled_event_users(guild.id, event.id)
-                    
+
                     guild_id = event.guild.id
                     user_mentions = [f"<@{user['user_id']}>" for user in users]
                     user_list_string = ", ".join(user_mentions)
@@ -84,7 +84,8 @@ async def check_events(bot: commands.Bot) -> None:
                 logger.info(
                     f"No new upcoming events in the next 24 hours for guild {guild}."
                 )
-                
+
+
 @tasks.loop(minutes=5)
 async def check_concluded_proposals_task(bot: commands.Bot):
     """
@@ -106,37 +107,34 @@ async def check_concluded_proposals_task(bot: commands.Bot):
                 continue
 
             channel = bot.get_channel(int(proposal_data["channel_id"]))
-            if not channel:
-                logger.error(
-                    f"Unable to find the channel with id: {proposal_data['channel_id']}"
-                )
-                continue
 
-            thread = channel.get_thread(int(proposal_id))
-            if not thread:
-                logger.error(
-                    f"Unable to find the thread with id: {proposal_id} in the channel: {channel.name}"
-                )
-                continue
+            if channel:
+                thread = channel.get_thread(int(proposal_id))
+                if thread:
+                    message = await thread.fetch_message(int(proposal_id))
 
-            message = await thread.fetch_message(int(proposal_id))
             if not message:
-                logger.error(
-                    f"Unable to find the message with id: {proposal_id} in the thread: {thread.name}"
-                )
+                if not channel:
+                    logger.error(
+                        f"Unable to find the channel with id: {proposal_data['channel_id']}"
+                    )
+                else:
+                    logger.error(
+                        f"Unable to find the thread with id: {proposal_id} in the channel: {channel.name}"
+                    )
                 continue
 
             # Update the Yes/No/Abstain counts from message reactions
+            counts = {
+                f"{YES_VOTE}": "yes_count",
+                f"{NO_VOTE}": "no_count",
+                f"{ABSTAIN_VOTE}": "abstain_count",
+            }
             for reaction in message.reactions:
                 emoji = str(reaction.emoji)
-                if emoji == f"{YES_VOTE}":
-                    proposal_data["yes_count"] = (
-                        reaction.count - 1
-                    )  # Subtract the bot's reaction
-                elif emoji == f"{NO_VOTE}":
-                    proposal_data["no_count"] = reaction.count - 1
-                elif emoji == f"{ABSTAIN_VOTE}":
-                    proposal_data["abstain_count"] = reaction.count - 1
+                if emoji in counts:
+                    # Subtract 1 from the count to account for the bot's own reaction
+                    proposal_data[counts[emoji]] = reaction.count - 1
 
             # Check if the proposal has passed based off the yes and no count, and quorum of 5.
             if (
