@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 28-2-2024
+
 ### Added
 
 - Discord.Embed with colors when using proposal related commands
@@ -19,12 +21,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Check to prevent abuse of specific commands
 
-- on_member_join added to greet a new potential Bloomer, advising them where to start and how to allocate a role to themselves if they are an existing cXP token holder. 
+- on_member_join added to greet a new potential Bloomer, advising them where to start and how to allocate a role to themselves if they are an existing cXP token holder.
 
 - Merged features from OK Bloomer bot.
-    - Add to bloomer role, based off an emoji react to a predefined message ID and notify channel
-    - Notify channel a person has joined a pod
-    
+  - Add to bloomer role, based off an emoji react to a predefined message ID and notify channel
+  - Notify channel a person has joined a pod
 - Support for both the Bloom Studio Discord server, and the Bloom Collective Discord server.
 
 - Functionality to detect contributors emojis in chat, as well as if their emoji is used as a react. ping the respective user for said emoji.
@@ -39,8 +40,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Tag interested contributors that an event is started within hte next 24 hours
 
-- Delay between event creation events by 30 minutes to allow for editing of event details before posting to Discord. 
-- 
+- Delay between event creation events by 30 minutes to allow for editing of event details before posting to Discord.
+
 - Governance bot to create, edit, and submit proposals to respective governance channels in Discord.
 
 - Restricting governance proposal drafting to one channel in Discord.
@@ -49,10 +50,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Creating a proposal in Snapshot using the proposal information from Discord
 
+## [0.2.0] - 25-2-2024
+
+- Faulty view 0.2.1
+
+## [0.1.0] - 29-1-2024
+
 - This CHANGELOG file.
-
-## [0.1.0] - x-x-2023
-
 
 [unreleased]: https://github.com/BloomGameStudio/BloomDiscordBot/compare/staging...dev
 [0.1.0]: https://github.com/BloomGameStudio/BloomDiscordBot/releases/tag/0.1.0
+[0.2.0]: https://github.com/BloomGameStudio/BloomDiscordBot/releases/tag/0.2.0
+[0.2.1]: https://github.com/BloomGameStudio/BloomDiscordBot/releases/tag/0.2.1
