@@ -8,7 +8,7 @@ import os
 import asyncio
 from discord.ext import commands
 from events.events import setup_event_events
-from tasks.tasks import check_events, check_concluded_proposals_task  # Import the tasks
+from tasks.tasks import check_events, check_concluded_proposals_task
 from helpers import (
     load_posted_events,
     load_contributors_and_emoji_dicts,
