@@ -23,19 +23,10 @@ def setup_event_events(bot: commands.Bot) -> None:
     async def on_ready():
         """
         Handles the on_ready event. This event is triggered when the bot has successfully connected.
-        check_events is then started to check for upcoming events every hour.
-        Concluded_proposals_task is then started to check for any proposals that have ended.
         """
         logger.info(f"Logged in as {bot.user.name} ({bot.user.id})")
         await bot.change_presence()
         logger.info(f"Starting background task for all guilds")
-        check_events.start(bot)
-        check_concluded_proposals_task.start(bot)
-        # Perform tree synchronization
-        try:
-            await bot.tree.sync()
-        except Exception as e:
-            logger.error(e)
 
     @bot.event
     async def on_scheduled_event_create(event: ScheduledEvent) -> None:
