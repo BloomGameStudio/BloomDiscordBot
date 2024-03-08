@@ -20,8 +20,8 @@ from config.config import ONGOING_VOTES_FILE_PATH
 
 @tasks.loop(minutes=60)
 async def check_events(bot: commands.Bot) -> None:
-    if not bot.guilds:
-        logger.warning("Guild not found")
+    if not bot.is_ready():
+        return
 
     for guild in bot.guilds:
         try:
@@ -98,6 +98,8 @@ async def check_concluded_proposals_task(bot: commands.Bot):
     Returns:
     None
     """
+    if not bot.is_ready():
+        return
     logger.info("Checking to see if proposals have ended")
     try:
         keys_to_remove = []  # Initialize list to store keys for removal
