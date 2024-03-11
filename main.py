@@ -19,6 +19,7 @@ from cogs.events import EventCommandsCog
 from cogs.help import HelpCommandCog
 from cogs.gov import GovCommandsCog
 
+
 class Bot:
     async def setup_background_tasks(self):
         # Start the background tasks
@@ -44,14 +45,17 @@ class Bot:
             ContributorCommandsCog(self.bot, self.contributors, self.emoji_dicts)
         )
         await self.bot.add_cog(GovCommandsCog(self.bot))
-        await self.bot.add_cog(EventCommandsCog(self.bot, self.contributors, self.emoji_dicts))
+        await self.bot.add_cog(
+            EventCommandsCog(self.bot, self.contributors, self.emoji_dicts)
+        )
 
         # Setup and start background tasks
         await self.setup_background_tasks()
 
         # Run the bot
         await self.bot.start(os.getenv("DISCORD_BOT_TOKEN"))
-        
+
+
 if __name__ == "__main__":
     bot = Bot()
-    asyncio.run(bot.main()) 
+    asyncio.run(bot.main())

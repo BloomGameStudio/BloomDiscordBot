@@ -11,8 +11,15 @@ from discord import app_commands
 from helpers.helpers import get_guild_member_check_role
 from logger.logger import logger
 from discord import ScheduledEvent
-from events.event_operations import notify_new_event, process_new_member, handle_message, handle_reaction, process_reaction_add
+from events.event_operations import (
+    notify_new_event,
+    process_new_member,
+    handle_message,
+    handle_reaction,
+    process_reaction_add,
+)
 from consts.constants import RULES_MESSAGE_ID
+
 
 class EventCommandsCog(commands.Cog):
     def __init__(self, bot, contributors, emoji_dicts):
@@ -66,7 +73,7 @@ class EventCommandsCog(commands.Cog):
         Returns:
         """
         await handle_reaction(self.bot, reaction, user, self.emoji_dicts)
-    
+
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
         """
@@ -94,7 +101,7 @@ class EventCommandsCog(commands.Cog):
         """
         logger.info(f"New member: {member.name} has joined: {member.guild.name}")
         await process_new_member(member)
-    
+
     @app_commands.command(name="list_events")
     async def list_events(self, interaction: discord.Interaction):
         """

@@ -9,7 +9,13 @@ import requests
 import asyncio
 import os
 import discord
-from consts.constants import GENERAL_CHANNEL, RULES_MESSAGE_ID, DISCORD_ROLE_TRIGGERS, COLLAB_LAND_CHANNEL, START_HERE_CHANNEL
+from consts.constants import (
+    GENERAL_CHANNEL,
+    RULES_MESSAGE_ID,
+    DISCORD_ROLE_TRIGGERS,
+    COLLAB_LAND_CHANNEL,
+    START_HERE_CHANNEL,
+)
 from config.config import POSTED_EVENTS_FILE_PATH
 from helpers.helpers import get_channel_by_name, send_dm_once
 from datetime import datetime, timezone
@@ -180,7 +186,9 @@ async def process_new_member(member: discord.Member) -> None:
     try:
         # Get the welcome channel
         welcome_channel = get_channel_by_name(member.guild, GENERAL_CHANNEL)
-        collab_land_join_channel = get_channel_by_name(member.guild, COLLAB_LAND_CHANNEL)
+        collab_land_join_channel = get_channel_by_name(
+            member.guild, COLLAB_LAND_CHANNEL
+        )
         start_here_channel = get_channel_by_name(member.guild, START_HERE_CHANNEL)
 
         # Send the welcome message
@@ -198,9 +206,7 @@ async def process_new_member(member: discord.Member) -> None:
 
 
 async def handle_message(
-    bot: commands.Bot,
-    message: discord.Message,
-    emoji_dicts: Dict[str, Dict[str, str]]
+    bot: commands.Bot, message: discord.Message, emoji_dicts: Dict[str, Dict[str, str]]
 ) -> None:
     """
     Handles a new message in the server.
@@ -211,7 +217,7 @@ async def handle_message(
         bot (commands.Bot): The bot instance.
         message (Message): The new message.
         emoji_dicts (Dict[str, Dict[str, str]]): The dictionary of emoji to user mappings for each server.
-    
+
     """
     if message.content.lower().startswith(".update_commands"):
         try:
@@ -220,7 +226,7 @@ async def handle_message(
             logger.info(("Commands updated"))
         except Exception as e:
             logger.error(f"Error updating commands: {e}")
-            
+
     # Ignore messages from the bot itself
     if message.author == bot.user:
         return
@@ -233,19 +239,20 @@ async def handle_message(
         if emoji_id in message.content:
             if str(user_id) != str(message.author.id):
                 try:
-                    logger.info(f'Messaging the user, {user_id}')
+                    logger.info(f"Messaging the user, {user_id}")
                     message_link = message.jump_url
                     user = await bot.fetch_user(int(user_id))
                     if user:
                         await send_dm_once(bot, user, message_link)
                 except discord.errors.NotFound:
-                    logger.warning(f'User not found: {user_id}')
+                    logger.warning(f"User not found: {user_id}")
+
 
 async def handle_reaction(
     bot: commands.Bot,
     reaction: Reaction,
     user: User,
-    emoji_dicts: Dict[str, Dict[str, str]]
+    emoji_dicts: Dict[str, Dict[str, str]],
 ) -> None:
     """
     Handles a new reaction in the server.
@@ -268,8 +275,12 @@ async def handle_reaction(
         return
 
     contributor_emoji = next(
-        (emoji_id for emoji_id, contributor_uid in server_emoji_dict.items() if str(reaction.emoji) == emoji_id),
-        None
+        (
+            emoji_id
+            for emoji_id, contributor_uid in server_emoji_dict.items()
+            if str(reaction.emoji) == emoji_id
+        ),
+        None,
     )
 
     if contributor_emoji:
@@ -281,7 +292,8 @@ async def handle_reaction(
                 if contributor_user:
                     await send_dm_once(bot, contributor_user, message_link)
             except discord.errors.NotFound:
-                logger.warning(f'User not found: {contributor_uid}')
+                logger.warning(f"User not found: {contributor_uid}")
+
 
 async def process_reaction_add(bot, payload):
     """
