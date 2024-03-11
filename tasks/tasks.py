@@ -13,7 +13,7 @@ from events.event_operations import (
     save_posted_events,
     fetch_upcoming_events,
 )
-from helpers import get_channel_by_name, update_ongoing_votes_file
+from helpers.helpers import get_channel_by_name, update_ongoing_votes_file
 from consts.constants import GENERAL_CHANNEL, YES_VOTE, NO_VOTE, ABSTAIN_VOTE
 from config.config import ONGOING_VOTES_FILE_PATH
 
