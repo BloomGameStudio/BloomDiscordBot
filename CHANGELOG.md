@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Event commands.Cogs.listener/s to cogs/events.py
+
+- helpers directory for helper functions
+
 - Discord Task Decorator that invokes check_ongoing_proposals to see if a proposal has finished.
 
 - Commands reorganized using cogs
