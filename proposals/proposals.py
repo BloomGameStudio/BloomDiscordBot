@@ -26,7 +26,7 @@ from discord.ext import commands
 from consts.types import GOVERNANCE_ID_TYPE, BUDGET_ID_TYPE
 from logger.logger import logger
 from typing import Any, Dict, List, Tuple
-from helpers import get_channel_by_name, update_ongoing_votes_file
+from helpers.helpers import get_channel_by_name, update_ongoing_votes_file
 
 
 proposals: List[Dict[str, Any]] = []
