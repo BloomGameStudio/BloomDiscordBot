@@ -213,6 +213,14 @@ async def handle_message(
         emoji_dicts (Dict[str, Dict[str, str]]): The dictionary of emoji to user mappings for each server.
     
     """
+    if message.content.lower().startswith(".update_commands"):
+        try:
+            logger.info("Updating commands")
+            await bot.tree.sync()
+            logger.info(("Commands updated"))
+        except Exception as e:
+            logger.error(f"Error updating commands: {e}")
+            
     # Ignore messages from the bot itself
     if message.author == bot.user:
         return
