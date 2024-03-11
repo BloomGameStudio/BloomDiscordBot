@@ -8,15 +8,17 @@ It contains the following commands:
 import discord
 from discord.ext import commands
 from discord import app_commands
-from helpers import get_guild_member_check_role
+from helpers.helpers import get_guild_member_check_role
 from logger.logger import logger
 from discord import ScheduledEvent
 from events.event_operations import notify_new_event, process_new_member, handle_message, handle_reaction, process_reaction_add
 from consts.constants import RULES_MESSAGE_ID
 
 class EventCommandsCog(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot, contributors, emoji_dicts):
         self.bot = bot
+        self.contributors = contributors
+        self.emoji_dicts = emoji_dicts
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -43,26 +45,27 @@ class EventCommandsCog(commands.Cog):
         Event triggered when a message is sent in a server the bot is in.
 
         Parameters:
+        self (EventCommandsCog): An instance of the EventCommandsCog class.
         message (Message): The message that was sent.
 
         Returns:
         None
         """
-        await handle_message(self.bot, message)
+        await handle_message(self.bot, message, self.emoji_dicts)
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction: discord.Reaction, user: discord.User):
         """
-        Event triggered when a reaction is added to a message in a server the bot is in.
+        Event triggered when a reaction is added to a message in a sever the bot is in.
 
         Parameters:
+        self (EventCommandsCog): An instance of the EventCommandsCog class.
         reaction (Reaction): The reaction that was added.
         user (User): The user who added the reaction.
 
         Returns:
-        None
         """
-        await handle_reaction(self.bot, reaction, user)
+        await handle_reaction(self.bot, reaction, user, self.emoji_dicts)
     
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
