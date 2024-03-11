@@ -8,7 +8,7 @@ import os
 import asyncio
 from discord.ext import commands
 from tasks.tasks import check_events, check_concluded_proposals_task
-from helpers import (
+from helpers.helpers import (
     load_posted_events,
     load_contributors_and_emoji_dicts,
     load_ongoing_votes,
@@ -44,7 +44,7 @@ class Bot:
             ContributorCommandsCog(self.bot, self.contributors, self.emoji_dicts)
         )
         await self.bot.add_cog(GovCommandsCog(self.bot))
-        await self.bot.add_cog(EventCommandsCog(self.bot))
+        await self.bot.add_cog(EventCommandsCog(self.bot, self.contributors, self.emoji_dicts))
 
         # Setup and start background tasks
         await self.setup_background_tasks()
