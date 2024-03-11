@@ -21,7 +21,7 @@ from events.event_operations import (
 from consts.constants import RULES_MESSAGE_ID
 
 
-class EventCommandsCog(commands.Cog):
+class EventsCog(commands.Cog):
     def __init__(self, bot, contributors, emoji_dicts):
         self.bot = bot
         self.contributors = contributors

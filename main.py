@@ -15,7 +15,7 @@ from helpers.helpers import (
 )
 from cogs.help import HelpCommandCog
 from cogs.contributors import ContributorCommandsCog
-from cogs.events import EventCommandsCog
+from cogs.events import EventsCog
 from cogs.help import HelpCommandCog
 from cogs.gov import GovCommandsCog
 
@@ -46,7 +46,7 @@ class Bot:
         )
         await self.bot.add_cog(GovCommandsCog(self.bot))
         await self.bot.add_cog(
-            EventCommandsCog(self.bot, self.contributors, self.emoji_dicts)
+            EventsCog(self.bot, self.contributors, self.emoji_dicts)
         )
 
         # Setup and start background tasks
