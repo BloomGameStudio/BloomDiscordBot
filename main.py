@@ -9,11 +9,6 @@ import asyncio
 from discord.ext import commands
 from events.events import setup_event_events
 from tasks.tasks import check_events, check_concluded_proposals_task
-from helpers import (
-    load_posted_events,
-    load_contributors_and_emoji_dicts,
-    load_ongoing_votes,
-)
 from cogs.help import HelpCommandCog
 from cogs.contributors import ContributorCommandsCog
 from cogs.events import EventCommandsCog
@@ -34,16 +29,9 @@ class Bot:
         intents.members = True
         self.bot = commands.Bot(command_prefix="", intents=intents)
 
-        # Load the contributors, emoji dicts, and posted events
-        self.bot.ongoing_votes = load_ongoing_votes()
-        self.bot.posted_events = load_posted_events()
-        self.contributors, self.emoji_dicts = load_contributors_and_emoji_dicts()
-
         # Load the cogs
         await self.bot.add_cog(HelpCommandCog(self.bot))
-        await self.bot.add_cog(
-            ContributorCommandsCog(self.bot, self.contributors, self.emoji_dicts)
-        )
+        await self.bot.add_cog(ContributorCommandsCog(self.bot))
         await self.bot.add_cog(GovCommandsCog(self.bot))
         await self.bot.add_cog(EventCommandsCog(self.bot))
 
