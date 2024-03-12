@@ -11,13 +11,12 @@ from discord.ext import commands
 from discord import app_commands
 from helpers import get_guild_member_check_role, update_json_file
 from typing import Dict, Optional
-
+from config.db import db 
+from logger.logger import logger
 
 class ContributorCommandsCog(commands.Cog):
-    def __init__(self, bot, contributors, emoji_dicts):
+    def __init__(self, bot):
         self.bot = bot
-        self.contributors = contributors
-        self.emoji_dicts = emoji_dicts
 
     @app_commands.command(name="contributors")
     async def list_contributors(self, interaction: discord.Interaction):
@@ -31,16 +30,15 @@ class ContributorCommandsCog(commands.Cog):
         await interaction.response.defer()
 
         server_name = interaction.guild.name
-        emoji_dict = self.emoji_dicts.get(server_name)
-        if emoji_dict is None:
-            await interaction.followup.send(
-                f"No emoji dictionary found for server: {server_name}"
-            )
+        contributors_data = db.query_data("servers", "server_name", server_name)
+
+        if not contributors_data:
+            await interaction.followup.send(f"No contributors found for server: {server_name}")
             return
 
-        emoji_list = [emoji for emoji in emoji_dict.keys()]
-        emoji_text = "\n".join(emoji_list)
-        message = f" :fire: **List of Contributors** :fire: \n" f"{emoji_text}"
+        contributors_list = contributors_data[0]["contributors"]
+        contributor_names = [contributor["note"] for contributor in contributors_list]
+        message = f"Contributors for {server_name}: {', '.join(contributor_names)}"
         await interaction.followup.send(message)
 
     @app_commands.command(name="remove_contributor")
