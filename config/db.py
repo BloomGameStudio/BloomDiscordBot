@@ -1,24 +1,15 @@
-from tinydb import TinyDB, Query
+from tinydb import TinyDB
+from logger.logger import logger
 
 # Initialize the TinyDB database
 db = TinyDB('data/db.json')
 
-# Function to insert data into the database
-def insert_data(table_name, data):
-    table = db.table(table_name)
-    table.insert(data)
-
-# Function to update data in the database
-def update_data(table_name, key, value, new_data):
-    table = db.table(table_name)
-    table.update(new_data, key == value)
-
-# Function to delete data from the database
-def delete_data(table_name, key, value):
-    table = db.table(table_name)
-    table.remove(key == value)
-
 # Function to query data from the database
-def query_data(table_name, key, value):
+def query_data(table_name, server_name):
+    logger.info(f"Querying data from table {table_name} for server {server_name}")
     table = db.table(table_name)
-    return table.search(key == value)
+    server_data = table.get(doc_id=server_name)
+    if server_data:
+        return server_data
+    else:
+        return None
