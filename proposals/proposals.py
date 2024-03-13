@@ -31,6 +31,7 @@ from helpers import get_channel_by_name, update_ongoing_votes_file
 
 proposals: List[Dict[str, Any]] = []
 
+
 async def handle_votedraft(
     ctx: commands.Context, proposals: List[Dict[str, str]], new_proposal_emoji: str
 ) -> None:
@@ -131,20 +132,24 @@ async def prepare_draft(
     if draft_type == BUDGET_ID_TYPE:
         id_type = BUDGET_ID_TYPE
         channel_name = constants.GOVERNANCE_BUDGET_CHANNEL
-        cfg.current_budget_id += 1
-        cfg.update_id_values(
-            cfg.current_budget_id, id_type
-        )  # Update the governance ID in the config file
+        cfg.increment_config_id(
+            id_type, 1
+        )  # Increment the budget ID in the config file
+        cfg.current_budget_id = cfg.config.getint(
+            "ID_START_VALUES", "budget_id"
+        )  # Update the current_budget_id variable
         title = (
             f"Bloom Budget Proposal (BBP) #{cfg.current_budget_id}: {draft['title']}"
         )
     else:
         id_type = GOVERNANCE_ID_TYPE
         channel_name = constants.GOVERNANCE_CHANNEL
-        cfg.current_governance_id += 1
-        cfg.update_id_values(
-            cfg.current_governance_id, id_type
-        )  # Update the governance ID in the config file
+        cfg.increment_config_id(
+            id_type, 1
+        )  # Increment the governance ID in the config file
+        cfg.current_governance_id = cfg.config.getint(
+            "ID_START_VALUES", "governance_id"
+        )  # Update the current_governance_id variable
         title = f"Bloom Governance Proposal (BGP) #{cfg.current_governance_id}: {draft['title']}"
 
     return id_type, channel_name, title
@@ -213,6 +218,7 @@ Vote will conclude in 48h from now.
     update_ongoing_votes_file(bot.ongoing_votes, cfg.ONGOING_VOTES_FILE_PATH)
 
     await react_to_vote(thread_with_message.thread.id, bot, guild_id, channel_name)
+
 
 async def react_to_vote(
     thread_id: int, bot: Bot, guild_id: int, channel_name: str
