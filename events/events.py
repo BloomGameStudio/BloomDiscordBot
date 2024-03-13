@@ -8,7 +8,7 @@ from logger.logger import logger
 from discord import ScheduledEvent, Message, Reaction, User
 from discord.ext import commands
 from events.event_operations import notify_new_event
-from tasks.tasks import check_events
+from tasks.tasks import check_events, check_concluded_proposals_task
 from .event_operations import (
     handle_message,
     handle_reaction,
@@ -19,29 +19,14 @@ from consts.constants import RULES_MESSAGE_ID
 
 
 def setup_event_events(bot: commands.Bot) -> None:
-    """
-    Set up the event handlers for the bot.
-
-    Parameters:
-    bot (commands.Bot): The bot instance.
-    """
-
     @bot.event
     async def on_ready():
         """
         Handles the on_ready event. This event is triggered when the bot has successfully connected.
-        check_events is then started to check for upcoming events every hour.
         """
         logger.info(f"Logged in as {bot.user.name} ({bot.user.id})")
         await bot.change_presence()
         logger.info(f"Starting background task for all guilds")
-        check_events.start(bot)
-
-        # Perform tree synchronization
-        try:
-            await bot.tree.sync()
-        except Exception as e:
-            logger.error(e)
 
     @bot.event
     async def on_scheduled_event_create(event: ScheduledEvent) -> None:

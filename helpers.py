@@ -183,6 +183,19 @@ def load_posted_events() -> List[int]:
         return []
 
 
+def update_ongoing_votes_file(data, file_path):
+    """
+    Update ongoing_votes.json with the new data.
+
+    Parameters:
+    data (Dict): The data to update the ongoing_votes with.
+    file_path (str): The file path to ongoing_votes.json.
+    """
+    # Write the updated data to the file
+    with open(file_path, "w") as json_file:
+        json.dump(data, json_file, indent=4)
+
+
 # NOTE: Should this be part of the configuration (config/config.py)?
 def load_contributors_and_emoji_dicts() -> (
     Tuple[Dict[str, List[Dict[str, str]]], Dict[str, Dict[str, str]]]
@@ -193,6 +206,10 @@ def load_contributors_and_emoji_dicts() -> (
     Returns:
     Tuple[Dict[str, List[Dict[str, str]]], Dict[str, Dict[str, str]]]: The contributors and emoji dictionaries.
     """
+    logger.info(
+        "Loading contributors and emoji dictionaries from: "
+        + cfg.CONTRIBUTORS_FILE_PATH
+    )
     with open(cfg.CONTRIBUTORS_FILE_PATH, "r") as json_file:
         data = json.load(json_file)
         contributors = {
@@ -204,3 +221,21 @@ def load_contributors_and_emoji_dicts() -> (
             "Bloom Collective": data["servers"]["Bloom Collective"]["emoji_dictionary"],
         }
     return contributors, emoji_dicts
+
+
+def load_ongoing_votes() -> Dict[str, Any]:
+    """
+    Load the ongoing votes from the JSON file.
+
+    Returns:
+    Dict[str, Any]: The dictionary of ongoing votes.
+    """
+    try:
+        logger.info(f"Loading ongoing votes from: {cfg.ONGOING_VOTES_FILE_PATH}")
+        with open(cfg.ONGOING_VOTES_FILE_PATH, "r") as file:
+            try:
+                return json.load(file)
+            except json.JSONDecodeError:
+                return {}
+    except FileNotFoundError:
+        return {}

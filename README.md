@@ -159,9 +159,10 @@ new draft abstract
 Background
 new draft background
 
- :inevitable_bloom:Yes
- :bulby_sore: Reassess
- :pepe_angel: Abstain
+ 👍 Yes
+ 👎 Reasses
+ ❌ Abstain
+
 
 Vote will conclude in 48h from now.
 ```

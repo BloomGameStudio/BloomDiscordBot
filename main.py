@@ -8,15 +8,24 @@ import os
 import asyncio
 from discord.ext import commands
 from events.events import setup_event_events
-from helpers import load_posted_events, load_contributors_and_emoji_dicts
+from tasks.tasks import check_events, check_concluded_proposals_task
+from helpers import (
+    load_posted_events,
+    load_contributors_and_emoji_dicts,
+    load_ongoing_votes,
+)
 from cogs.help import HelpCommandCog
 from cogs.contributors import ContributorCommandsCog
 from cogs.events import EventCommandsCog
 from cogs.help import HelpCommandCog
 from cogs.gov import GovCommandsCog
 
-
 class Bot:
+    async def setup_background_tasks(self):
+        # Start the background tasks
+        check_events.start(self.bot)
+        check_concluded_proposals_task.start(self.bot)
+
     async def main(self):
         # Setup the bot with intents
         intents = discord.Intents.default()
@@ -26,6 +35,7 @@ class Bot:
         self.bot = commands.Bot(command_prefix="", intents=intents)
 
         # Load the contributors, emoji dicts, and posted events
+        self.bot.ongoing_votes = load_ongoing_votes()
         self.bot.posted_events = load_posted_events()
         self.contributors, self.emoji_dicts = load_contributors_and_emoji_dicts()
 
@@ -37,13 +47,15 @@ class Bot:
         await self.bot.add_cog(GovCommandsCog(self.bot))
         await self.bot.add_cog(EventCommandsCog(self.bot))
 
-        # Setup commands and events for the bot
+        # Setup bots events
         setup_event_events(self.bot)
+
+        # Setup and start background tasks
+        await self.setup_background_tasks()
 
         # Run the bot
         await self.bot.start(os.getenv("DISCORD_BOT_TOKEN"))
-
-
+        
 if __name__ == "__main__":
     bot = Bot()
-    asyncio.run(bot.main())
+    asyncio.run(bot.main()) 

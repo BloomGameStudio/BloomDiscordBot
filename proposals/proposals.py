@@ -15,9 +15,8 @@ The module also contains the following variables:
 - ongoing_votes: A dictionary of ongoing votes.
 """
 
-import asyncio
-import subprocess
 import textwrap
+import time
 import discord
 import consts.constants as constants
 import config.config as cfg
@@ -27,13 +26,10 @@ from discord.ext import commands
 from consts.types import GOVERNANCE_ID_TYPE, BUDGET_ID_TYPE
 from logger.logger import logger
 from typing import Any, Dict, List, Tuple
-from helpers import get_channel_by_name
+from helpers import get_channel_by_name, update_ongoing_votes_file
 
 
 proposals: List[Dict[str, Any]] = []
-
-ongoing_votes: Dict[int, Dict[str, Any]] = {}
-
 
 async def handle_votedraft(
     ctx: commands.Context, proposals: List[Dict[str, str]], new_proposal_emoji: str
@@ -163,8 +159,9 @@ async def publish_draft(
 
     Parameters:
     draft (Dict[str, Any]): The draft to be published.
-    bot (Bot): The bot instance.
+    bot (commands.Bot): The bot instance.
     guild_id (int): The ID of the guild where the draft will be published.
+    guild (discord.Guild): The guild object.
     """
     id_type, channel_name, title = await prepare_draft(guild, draft)
     forum_channel = discord.utils.get(
@@ -179,37 +176,43 @@ async def publish_draft(
     # Store the content in a variable
     content = textwrap.dedent(
         f"""
-    **{title}**
+**{title}**
 
-    __**Abstract**__
-    {draft["abstract"]}
+__**Abstract**__
+{draft["abstract"]}
 
-    **__Background__**
-    {draft["background"]}
+**__Background__**
+{draft["background"]}
 
-    **{constants.YES_VOTE} Yes**
+**{constants.YES_VOTE} Yes**
 
-    **{constants.NO_VOTE} Reassess**
+**{constants.NO_VOTE} Reassess**
 
-    **{constants.ABSTAIN_VOTE} Abstain**
+**{constants.ABSTAIN_VOTE} Abstain**
 
-    Vote will conclude in 48h from now.
-    """
+Vote will conclude in 48h from now.
+"""
     )
     thread_with_message = await forum_channel.create_thread(name=title, content=content)
 
-    ongoing_votes[thread_with_message.thread.id] = {
-        "draft": draft,  # Store the draft info
-        "yes_count": 0,  # Initialize counts
-        "reassess_count": 0,
-        "abstain_count": 0,
+    proposal_id = str(thread_with_message.thread.id)
+    proposal_data = {
+        "draft": draft,
+        "end_time": time.time() + 48 * 60 * 60,
+        "yes_count": 0,
+        "title": title,
+        "channel_id": str(forum_channel.id),
     }
+
+    # Update ongoing_votes with new proposal data
+    if not hasattr(bot, "ongoing_votes"):
+        bot.ongoing_votes = {}  # In case ongoing_votes is not initialized
+    bot.ongoing_votes[proposal_id] = proposal_data
+
+    # Save to ongoing_votes.json
+    update_ongoing_votes_file(bot.ongoing_votes, cfg.ONGOING_VOTES_FILE_PATH)
+
     await react_to_vote(thread_with_message.thread.id, bot, guild_id, channel_name)
-
-    await vote_timer(
-        thread_with_message.thread.id, bot, guild_id, channel_name, title, draft
-    )
-
 
 async def react_to_vote(
     thread_id: int, bot: Bot, guild_id: int, channel_name: str
@@ -240,79 +243,3 @@ async def react_to_vote(
     await message.add_reaction(constants.YES_VOTE)
     await message.add_reaction(constants.NO_VOTE)
     await message.add_reaction(constants.ABSTAIN_VOTE)
-
-
-async def vote_timer(
-    thread_id: int,
-    bot: Bot,
-    guild_id: int,
-    channel_name: str,
-    title: str,
-    draft: Dict[str, Any],
-) -> None:
-    """
-    NOTE: This should be changed as a long sleep time is unideal, IE if the bot is restarted while sleeping.
-
-    Start a timer for the vote. After 48 hours, the vote is concluded and the result is posted.
-
-    Parameters:
-    thread_id (int): The ID of the thread where the vote is taking place.
-    bot (Bot): The bot instance.
-    guild_id (int): The ID of the guild where the vote is taking place.
-    channel_name (str): The name of the channel where the vote is taking place.
-    title (str): The title of the vote.
-    draft (Dict[str, Any]): The draft that is being voted on.
-    """
-    # Sleep until the vote ends
-    await asyncio.sleep(48 * 3600)
-
-    # Fetch the guild using the guild_id
-    guild = bot.get_guild(guild_id)
-    if not guild:
-        logger.error(f"Error: Guild with id {guild_id} not found.")
-        return
-
-    # Fetch the channel by name
-    channel = discord.utils.get(guild.channels, name=channel_name)
-    thread = channel.get_thread(thread_id)
-
-    # Fetch the initial message in the thread using the thread ID
-    message = await thread.fetch_message(thread_id)
-    for reaction in message.reactions:
-        if str(reaction.emoji) == f"{constants.YES_VOTE}":
-            ongoing_votes[message.id]["yes_count"] = reaction.count - 1
-        elif str(reaction.emoji) == f"{constants.NO_VOTE}":
-            ongoing_votes[message.id]["reassess_count"] = reaction.count - 1
-        elif str(reaction.emoji) == f"{constants.ABSTAIN_VOTE}":
-            ongoing_votes[message.id]["abstain_count"] = reaction.count - 1
-
-    # Check the result and post it
-    result_message = f"Vote for '{title}' has concluded:\n\n"
-
-    if ongoing_votes[message.id]["yes_count"] >= 5:  # Set to quorum needed
-        result_message += (
-            "The vote passes! :tada:, snapshot proposal will now be created"
-        )
-        # Call the snapshot creation function
-        subprocess.run(
-            [
-                "node",
-                "./snapshot/wrapper.js",
-                title,
-                draft["abstract"],
-                draft["background"],
-                "Yes",
-                "No",
-                "Abstain",
-            ],
-            check=True,
-        )
-    else:
-        result_message += "The vote fails. :disappointed:"
-
-    result_message += f"\n\nYes: {ongoing_votes[message.id]['yes_count']}\nReassess: {ongoing_votes[message.id]['reassess_count']}\nAbstain: {ongoing_votes[message.id]['abstain_count']}"
-
-    await bot.get_channel(thread_id).send(result_message)
-
-    # Remove the vote from ongoing_votes
-    del ongoing_votes[message.id]
