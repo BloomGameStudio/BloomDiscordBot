@@ -1,18 +1,9 @@
-""" 
-The ContributorCommandsCog class is a cog for handling the contributor commands.
-It contains the following commands:
-- list_contributors: Lists the contributors associated with this guild.
-- remove_contributor: Removes a contributor from the list of contributors.
-- add_contributor: Add a contributor to the list of contributors if the user invoking the command has the authorization to do so.
-"""
-
 import discord
 from discord.ext import commands
 from discord import app_commands
 from helpers import get_guild_member_check_role, update_json_file
 from typing import Dict, Optional
-from config.db import db 
-from logger.logger import logger
+from config.db import query_data
 
 class ContributorCommandsCog(commands.Cog):
     def __init__(self, bot):
@@ -30,15 +21,22 @@ class ContributorCommandsCog(commands.Cog):
         await interaction.response.defer()
 
         server_name = interaction.guild.name
-        contributors_data = db.query_data("servers", "server_name", server_name)
 
-        if not contributors_data:
-            await interaction.followup.send(f"No contributors found for server: {server_name}")
+        try:
+            server_data = query_data("servers", server_name)
+        except Exception as e:
+            await interaction.followup.send("An error occurred while querying the server data from the database.")
             return
 
-        contributors_list = contributors_data[0]["contributors"]
-        contributor_names = [contributor["note"] for contributor in contributors_list]
-        message = f"Contributors for {server_name}: {', '.join(contributor_names)}"
+        if not server_data or "emoji_dictionary" not in server_data:
+            await interaction.followup.send(f"No emoji dictionary found for server: {server_name}")
+            return
+
+        emoji_dictionary = server_data["emoji_dictionary"]
+        emojis = list(emoji_dictionary.keys())
+
+        emojis_text = "\n".join(emojis)
+        message = f":fire: **List of Emojis** :fire: \n{emojis_text}"
         await interaction.followup.send(message)
 
     @app_commands.command(name="remove_contributor")
