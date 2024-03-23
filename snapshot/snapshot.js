@@ -15,22 +15,12 @@ dotenv.config();
 
 /**
  * 
- * @param {string} text - The text to remove markdown from 
- * @returns {string} - The text with markdown removed.
- */
-function removeMarkdown(text) {
-  const markdownRegex = /([_*~`]|(\\r\\n|\\n))/g;
-  return text.replace(markdownRegex, '');
-}
-
-/**
- * 
  * @param {string} title - The title of the proposal 
  * @param {*} abstract  - The abstract of the proposal
  * @param {*} background - The background of the proposal
  * @param {*} choices - The choices for the proposal
  */
-async function createProposal(title, abstract, background, choices) {
+async function createProposal(title, abstract, background, additional, choices) {
   try {
     const ethAddress = process.env.ETH_ADDRESS;
     const ethPrivateKey = process.env.ETH_PRIVATE_KEY;
@@ -39,7 +29,7 @@ async function createProposal(title, abstract, background, choices) {
       throw new Error('Ethereum address or private key not provided in environment variables');
     }
 
-    const provider = new ethers.providers.JsonRpcProvider('https://rpc.ankr.com/eth_goerli');
+    const provider = new ethers.providers.JsonRpcProvider('https://eth.llamarpc.com');
 
     const wallet = new ethers.Wallet(ethPrivateKey, provider);
 
@@ -55,11 +45,11 @@ async function createProposal(title, abstract, background, choices) {
     const proposalParams = {
       space: 'gov.bloomstudio.eth',
       type: 'weighted', // define the voting system
-      title: removeMarkdown(title),
-      body: `Abstract:\n ${removeMarkdown(abstract)}\n\n Background:\n ${removeMarkdown(background)}`,
-      choices: choices.map(removeMarkdown),
+      title: title,
+      body: `\n ${abstract}\n\n \n ${background}\n\n \n ${additional}`,
+      choices: choices,
       start: currentTime,
-      end: currentTime + fortyeighthoursinSeconds, // End time is one hour later as an example
+      end: currentTime + fortyeighthoursinSeconds, // 48 hours from now
       snapshot: await provider.getBlockNumber(), // Current block number as snapshot
       network: '1',
       plugins: JSON.stringify({}),

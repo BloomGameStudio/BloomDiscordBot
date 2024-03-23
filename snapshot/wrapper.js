@@ -18,9 +18,10 @@ const createProposal = require('./snapshot.js');
 const title = process.argv[2];
 const abstract = process.argv[3];
 const background = process.argv[4];
-const choices = process.argv.slice(5);
+const additional = process.argv[5];
+const choices = process.argv.slice(6);
 
-createProposal(title, abstract, background, choices).catch(error => {
+createProposal(title, abstract, background, additional, choices).catch(error => {
   console.error('Error in createProposal:', error);
   process.exit(1);
 });
