@@ -153,6 +153,15 @@ async def prepare_draft(
 async def publish_draft(
     draft: Dict[str, Any], bot: Bot, guild_id: int, guild: discord.Guild
 ):
+    """
+    Publish the draft by creating a thread with the prepared content.
+
+    Parameters:
+    draft (Dict[str, Any]): The draft to be published.
+    bot (Bot): The bot instance.
+    guild_id (int): The ID of the guild.
+    guild (discord.Guild): The guild to publish the draft in.
+    """
     try:
         id_type, channel_name, title = await prepare_draft(guild, draft)
         forum_channel = discord.utils.get(
