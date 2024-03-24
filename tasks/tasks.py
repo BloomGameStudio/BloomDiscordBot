@@ -163,8 +163,8 @@ async def check_concluded_proposals_task(bot: commands.Bot):
                         proposal_data["draft"]["abstract"],
                         proposal_data["draft"]["background"],
                         proposal_data["draft"]["additional"],
-                        "Yes",
-                        "No",
+                        "Adopt",
+                        "Reasses",
                         "Abstain",
                     ],
                     check=True,
@@ -175,7 +175,7 @@ async def check_concluded_proposals_task(bot: commands.Bot):
             else:
                 result_message += "The vote fails. :disappointed:"
 
-            result_message += f"\n\nYes: {proposal_data['yes_count']}\nNo: {proposal_data['no_count']}\nAbstain: {proposal_data['abstain_count']}"
+            result_message += f"\n\Adopt: {proposal_data['yes_count']}\nReasses: {proposal_data['no_count']}\nAbstain: {proposal_data['abstain_count']}"
 
             logger.info(
                 f"Yes vote count: {proposal_data['yes_count']} No vote count: {proposal_data['no_count']} Abstain vote count: {proposal_data['abstain_count']}"
