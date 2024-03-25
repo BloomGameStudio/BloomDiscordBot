@@ -111,19 +111,23 @@ async def check_concluded_proposals_task(bot: commands.Bot):
             channel = bot.get_channel(int(proposal_data["channel_id"]))
 
             if channel:
-                thread = channel.get_thread(int(proposal_id))
+                thread = channel.get_thread(int(proposal_data["thread_id"]))
                 if thread:
-                    message = await thread.fetch_message(int(proposal_id))
-
-            if not message:
-                if not channel:
-                    logger.error(
-                        f"Unable to find the channel with id: {proposal_data['channel_id']}"
-                    )
+                    message = await thread.fetch_message(int(proposal_data["message_id"]))
+                    if not message:
+                        logger.error(
+                            f"Unable to find the message with id: {proposal_data['message_id']} in the thread: {thread.id}"
+                        )
+                        continue
                 else:
                     logger.error(
-                        f"Unable to find the thread with id: {proposal_id} in the channel: {channel.name}"
+                        f"Unable to find the thread with id: {proposal_data['thread_id']} in the channel: {channel.name}"
                     )
+                    continue
+            else:
+                logger.error(
+                    f"Unable to find the channel with id: {proposal_data['channel_id']}"
+                )
                 continue
 
             # Update the Yes/No/Abstain counts from message reactions
@@ -158,8 +162,9 @@ async def check_concluded_proposals_task(bot: commands.Bot):
                         proposal_data["title"],
                         proposal_data["draft"]["abstract"],
                         proposal_data["draft"]["background"],
-                        "Yes",
-                        "No",
+                        proposal_data["draft"]["additional"],
+                        "Adopt",
+                        "Reasses",
                         "Abstain",
                     ],
                     check=True,
@@ -170,7 +175,7 @@ async def check_concluded_proposals_task(bot: commands.Bot):
             else:
                 result_message += "The vote fails. :disappointed:"
 
-            result_message += f"\n\nYes: {proposal_data['yes_count']}\nNo: {proposal_data['no_count']}\nAbstain: {proposal_data['abstain_count']}"
+            result_message += f"\n\Adopt: {proposal_data['yes_count']}\nReasses: {proposal_data['no_count']}\nAbstain: {proposal_data['abstain_count']}"
 
             logger.info(
                 f"Yes vote count: {proposal_data['yes_count']} No vote count: {proposal_data['no_count']} Abstain vote count: {proposal_data['abstain_count']}"
