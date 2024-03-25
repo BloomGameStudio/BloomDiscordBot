@@ -6,8 +6,9 @@ CONFIG_ID_MAP: dict[str, str] = {"governance": "governance_id", "budget": "budge
 CONFIG_ABSOLUTE_PATH = "config/config.ini"
 
 # File paths for JSON files containing information about contributors and posted events IDs
-CONTRIBUTORS_FILE_PATH = "./emotes/contributors.json"
-POSTED_EVENTS_FILE_PATH = "./events/posted_events.json"
+CONTRIBUTORS_FILE_PATH = "./data/contributors.json"
+POSTED_EVENTS_FILE_PATH = "./data/posted_events.json"
+ONGOING_VOTES_FILE_PATH = "./data/ongoing_votes.json"
 
 
 # Load configuration

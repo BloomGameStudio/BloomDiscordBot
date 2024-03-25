@@ -8,6 +8,25 @@ After agreeing to the server rules, the bloomer will be able to verify they poss
 
 The initial greeting message advise the bloomer where the can get more information about Bloom Studio.
 
+# Bot permissions
+
+The Discord bot has the following permissions:
+
+Integer: 318096215104
+
+Permissions: 
+
+- Manage Roles
+- Read Messages / View channels
+- Manage Events
+- Send Messages
+- Create Public Threads
+- Send Messages in Threads
+- Read Message History
+- Mention Everyone
+- Add reactions
+
+
 # Quick start guide:
 
 1. Ensure there are existing channels in Bloom Collective, and Bloom Studio Discord servers with the channel names set in constants.py. The bot will determine the required channel IDs / Forum Channel IDs from the channel names in it's respective server.
@@ -140,9 +159,10 @@ new draft abstract
 Background
 new draft background
 
- :inevitable_bloom:Yes
- :bulby_sore: Reassess
- :pepe_angel: Abstain
+ 👍 Yes
+ 👎 Reasses
+ ❌ Abstain
+
 
 Vote will conclude in 48h from now.
 ```
