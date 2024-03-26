@@ -15,7 +15,6 @@ The module also contains the following variables:
 - ongoing_votes: A dictionary of ongoing votes.
 """
 
-import textwrap
 import time
 import discord
 import consts.constants as constants
@@ -160,80 +159,61 @@ async def publish_draft(
     draft: Dict[str, Any], bot: Bot, guild_id: int, guild: discord.Guild
 ):
     """
-    Publish the draft by creating a thread with the prepared content and starting a vote timer.
+    Publish the draft by creating a thread with the prepared content.
 
     Parameters:
     draft (Dict[str, Any]): The draft to be published.
-    bot (commands.Bot): The bot instance.
-    guild_id (int): The ID of the guild where the draft will be published.
-    guild (discord.Guild): The guild object.
+    bot (Bot): The bot instance.
+    guild_id (int): The ID of the guild.
+    guild (discord.Guild): The guild to publish the draft in.
     """
-    id_type, channel_name, title = await prepare_draft(guild, draft)
-    forum_channel = discord.utils.get(
-        bot.get_guild(guild_id).channels, name=channel_name
-    )
-    if not forum_channel:
-        logger.error(
-            f"Error: Unable to publish draft, Forum Channel not found. Please verify a channel exists with the name {channel_name} and it aligns with shared/constants.py"
+    try:
+        id_type, channel_name, title = await prepare_draft(guild, draft)
+        forum_channel = discord.utils.get(
+            bot.get_guild(guild_id).channels, name=channel_name
         )
-        return
+        if not forum_channel:
+            logger.error(
+                f"Error: Unable to publish draft, Forum Channel not found. Please verify a channel exists with the name {channel_name} and it aligns with shared/constants.py"
+            )
+            return
 
-    # Store the content in a variable
-    content = textwrap.dedent(
-        f"""
-**{title}**
+        # Create a thread with the title and abstract
+        thread = await forum_channel.create_thread(name=title, content=f"{draft['abstract']}")
 
-__**Abstract**__
-{draft["abstract"]}
+        # Post the background, additional information, and vote options
+        await thread.message.reply(f"\n{draft['background']}")
+        await thread.message.reply(f"\n{draft['additional']}")
 
-**__Background__**
-{draft["background"]}
+        vote_message = await thread.message.reply(f"**{constants.YES_VOTE} Yes**\n**{constants.NO_VOTE} Reassess**\n**{constants.ABSTAIN_VOTE} Abstain**\nVote will conclude in 48h from now.")
 
-**{constants.YES_VOTE} Yes**
+        proposal_id = str(thread.message.id)
+        proposal_data = {
+            "draft": draft,
+            "end_time": time.time() + 48 * 60 * 60,  # 48 hours from now
+            "yes_count": 0,
+            "title": title,
+            "channel_id": str(forum_channel.id),
+            "thread_id": str(thread.thread.id),  # Add the thread ID
+            "message_id": str(vote_message.id),  # Add the message ID
+        }
 
-**{constants.NO_VOTE} Reassess**
+        # Update ongoing_votes with new proposal data
+        if not hasattr(bot, "ongoing_votes"):
+            bot.ongoing_votes = {}  # In case ongoing_votes is not initialized
+        bot.ongoing_votes[proposal_id] = proposal_data
 
-**{constants.ABSTAIN_VOTE} Abstain**
+        # Save to ongoing_votes.json
+        update_ongoing_votes_file(bot.ongoing_votes, cfg.ONGOING_VOTES_FILE_PATH)
 
-Vote will conclude in 48h from now.
-"""
-    )
-    thread_with_message = await forum_channel.create_thread(name=title, content=content)
-
-    proposal_id = str(thread_with_message.thread.id)
-    proposal_data = {
-        "draft": draft,
-        "end_time": time.time() + 48 * 60 * 60,
-        "yes_count": 0,
-        "title": title,
-        "channel_id": str(forum_channel.id),
-    }
-
-    # Update ongoing_votes with new proposal data
-    if not hasattr(bot, "ongoing_votes"):
-        bot.ongoing_votes = {}  # In case ongoing_votes is not initialized
-    bot.ongoing_votes[proposal_id] = proposal_data
-
-    # Save to ongoing_votes.json
-    update_ongoing_votes_file(bot.ongoing_votes, cfg.ONGOING_VOTES_FILE_PATH)
-
-    await react_to_vote(thread_with_message.thread.id, bot, guild_id, channel_name)
+        await react_to_vote(vote_message.id, bot, guild_id, channel_name, thread.thread.id)
+    except Exception as e:
+        logger.error(f"Error publishing draft: {str(e)}")
 
 
 async def react_to_vote(
-    thread_id: int, bot: Bot, guild_id: int, channel_name: str
+    message_id: int, bot: Bot, guild_id: int, channel_name: str, thread_id: int
 ) -> None:
-    """
-    React to the published draft with the vote emojis.
-    This function is called when a draft is published.
-    This will ensure that when a draft is published, the vote emojis are added to the thread.
-
-    Parameters:
-    thread_id (int): The ID of the thread where the vote is taking place.
-    bot (Bot): The bot instance.
-    guild_id (int): The ID of the guild where the vote is taking place.
-    channel_name (str): The name of the channel where the vote is taking place.
-    """
     guild = bot.get_guild(guild_id)
     if not guild:
         logger.error(f"Error: Guild with id {guild_id} not found.")
@@ -241,10 +221,18 @@ async def react_to_vote(
 
     # Fetch the channel by name
     channel = discord.utils.get(guild.channels, name=channel_name)
-    thread = channel.get_thread(thread_id)
+    if not channel:
+        logger.error(f"Error: Channel with name {channel_name} not found.")
+        return
 
-    # Fetch the initial message in the thread using the thread ID
-    message = await thread.fetch_message(thread_id)
+    # Fetch the thread from the channel
+    thread = discord.utils.get(channel.threads, id=thread_id)
+    if not thread:
+        logger.error(f"Error: Thread with id {thread_id} not found.")
+        return
+
+    # Fetch the message using the message ID
+    message = await thread.fetch_message(message_id)
 
     await message.add_reaction(constants.YES_VOTE)
     await message.add_reaction(constants.NO_VOTE)
