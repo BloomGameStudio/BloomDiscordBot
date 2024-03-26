@@ -36,8 +36,12 @@ async def check_events(bot: commands.Bot) -> None:
             logger.info(f"No upcoming events in the next 24 hours for guild {guild}.")
             continue
 
-        if not bot.posted_events:
-            for event in upcoming_events:
+        new_events = [
+            event for event in upcoming_events if event.id not in bot.posted_events
+        ]
+
+        if new_events:
+            for event in new_events:
                 users = get_guild_scheduled_event_users(guild.id, event.id)
 
                 guild_id = event.guild.id
@@ -53,37 +57,12 @@ async def check_events(bot: commands.Bot) -> None:
                 )
 
                 await channel.send(formatted_string)
-
-            save_posted_events([event.id for event in upcoming_events])
-        else:
-            new_events = [
-                event for event in upcoming_events if event.id not in bot.posted_events
-            ]
-
-            if new_events:
-                for event in new_events:
-                    users = get_guild_scheduled_event_users(guild.id, event.id)
-
-                    guild_id = event.guild.id
-                    user_mentions = [f"<@{user['user_id']}>" for user in users]
-                    user_list_string = ", ".join(user_mentions)
-
-                    formatted_string = (
-                        f"📆 **Upcoming Events in the Next 24 Hours** 📆 \n"
-                        f"\n"
-                        f":link: **Event Link https://discord.com/events/{guild_id}/{event.id} :link:**\n"
-                        f"\n"
-                        f"{user_list_string}\n"
-                    )
-
-                    await channel.send(formatted_string)
-
-                bot.posted_events.extend([event.id for event in new_events])
+                bot.posted_events.append(event.id)
                 save_posted_events(bot.posted_events)
-            else:
-                logger.info(
-                    f"No new upcoming events in the next 24 hours for guild {guild}."
-                )
+        else:
+            logger.info(
+                f"No new upcoming events in the next 24 hours for guild {guild}."
+            )
 
 
 @tasks.loop(minutes=5)
@@ -113,7 +92,9 @@ async def check_concluded_proposals_task(bot: commands.Bot):
             if channel:
                 thread = channel.get_thread(int(proposal_data["thread_id"]))
                 if thread:
-                    message = await thread.fetch_message(int(proposal_data["message_id"]))
+                    message = await thread.fetch_message(
+                        int(proposal_data["message_id"])
+                    )
                     if not message:
                         logger.error(
                             f"Unable to find the message with id: {proposal_data['message_id']} in the thread: {thread.id}"
