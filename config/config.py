@@ -19,20 +19,6 @@ current_governance_id: int = config.getint("ID_START_VALUES", "governance_id")
 current_budget_id: int = config.getint("ID_START_VALUES", "budget_id")
 
 
-# Update values when proposals are submitted.
-def update_id_values(id_value: int, id_type: str) -> None:
-    config = configparser.ConfigParser()
-    config.read("config/config.ini")
-
-    if id_type.lower() == "governance":
-        config["ID_START_VALUES"]["governance_id"] = str(id_value)
-    elif id_type.lower() == "budget":
-        config["ID_START_VALUES"]["budget_id"] = str(id_value)
-
-    with open("config/config.ini", "w") as configfile:
-        config.write(configfile)
-
-
 def increment_config_id(
     id_type: str, increment: int = +1, config: configparser.ConfigParser = config
 ) -> None:
@@ -58,7 +44,9 @@ def increment_config_id(
         raise ValueError(err_msg)
 
     key = CONFIG_ID_MAP[id_type]
-    config["ID_START_VALUES"][key] += str(increment)
+    config["ID_START_VALUES"][key] = str(
+        int(config["ID_START_VALUES"][key]) + increment
+    )
 
     try:
         with open(CONFIG_ABSOLUTE_PATH, "w") as f:
