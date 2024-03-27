@@ -147,7 +147,7 @@ def update_json_file(server_name: str, server_data: Dict[str, Any]) -> None:
 
 
 async def send_dm_once(
-    bot: discord.Client, contributor: Dict[str, str], message_link: str
+    bot: discord.Client, user: discord.User, message_link: str
 ) -> None:
     """
     Sends a direct message to a contributor if they are mentioned in a message.
@@ -157,14 +157,15 @@ async def send_dm_once(
 
     Parameters:
     bot (discord.Client): The bot instance.
-    contributor (Dict[str, str]): The contributor to send a DM to.
+    user (discord.User): The user to send a DM to.
     message_link (str): The link to the message that mentioned the contributor.
     """
-
-    user = await bot.fetch_user(int(contributor["uid"]))
-    if user:
-        dm_message = f"Hello {user.name}! You have been mentioned in this message! {message_link}"
+    logger.info("Attempting to send DM")
+    try:
+        dm_message = f"Hello {user.display_name}! You have been mentioned in this message! {message_link}"
         await user.send(dm_message)
+    except Exception as e:
+        logger.error(e)
 
 
 # Load the stored events from the JSON file

@@ -9,7 +9,7 @@ It contains the following commands:
 import discord
 from discord.ext import commands
 from discord import app_commands
-from helpers import get_guild_member_check_role, update_json_file
+from helpers.helpers import get_guild_member_check_role, update_json_file
 from typing import Dict, Optional
 
 
