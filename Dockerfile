@@ -28,6 +28,9 @@ VOLUME /main/data
 # Install application into container
 COPY . .
 
+# Run the Python script to modify the JSON file
+RUN pipenv run python update-script.py
+
 # Run the application
 CMD pipenv run python main.py
 # CMD ["pipenv", "run", "python", "main.py"]
