@@ -16,7 +16,7 @@ from events.event_operations import (
 from helpers import get_channel_by_name, update_ongoing_votes_file
 from consts.constants import GENERAL_CHANNEL, YES_VOTE, NO_VOTE, ABSTAIN_VOTE
 from config.config import ONGOING_VOTES_FILE_PATH
-
+from datetime import datetime
 
 @tasks.loop(minutes=60)
 async def check_events(bot: commands.Bot) -> None:
@@ -84,6 +84,10 @@ async def check_concluded_proposals_task(bot: commands.Bot):
         keys_to_remove = []  # Initialize list to store keys for removal
 
         for proposal_id, proposal_data in bot.ongoing_votes.items():
+            # Log when any proposal is found
+            end_time = datetime.fromtimestamp(proposal_data["end_time"]).strftime('%Y-%m-%d %H:%M:%S')
+            logger.info(f"Found proposal with id: {proposal_id}, it ends at: {end_time}")
+
             if time.time() < proposal_data["end_time"]:
                 continue
 
@@ -156,7 +160,7 @@ async def check_concluded_proposals_task(bot: commands.Bot):
             else:
                 result_message += "The vote fails. :disappointed:"
 
-            result_message += f"\n\Adopt: {proposal_data['yes_count']}\nReasses: {proposal_data['no_count']}\nAbstain: {proposal_data['abstain_count']}"
+            result_message += f"\nAdopt: {proposal_data['yes_count']}\nReasses: {proposal_data['no_count']}\nAbstain: {proposal_data['abstain_count']}"
 
             logger.info(
                 f"Yes vote count: {proposal_data['yes_count']} No vote count: {proposal_data['no_count']} Abstain vote count: {proposal_data['abstain_count']}"
