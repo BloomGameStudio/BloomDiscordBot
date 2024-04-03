@@ -214,7 +214,11 @@ The following commands can be used to delete, and list events.
 **Delete Events:**
 
 ```
-/delete_event <name>
+
+**delete_event:**
+
+```
+/delete_event
 ```
 
 **Example**
