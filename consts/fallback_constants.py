@@ -1,5 +1,5 @@
 """
-consts/constants.py contains constants used throughout the bot.
+consts/fallback_constants.py contains fallback constants used throughout the bot.
 
 GENERAL_CHANNEL, GOVERNANCE_CHANNEL, GOVERNANCE_BUDGET_CHANNEL, GOVERNANCE_TALK_CHANNEL
 are various channels used throughout the bot.

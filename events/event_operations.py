@@ -323,13 +323,13 @@ async def process_reaction_add(bot, payload):
             role = get(guild.roles, name="bloomer")
             await member.add_roles(role)
             response = f"{member.display_name} has selected 🌺!\n\n**Their commitment is official and they are now a Bloomer!**"
-            general_channel = get_channel_by_name(guild, "🌺│home")
+            general_channel = get_channel_by_name(guild, GENERAL_CHANNEL)
             await general_channel.send(response)
         else:
             # If the reaction emoji matches any in DISCORD_ROLE_TRIGGERS, add the corresponding role to the member
             for role_info in DISCORD_ROLE_TRIGGERS:
                 if payload.emoji.id == role_info.get("emoji_id"):
-                    general_channel = get_channel_by_name(guild, "🌺│home")
+                    general_channel = get_channel_by_name(guild, GENERAL_CHANNEL)
                     role = get(guild.roles, name=role_info.get("role"))
                     response = f"{member.display_name} has joined the **{role_info.get('name')}** pod!"
                     await general_channel.send(response)

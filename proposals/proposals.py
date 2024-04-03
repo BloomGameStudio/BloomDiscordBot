@@ -25,37 +25,10 @@ from discord.ext import commands
 from consts.types import GOVERNANCE_ID_TYPE, BUDGET_ID_TYPE
 from logger.logger import logger
 from typing import Any, Dict, List, Tuple
-from helpers import get_channel_by_name, update_ongoing_votes_file
+from helpers import update_ongoing_votes_file
 
 
 proposals: List[Dict[str, Any]] = []
-
-async def handle_votedraft(
-    ctx: commands.Context, proposals: List[Dict[str, str]], new_proposal_emoji: str
-) -> None:
-    """
-    Handles the vote draft command. This command allows users to draft a proposal.
-
-    Parameters:
-    ctx (commands.Context): The context in which the command was called.
-    proposals (List[Dict[str, str]]): The list of proposals.
-    new_proposal_emoji (str): The emoji for new proposals.
-    """
-    try:
-        # Get the channel with the name 'governance' in the server
-        governance_talk_channel = get_channel_by_name(
-            ctx.guild, constants.GOVERNANCE_TALK_CHANNEL
-        )
-    except ValueError as e:
-        await ctx.send(f"Cannot find governance channel in this server.")
-        logger.error(f"Error drafting a vote: {str(e)}")
-        return
-
-    if ctx.channel.id != governance_talk_channel.id:
-        await ctx.send(
-            f"This command can only be used in <#{governance_talk_channel.id}>"
-        )
-        return
 
 
 async def handle_publishdraft(
