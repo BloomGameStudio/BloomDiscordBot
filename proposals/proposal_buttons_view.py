@@ -4,7 +4,7 @@ ProposalButtonsView is a discord.ui.View that contains buttons for creating, edi
 
 import discord
 from .proposal_modal import ProposalModal
-from .proposal_selects import DeleteProposalSelect, EditProposalSelect
+from .proposal_selects import DeleteProposalSelect, EditProposalSelect, PreviewProposalSelect
 
 
 class ProposalButtonsView(discord.ui.View):
@@ -36,4 +36,14 @@ class ProposalButtonsView(discord.ui.View):
         else:
             self.clear_items()
             self.add_item(DeleteProposalSelect(self.proposals))
+            await interaction.response.edit_message(view=self)
+
+    @discord.ui.button(label="Preview", style=discord.ButtonStyle.grey)
+    async def preview(self, interaction: discord.Interaction, button: discord.ui.Button):
+        # Check if there are any proposals to preview
+        if not self.proposals:
+            await interaction.response.send_message("No proposals to edit.")
+        else:
+            self.clear_items()
+            self.add_item(PreviewProposalSelect(self.proposals))
             await interaction.response.edit_message(view=self)

@@ -84,3 +84,32 @@ class EditProposalSelect(discord.ui.Select):
         # Open the ProposalModal with the selected proposal
         modal = ProposalModal(interaction.channel, selected_proposal)
         await interaction.response.send_modal(modal)
+
+class PreviewProposalSelect(discord.ui.Select):
+    def __init__(self, proposals):
+        self.proposals = proposals
+        options = [
+            discord.SelectOption(label=proposal["title"], value=proposal["title"])
+            for proposal in self.proposals
+        ]
+        super().__init__(placeholder="Select a proposal to preview", options=options)
+
+    async def callback(self, interaction: discord.Interaction):
+        # Find the selected proposal
+        for proposal in self.proposals:
+            if proposal["title"] == self.values[0]:
+                selected_proposal = proposal
+                break
+        else:
+            await interaction.response.send_message("Proposal not found.")
+            return
+
+        # Send proposal attributes as individual messages
+        await interaction.response.send_message(f'{selected_proposal["title"]}')
+        await interaction.followup.send(f'{selected_proposal["background"]}')
+        await interaction.followup.send(f'{selected_proposal["abstract"]}')
+
+        # Check if additional information is present
+        if selected_proposal["additional"]:
+            await interaction.followup.send(f'{selected_proposal["additional"]}')
+        await interaction.followup.send("Preview complete. Use the /vote_draft command again to edit or delete an existing proposal.")
