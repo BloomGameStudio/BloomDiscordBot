@@ -37,6 +37,7 @@ GOVERNANCE_BUDGET_CHANNEL = "budgetary-props"
 GOVERNANCE_TALK_CHANNEL = "🐬│governance"
 COLLAB_LAND_CHANNEL = "🤖│collabland-join"
 START_HERE_CHANNEL = "start-here"
+SNAPSHOT_SPACE = "gov.bloomstudio.eth"
 
 YES_VOTE = "👍"
 NO_VOTE = "👎"
