@@ -19,17 +19,24 @@ class ProposalModal(ui.Modal, title="Create/Edit Proposal"):
     )
 
     abstract = ui.TextInput(
-        label="Proposal abstract:",
+        label="Proposal Authors & Abstract:",
         style=discord.TextStyle.paragraph,
         required=True,
-        max_length=400,
+        max_length=2000,
     )
 
     background = ui.TextInput(
-        label="Proposal background:",
+        label="Proposal Definitions & Background:",
         style=discord.TextStyle.paragraph,
         required=True,
-        max_length=400,
+        max_length=2000,
+    )
+
+    additional = ui.TextInput(
+        label="Implementation Protocol & Voting Choices:",
+        style=discord.TextStyle.paragraph,
+        required=False,
+        max_length=2000,
     )
 
     def __init__(self, channel, proposal):
@@ -42,6 +49,7 @@ class ProposalModal(ui.Modal, title="Create/Edit Proposal"):
             self.proposal_type.default = proposal["type"]
             self.background.default = proposal["background"]
             self.abstract.default = proposal["abstract"]
+            self.additional.default = proposal["additional"]
 
     async def on_submit(self, interaction: discord.Interaction) -> None:
         member_id: int = interaction.user.id
@@ -69,6 +77,7 @@ class ProposalModal(ui.Modal, title="Create/Edit Proposal"):
                 "type": self.proposal_type.value,
                 "abstract": self.abstract.value,
                 "background": self.background.value,
+                "additional": self.additional.value,
             }
             # Add the created proposal to the global proposals list
             proposals.append(new_proposal)
@@ -77,6 +86,7 @@ class ProposalModal(ui.Modal, title="Create/Edit Proposal"):
             self.proposal["type"] = self.proposal_type.value
             self.proposal["abstract"] = self.abstract.value
             self.proposal["background"] = self.background.value
+            self.proposal["additiona"] = self.additional.value
 
         # Clear the buttons and show the response when a proposal is created/edited
         e = discord.Embed()
