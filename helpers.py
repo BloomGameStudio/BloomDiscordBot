@@ -23,9 +23,10 @@ import requests
 from typing import Optional, Dict, Any, List, Tuple
 from logger.logger import logger
 
+
 def fetch_first_open_proposal_url():
-    url = 'https://hub.snapshot.org/graphql'
-    query = '''
+    url = "https://hub.snapshot.org/graphql"
+    query = """
     query {
         proposals (
             first: 1,
@@ -34,25 +35,30 @@ def fetch_first_open_proposal_url():
                 state: "open"
             },
             orderBy: "created",
-            orderDirection: desc  # Changed to unquoted enum value
+            orderDirection: desc
         ) {
             id
         }
     }
-    ''' % (constants.SNAPSHOT_SPACE)
+    """ % (
+        constants.SNAPSHOT_SPACE
+    )
 
-    response = requests.post(url, json={'query': query})
-    
+    response = requests.post(url, json={"query": query})
+
     if response.status_code == 200:
         data = response.json()
-        proposals = data.get('data', {}).get('proposals', [])
+        proposals = data.get("data", {}).get("proposals", [])
         if proposals:
-            proposal_id = proposals[0]['id']
+            proposal_id = proposals[0]["id"]
             return f"https://snapshot.org/#/{constants.SNAPSHOT_SPACE}/proposal/{proposal_id}"
         else:
             return None
     else:
-        raise Exception(f"Query failed with status code {response.status_code}. {response.text}")
+        raise Exception(
+            f"Query failed with status code {response.status_code}. {response.text}"
+        )
+
 
 def get_channel_by_name(guild: discord.Guild, channel_name: str) -> discord.TextChannel:
     """
