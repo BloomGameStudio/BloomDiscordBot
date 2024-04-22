@@ -6,6 +6,7 @@ If there are any new events, they are posted to Discord. Interested users are id
 import time
 import subprocess
 import discord
+import random
 from logger.logger import logger
 from discord.ext import tasks, commands
 from events.event_operations import (
@@ -14,7 +15,7 @@ from events.event_operations import (
     fetch_upcoming_events,
 )
 from helpers import get_channel_by_name, update_ongoing_votes_file, fetch_first_open_proposal_url
-from consts.constants import GENERAL_CHANNEL, YES_VOTE, NO_VOTE, ABSTAIN_VOTE
+from consts.constants import GENERAL_CHANNEL, YES_VOTE, NO_VOTE, ABSTAIN_VOTE, PROPOSAL_CONCLUSION_EMOJIS
 from config.config import ONGOING_VOTES_FILE_PATH
 
 
@@ -125,9 +126,9 @@ async def check_concluded_proposals_task(bot: commands.Bot):
                 # Call the fetch_first_open_proposal_url after subprocess call
                 proposal_url = fetch_first_open_proposal_url()
                 if proposal_url:
-                    result_message += f"The vote passes! :tada:"
+                    result_message += f"The vote passes! {random.choice(PROPOSAL_CONCLUSION_EMOJIS)}"
                 else:
-                    result_message += "The vote passes! :tada:"
+                    result_message += f"The vote passes! {random.choice(PROPOSAL_CONCLUSION_EMOJIS)}"
             else:
                 result_message += "The vote fails. :disappointed:"
 
