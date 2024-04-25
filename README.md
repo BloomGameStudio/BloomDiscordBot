@@ -296,7 +296,6 @@ Contributor added successfully!
 :spag:
 :baguette:
 :breeze:
-```
 
 # Manually publishing proposals via the bot
 
@@ -311,6 +310,7 @@ In the event that the bot goes down, or there is some other issue with a proposa
 **Example:**
 
 ```
+
 {
     "1232974623113744386": {
         "draft": {
@@ -329,6 +329,7 @@ In the event that the bot goes down, or there is some other issue with a proposa
         "message_id": "1232152968225357895"
     }
 }
+
 ```
 
 4. Modify the end_time value so that it is *any* time in the past as long as it is 48+ hours from when the proposal that failed to be published concluded. 
