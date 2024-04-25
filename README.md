@@ -305,7 +305,9 @@ In the event that the bot goes down, or there is some other issue with a proposa
 
 2. Create / Publish the proposal. by using /vote_draft & /publish_draft locally.
 
-3. Access ./data/ongoing_votes.json, copy the proposal object
+3. Stop the local running of the bot in the test server
+
+4. Access ./data/ongoing_votes.json, copy the proposal object
 
 **Example:**
 
@@ -332,14 +334,14 @@ In the event that the bot goes down, or there is some other issue with a proposa
 
 ```
 
-4. Modify the end_time value so that it is *any* time in the past as long as it is 48+ hours from when the proposal that failed to be published concluded. 
+5. Modify the end_time value so that it is *any* time in the past as long as it is 48+ hours from when the proposal that failed to be published concluded. 
 
-5. Modify channel_id, thread_id, message_id so that it matches the channel ID (improvement-props OR budgetary-props 1191283932096905307 and 1191283982768287795 respectively), thread_id (the thread_id of the thread the discord bot created within the forum channel), and the message_id (the message the bot sent that contains the voting options (yes / reasses / abstain))
+6. Modify channel_id, thread_id, message_id so that it matches the channel ID (improvement-props OR budgetary-props 1191283932096905307 and 1191283982768287795 respectively), thread_id (the thread_id of the thread the discord bot created within the forum channel), and the message_id (the message the bot sent that contains the voting options (yes / reasses / abstain))
 
-7. Modify the BGP / BBP # as it will be a default of 0. Check the Discord thread for the BGP / BBP #
+7. Modify the BGP / BBP # under the title property, as it will be a default of 0 most likely. Check the Discord thread for the BGP / BBP # if you do not know what number we are up to. 
 
-6. Copy & paste the updated json object into the VM repository ./data/ongoing_votes.json
+8. Copy & paste the updated json object into the VM repository ./data/ongoing_votes.json
 
-7. Build & run the bot
+9. Build & run the bot
 
 The bot should run the scheduled task check_concluded_proposals_task in 5 minutes time, if all has been done correctly you should see the concluded message in the bot logs, and under the thread that has the Discord proposal. You should also see the proposal created in Snapshot. 
