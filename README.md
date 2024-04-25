@@ -300,6 +300,7 @@ Contributor added successfully!
 :spag:
 :baguette:
 :breeze:
+```
 
 # Manually publishing proposals via the bot
 
