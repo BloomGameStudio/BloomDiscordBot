@@ -301,7 +301,7 @@ Contributor added successfully!
 
 In the event that the bot goes down, or there is some other issue with a proposal being pushed to Snapshot, the following steps can be taken. These steps can be done locally, utilizing the test server
 
-1. Replicate the proposal locally with the bot running locally (Copy / Paste the text & Markdown from the posted proposal in Discord)
+1. Replicate the proposal locally with the bot (Copy / Paste the text & Markdown from the posted proposal in Discord)
 
 2. Create / Publish the proposal. by using /vote_draft & /publish_draft locally.
 
@@ -335,6 +335,8 @@ In the event that the bot goes down, or there is some other issue with a proposa
 4. Modify the end_time value so that it is *any* time in the past as long as it is 48+ hours from when the proposal that failed to be published concluded. 
 
 5. Modify channel_id, thread_id, message_id so that it matches the channel ID (improvement-props OR budgetary-props 1191283932096905307 and 1191283982768287795 respectively), thread_id (the thread_id of the thread the discord bot created within the forum channel), and the message_id (the message the bot sent that contains the voting options (yes / reasses / abstain))
+
+7. Modify the BGP / BBP # as it will be a default of 0. Check the Discord thread for the BGP / BBP #
 
 6. Copy & paste the updated json object into the VM repository ./data/ongoing_votes.json
 
