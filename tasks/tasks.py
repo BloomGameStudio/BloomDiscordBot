@@ -144,7 +144,7 @@ async def check_concluded_proposals_task(bot: commands.Bot):
 
             # Modify the result message based on the outcome of the vote
             result_message = (
-                f"Vote for **'{proposal_data['title']}'** has concluded:\n\n"
+                f"Vote for **{proposal_data['title']}** has concluded:\n\n"
             )
             if passed:
                 subprocess.run(
