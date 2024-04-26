@@ -101,8 +101,8 @@ OR
     docker build .
 
     docker run -d \
-        --mount type=volume,source=volume_name1,target=/path/in/container1 \
-        --mount type=volume,source=volume_name2,target=/path/in/container2 \
+        --mount type=volume,source=bloomdiscordbotvolume,target=/app/data \
+        --mount type=volume,source=configvolume,target=/app/data \
         <image_name>
     
 ```
