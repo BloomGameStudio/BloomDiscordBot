@@ -81,7 +81,9 @@ Permissions:
     
     docker build -t bloomdiscordbot .
 
-2. Run the container
+```
+
+3. Run the container
 
 ```
     docker run -d \
@@ -90,6 +92,8 @@ Permissions:
         bloomdiscordbot
 
 ```
+
+OR
 
 ```
     //Build without a tag/name prior to running:
