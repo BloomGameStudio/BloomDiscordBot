@@ -70,17 +70,25 @@ Permissions:
 1. Create the docker volume for the contributor information / event information
 
 ```
-    docker volume create discordbotvolume
+    docker volume create bloomdiscordbotvolume
+    docker volume create configvolume
 ```
+
+2. Build the image
+
+```
+    //Build with a tag name:
+    
+    docker build -t bloomdiscordbot .
 
 2. Run the container
 
 ```
-    //Build with a tag name prior to running:
+    docker run -d \
+        --mount type=volume,source=bloomdiscordbotvolume,target=/app/data \
+        --mount type=volume,source=configvolume,target=/app/config \
+        bloomdiscordbot
 
-    docker build -t bloomdiscordbot .
-
-    docker run -v discordbotvolume:/main/data bloomdiscordbot
 ```
 
 ```
@@ -88,7 +96,10 @@ Permissions:
 
     docker build .
 
-    docker run -v discordbotvolume:/main/data <container_name>
+    docker run -d \
+        --mount type=volume,source=volume_name1,target=/path/in/container1 \
+        --mount type=volume,source=volume_name2,target=/path/in/container2 \
+        <image_name>
     
 ```
 
