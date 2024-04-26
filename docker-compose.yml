@@ -1,14 +1,17 @@
-version: "3"
+version: "3.8"
 services:
-  bot:
+  BloomDiscordBot:
     build:
       context: .
       dockerfile: Dockerfile
-    image: ghcr.io/bloomgamestudio/bloomdiscordbot:main
+    image: bloomdiscordbot
     restart: unless-stopped
-    env_file: .env
     volumes:
-      - data:/main
+      - bloomdiscordbotvolume:/app/data
+      - configvolume:/app/config
+    env_file:
+      - .env
 
 volumes:
-  data:
+  bloomdiscordbotvolume: {}
+  configvolume: {}
