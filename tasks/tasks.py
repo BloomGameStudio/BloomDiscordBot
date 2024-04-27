@@ -187,6 +187,17 @@ async def check_concluded_proposals_task(bot: commands.Bot):
             except discord.HTTPException as e:
                 logger.error(f"An error occurred while posting the result message: {e}")
 
+            guild = channel.guild
+            general_channel = get_channel_by_name(guild, GENERAL_CHANNEL)
+
+            if general_channel:
+                try:
+                    await general_channel.send(result_message)
+                except discord.HTTPException as e:
+                    logger.error(f"An error occurred while posting the result message: {e}")        
+            else:
+                logger.error(f"Unable to find the general channel in guild: {guild.name}")
+
             keys_to_remove.append(proposal_id)
 
         # Remove concluded votes
