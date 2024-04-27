@@ -107,7 +107,7 @@ class ProposalModal(ui.Modal, title="Create/Edit Proposal"):
 
         # Clear the buttons and show the response when a proposal is created/edited
         e = discord.Embed()
-        e.title = f"Thank you, proposal has been created/edited."
+        e.title = f"Thank you, proposal has been created/edited. Use the same command to edit the proposal."
         e.description = f"{self.name.value}"
         e.set_author(
             name="Proposal Creation/Editing",
