@@ -5,8 +5,7 @@ proposal_modal is a discord.ui.Modal that is used to create or edit a proposal. 
 import discord
 from discord import ui
 from proposals.proposals import proposals
-from consts.types import GOVERNANCE_ID_TYPE, BUDGET_ID_TYPE
-from typing import Dict, Any
+from config import config as cfg
 
 
 class ProposalModal(ui.Modal, title="Create/Edit Proposal"):
@@ -51,46 +50,64 @@ class ProposalModal(ui.Modal, title="Create/Edit Proposal"):
             self.abstract.default = proposal["abstract"]
             self.additional.default = proposal["additional"]
 
+    def generate_full_title(self, proposal_type, draft_title):
+        if proposal_type == "governance":
+            prefix = f"Bloom General Proposal (BGP) #{cfg.current_governance_id}: "
+        elif proposal_type == "budget":
+            prefix = f"Bloom Budget Proposal (BBP) #{cfg.current_budget_id}: "
+        else:
+            prefix = ""
+
+        return prefix + draft_title
+
     async def on_submit(self, interaction: discord.Interaction) -> None:
         member_id: int = interaction.user.id
 
         # Check if the proposal type is valid
-        if self.proposal_type.value not in [GOVERNANCE_ID_TYPE, BUDGET_ID_TYPE]:
+        if self.proposal_type.value not in ["governance", "budget"]:
             await interaction.response.send_message(
                 'Invalid proposal type. It must be either "governance" or "budget".',
                 ephemeral=True,
             )
             return
 
+        full_title = self.generate_full_title(self.proposal_type.value, self.name.value)
+        # Validate title length
+        if len(full_title) > 100:
+            await interaction.response.send_message(
+                'The total length of the proposal title including prefix exceeds 100 characters. Please shorten your title.',
+                ephemeral=True,
+            )
+            return
+
         # Check if a proposal with the same name already exists
-        if any(proposal["title"] == self.name.value for proposal in proposals):
+        if self.proposal is None and any(proposal["title"] == self.name.value for proposal in proposals):
             await interaction.response.send_message(
                 'A proposal with this name already exists.',
                 ephemeral=True,
             )
             return
 
+        # Construct the proposal data dictionary
+        proposal_data = {
+            "member_id": member_id,
+            "title": self.name.value,
+            "type": self.proposal_type.value,
+            "abstract": self.abstract.value,
+            "background": self.background.value,
+            "additional": self.additional.value,
+        }
+
         if self.proposal is None:
-            new_proposal: Dict[str, Any] = {
-                "member_id": member_id,
-                "title": self.name.value,
-                "type": self.proposal_type.value,
-                "abstract": self.abstract.value,
-                "background": self.background.value,
-                "additional": self.additional.value,
-            }
-            # Add the created proposal to the global proposals list
-            proposals.append(new_proposal)
+            # If it's a new proposal, add it to the list
+            proposals.append(proposal_data)
         else:
-            self.proposal["title"] = self.name.value
-            self.proposal["type"] = self.proposal_type.value
-            self.proposal["abstract"] = self.abstract.value
-            self.proposal["background"] = self.background.value
-            self.proposal["additiona"] = self.additional.value
+            # Update existing proposal
+            self.proposal.update(proposal_data)
 
         # Clear the buttons and show the response when a proposal is created/edited
         e = discord.Embed()
-        e.title = f"Thank you, proposal has been created/edited. Use the same command again to edit or delete an existing proposal"
+        e.title = f"Thank you, proposal has been created/edited."
         e.description = f"{self.name.value}"
         e.set_author(
             name="Proposal Creation/Editing",
@@ -98,4 +115,3 @@ class ProposalModal(ui.Modal, title="Create/Edit Proposal"):
         )
         e.color = discord.Color.green()
         await interaction.response.edit_message(content=" ", embed=e, view=None)
-        
