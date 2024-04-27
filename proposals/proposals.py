@@ -178,7 +178,8 @@ async def publish_draft(
 
         # Post the background, additional information, and vote options
         await thread.message.reply(f"\n{draft['background']}")
-        await thread.message.reply(f"\n{draft['additional']}")
+        if 'additional' in draft and draft['additional'].strip():
+            await thread.message.reply(f"\n{draft['additional']}")
 
         vote_message = await thread.message.reply(f"**{constants.YES_VOTE} Yes**\n**{constants.NO_VOTE} Reassess**\n**{constants.ABSTAIN_VOTE} Abstain**\nVote will conclude in 48h from now.")
 
