@@ -6,7 +6,7 @@ import discord
 from discord import ui
 from proposals.proposals import proposals
 from config import config as cfg
-
+from consts.types import GOVERNANCE_ID_TYPE, BUDGET_ID_TYPE
 
 class ProposalModal(ui.Modal, title="Create/Edit Proposal"):
     name = ui.TextInput(
@@ -64,7 +64,7 @@ class ProposalModal(ui.Modal, title="Create/Edit Proposal"):
         member_id: int = interaction.user.id
 
         # Check if the proposal type is valid
-        if self.proposal_type.value not in ["governance", "budget"]:
+        if self.proposal_type.value not in [GOVERNANCE_ID_TYPE, BUDGET_ID_TYPE]:
             await interaction.response.send_message(
                 'Invalid proposal type. It must be either "governance" or "budget".',
                 ephemeral=True,
