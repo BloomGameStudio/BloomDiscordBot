@@ -36,6 +36,18 @@ async def handle_publishdraft(
     proposals: List[Dict[str, str]],
     bot: commands.Bot,
 ) -> None:
+    """
+    Handle the publish draft command by publishing the draft if it exists in the proposals list.
+
+    Parameters:
+    interaction (discord.Interaction): The interaction object.
+    draft_name (str): The name of the draft to be published.
+    proposals (List[Dict[str, str]]): The list of proposals.
+    bot (commands.Bot): The bot instance.
+
+    Returns:
+    None
+    """
     # Defer the response if it might take some time to process
     if not interaction.response.is_done():
         await interaction.response.defer()
@@ -159,7 +171,6 @@ async def publish_draft(
         update_ongoing_votes_file(bot.ongoing_votes, cfg.ONGOING_VOTES_FILE_PATH)
 
         await react_to_vote(vote_message.id, bot, guild_id, channel_name, thread.thread.id)
-
         return True
     
     except Exception as e:
