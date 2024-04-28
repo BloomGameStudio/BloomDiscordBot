@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added helper function to retrieve snapshot URL to include in a discord announcement & thread for easier access to the live vote.
+
 - Discord Task Decorator that invokes check_ongoing_proposals to see if a proposal has finished.
 
 - Commands reorganized using cogs
