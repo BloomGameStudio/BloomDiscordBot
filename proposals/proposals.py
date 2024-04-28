@@ -30,6 +30,7 @@ from helpers import update_ongoing_votes_file
 
 proposals: List[Dict[str, Any]] = []
 
+
 async def handle_publishdraft(
     interaction: discord.Interaction,
     draft_name: str,
@@ -53,7 +54,11 @@ async def handle_publishdraft(
         await interaction.response.defer()
 
     draft_to_publish = next(
-        (item for item in proposals if item.get("title", "").strip() == draft_name.strip()),
+        (
+            item
+            for item in proposals
+            if item.get("title", "").strip() == draft_name.strip()
+        ),
         None,
     )
 
@@ -68,7 +73,9 @@ async def handle_publishdraft(
                 description=f"The draft '{draft_to_publish['title']}' has been published.",
                 color=discord.Color.green(),
             )
-            embed.set_author(name="Draft Publishing", icon_url=interaction.user.display_avatar.url)
+            embed.set_author(
+                name="Draft Publishing", icon_url=interaction.user.display_avatar.url
+            )
             await interaction.followup.send(embed=embed)  # Use followup if deferred
         else:
             await interaction.followup.send(f"Failed to publish draft: {draft_name}")
@@ -104,7 +111,9 @@ async def prepare_draft(
     else:
         id_type = GOVERNANCE_ID_TYPE
         channel_name = constants.GOVERNANCE_CHANNEL
-        current_governance_id = cfg.config.getint("ID_START_VALUES", "governance_id") + 1
+        current_governance_id = (
+            cfg.config.getint("ID_START_VALUES", "governance_id") + 1
+        )
         title = f"Bloom Governance Proposal (BGP) #{current_governance_id}: {draft['title']}"
 
     return id_type, channel_name, title
@@ -117,13 +126,13 @@ async def publish_draft(
     """
     Publish the draft by creating a thread with the prepared content and starting a vote timer.
     Returns a boolean indicating whether the publication was successful.
-    
+
     Parameters:
     draft (Dict[str, Any]): The draft to be published.
     bot (Bot): The bot instance.
     guild_id (int): The ID of the guild.
     guild (discord.Guild): The guild to publish the draft in.
-    
+
     Returns:
     bool: True if successfully published, False otherwise.
     """
@@ -138,8 +147,10 @@ async def publish_draft(
             )
             return False
 
-        thread = await forum_channel.create_thread(name=title, content=f"{draft['abstract']}")
-        
+        thread = await forum_channel.create_thread(
+            name=title, content=f"{draft['abstract']}"
+        )
+
         # Assume publication is successful and update IDs
         if id_type == BUDGET_ID_TYPE:
             cfg.increment_config_id(BUDGET_ID_TYPE, 1)
@@ -149,7 +160,9 @@ async def publish_draft(
         # Post additional information and start the vote
         await thread.message.reply(f"\n{draft['background']}")
         await thread.message.reply(f"\n{draft['additional']}")
-        vote_message = await thread.message.reply(f"**{constants.YES_VOTE} Yes**\n**{constants.NO_VOTE} Reassess**\n**{constants.ABSTAIN_VOTE} Abstain**\nVote will conclude in 48h from now.")
+        vote_message = await thread.message.reply(
+            f"**{constants.YES_VOTE} Yes**\n**{constants.NO_VOTE} Reassess**\n**{constants.ABSTAIN_VOTE} Abstain**\nVote will conclude in 48h from now."
+        )
 
         proposal_id = str(thread.message.id)
         proposal_data = {
@@ -170,12 +183,15 @@ async def publish_draft(
         # Save to ongoing_votes.json
         update_ongoing_votes_file(bot.ongoing_votes, cfg.ONGOING_VOTES_FILE_PATH)
 
-        await react_to_vote(vote_message.id, bot, guild_id, channel_name, thread.thread.id)
+        await react_to_vote(
+            vote_message.id, bot, guild_id, channel_name, thread.thread.id
+        )
         return True
-    
+
     except Exception as e:
         logger.error(f"Error publishing draft: {str(e)}")
         return False
+
 
 async def react_to_vote(
     message_id: int, bot: Bot, guild_id: int, channel_name: str, thread_id: int
