@@ -24,7 +24,7 @@ from typing import Optional, Dict, Any, List, Tuple
 from logger.logger import logger
 
 
-def fetch_first_open_proposal_url():
+def fetch_first_open_proposal_url(concluded_proposal_title):
     url = "https://hub.snapshot.org/graphql"
     query = """
     query {
@@ -38,6 +38,7 @@ def fetch_first_open_proposal_url():
             orderDirection: desc
         ) {
             id
+            title
         }
     }
     """ % (
@@ -49,7 +50,7 @@ def fetch_first_open_proposal_url():
     if response.status_code == 200:
         data = response.json()
         proposals = data.get("data", {}).get("proposals", [])
-        if proposals:
+        if proposals and proposals[0]["title"] == concluded_proposal_title:
             proposal_id = proposals[0]["id"]
             return f"https://snapshot.org/#/{constants.SNAPSHOT_SPACE}/proposal/{proposal_id}"
         else:

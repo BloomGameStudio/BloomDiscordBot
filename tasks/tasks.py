@@ -82,7 +82,7 @@ async def check_concluded_proposals_task(bot: commands.Bot):
     This function is a task that runs every 5 minutes. It checks ongoing proposals and processes them if they have ended.
     If a proposal has ended, and meets the criteria of passing, a snapshot proposal will be created.
 
-    Paramaters:
+    Parameters:
     bot (commands.Bot): The bot instance containing the ongoing_votes attribute.
 
     Returns:
@@ -130,22 +130,13 @@ async def check_concluded_proposals_task(bot: commands.Bot):
             for reaction in message.reactions:
                 emoji = str(reaction.emoji)
                 if emoji in counts:
-                    # Subtract 1 to account for the bot's own reaction
+                    # Subtract 1 to account for the bots reaction
                     proposal_data[counts[emoji]] = reaction.count - 1
 
-            # Check if the proposal has passed based off the yes and no count, and if the yes count is greater than or equal to 5
-            if (
-                proposal_data["yes_count"] > proposal_data["no_count"]
-                and proposal_data["yes_count"] >= 5
-            ):
-                passed = True
-            else:
-                passed = False
+            # Check if the proposal has passed based off the yes and no count, and if the yes count is great than or equal to 5
+            passed = proposal_data["yes_count"] > proposal_data["no_count"] and proposal_data["yes_count"] >= 5
+            result_message = f"Vote for **{proposal_data['title']}** has concluded:\n\n"
 
-            # Modify the result message based on the outcome of the vote
-            result_message = (
-                f"Vote for **{proposal_data['title']}** has concluded:\n\n"
-            )
             if passed:
                 subprocess.run(
                     [
@@ -156,26 +147,21 @@ async def check_concluded_proposals_task(bot: commands.Bot):
                         proposal_data["draft"]["background"],
                         proposal_data["draft"]["additional"],
                         "Adopt",
-                        "Reasses",
+                        "Reassess",
                         "Abstain",
                     ],
                     check=True,
                 )
-
                 # Call the fetch_first_open_proposal_url after subprocess call
-                proposal_url = fetch_first_open_proposal_url()
+                proposal_url = fetch_first_open_proposal_url(proposal_data["title"])
                 if proposal_url:
-                    result_message += (
-                        f"The vote passes! {random.choice(PROPOSAL_CONCLUSION_EMOJIS)}"
-                    )
+                    result_message += f"The vote passes! {random.choice(PROPOSAL_CONCLUSION_EMOJIS)}\n\nSnapshot proposal has been created: **{proposal_url}**"
                 else:
-                    result_message += (
-                        f"The vote passes! {random.choice(PROPOSAL_CONCLUSION_EMOJIS)}"
-                    )
+                    result_message += f"The vote passes! {random.choice(PROPOSAL_CONCLUSION_EMOJIS)}"
             else:
                 result_message += "The vote fails. :disappointed:"
 
-            result_message += f"\n**Adopt:** {proposal_data['yes_count']}\nReasses: {proposal_data['no_count']}\nAbstain: {proposal_data['abstain_count']} \n\nSnapshot proposal has been created: **{proposal_url}**"
+            result_message += f"\n**Adopt:** {proposal_data['yes_count']}\nReassess: {proposal_data['no_count']}\nAbstain: {proposal_data['abstain_count']}"
 
             logger.info(
                 f"Yes vote count: {proposal_data['yes_count']} No vote count: {proposal_data['no_count']} Abstain vote count: {proposal_data['abstain_count']}"
@@ -194,7 +180,7 @@ async def check_concluded_proposals_task(bot: commands.Bot):
                 try:
                     await general_channel.send(result_message)
                 except discord.HTTPException as e:
-                    logger.error(f"An error occurred while posting the result message: {e}")        
+                    logger.error(f"An error occurred while posting the result message: {e}")
             else:
                 logger.error(f"Unable to find the general channel in guild: {guild.name}")
 
