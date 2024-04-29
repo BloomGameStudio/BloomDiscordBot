@@ -42,7 +42,7 @@ class ProposalButtonsView(discord.ui.View):
     async def preview(self, interaction: discord.Interaction, button: discord.ui.Button):
         # Check if there are any proposals to preview
         if not self.proposals:
-            await interaction.response.send_message("No proposals to edit.")
+            await interaction.response.send_message("No proposals to preview.", ephemeral=True)
         else:
             self.clear_items()
             self.add_item(PreviewProposalSelect(self.proposals))
