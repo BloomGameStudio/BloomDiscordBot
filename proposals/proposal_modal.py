@@ -65,7 +65,7 @@ class ProposalModal(ui.Modal, title="Create/Edit Proposal"):
         # Check if a proposal with the same name already exists
         if any(proposal["title"] == self.name.value for proposal in proposals):
             await interaction.response.send_message(
-                'A proposal with this name already exists.',
+                "A proposal with this name already exists.",
                 ephemeral=True,
             )
             return
@@ -98,4 +98,3 @@ class ProposalModal(ui.Modal, title="Create/Edit Proposal"):
         )
         e.color = discord.Color.green()
         await interaction.response.edit_message(content=" ", embed=e, view=None)
-        

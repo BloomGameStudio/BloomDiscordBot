@@ -5,6 +5,7 @@ proposal_selects is a discord.ui.select that contains the select menus for the p
 import discord
 from proposals.proposals import handle_publishdraft
 from .proposal_modal import ProposalModal
+from config import config as cfg
 
 
 class PublishDraftSelect(discord.ui.Select):
@@ -84,3 +85,49 @@ class EditProposalSelect(discord.ui.Select):
         # Open the ProposalModal with the selected proposal
         modal = ProposalModal(interaction.channel, selected_proposal)
         await interaction.response.send_modal(modal)
+
+
+class PreviewProposalSelect(discord.ui.Select):
+    def __init__(self, proposals):
+        self.proposals = proposals
+        options = [
+            discord.SelectOption(label=proposal["title"], value=proposal["title"])
+            for proposal in self.proposals
+        ]
+        super().__init__(placeholder="Select a proposal to preview", options=options)
+
+    async def callback(self, interaction: discord.Interaction):
+        # Find the selected proposal
+        for proposal in self.proposals:
+            if proposal["title"] == self.values[0]:
+                selected_proposal = proposal
+                break
+        else:
+            await interaction.response.send_message(
+                "Proposal not found.", ephemeral=True
+            )
+            return
+
+        # Send proposal attributes as individual messages
+        await interaction.response.send_message(
+            "This is what your proposal will look like upon being published to Discord. The title will be the thread title.",
+            ephemeral=True,
+        )
+        if selected_proposal["type"] == "governance":
+            await interaction.followup.send(
+                f'Bloom General Proposal (BGP) #{cfg.current_governance_id + 1}: {selected_proposal["title"]}'
+            )
+        else:
+            await interaction.followup.send(
+                f'Bloom Budget Proposal (BBP) #{cfg.current_budget_id + 1}: {selected_proposal["title"]}'
+            )
+        await interaction.followup.send(f'{selected_proposal["background"]}')
+        await interaction.followup.send(f'{selected_proposal["abstract"]}')
+
+        # Check if additional information is present
+        if selected_proposal["additional"]:
+            await interaction.followup.send(f'{selected_proposal["additional"]}')
+        await interaction.followup.send(
+            "Preview complete. Use the /vote_draft command again to edit or delete an existing proposal.",
+            ephemeral=True,
+        )
