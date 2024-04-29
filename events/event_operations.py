@@ -20,6 +20,8 @@ from discord.ext.commands import Bot
 from discord.ext import commands
 from logger.logger import logger
 
+# Track Notifications
+notified_contributors = {}
 
 # Save the posted events to the JSON file
 def save_posted_events(posted_events: List[int]) -> None:
@@ -256,6 +258,7 @@ async def handle_reaction(
     """
     Handles a new reaction in the server.
     If a contributors emoji is found, a DM is sent to the contributor.
+    Prevents multiple notifications for the same message using the contributor's emoji.
 
     Args:
         bot (commands.Bot): The bot instance.
@@ -263,23 +266,27 @@ async def handle_reaction(
         user (User): The user who added the reaction.
         data (Dict): The server data.
         proposals (List): The list of proposals.
-        new_proposal_emoji (str): The emoji for new proposals.
     """
     # Get the server name and data
     server_name = reaction.message.guild.name
-    server_data = data["servers"].get(server_name)
-
-    # Log a warning if no data is found for the server
-    if server_data is None:
-        logger.warning(f"No data found for server: {server_name}")
-        return
 
     # Ignore reactions from the bot itself
     if user == bot.user:
         return
 
+    server_data = data["servers"].get(server_name)
+    # Log a warning if no data is found for the server
+    if server_data is None:
+        logger.warning(f"No data found for server: {server_name}")
+        return
+
     contributors = server_data["contributors"]
     emoji_dicts = server_data["emoji_dictionary"]
+
+    # Initialize the message notification set if it doesn't exist
+    message_id = reaction.message.id
+    if message_id not in notified_contributors:
+        notified_contributors[message_id] = set()
 
     # Check if the reaction emoji matches any in the emoji dictionary
     contributor_emoji = next(
@@ -297,12 +304,12 @@ async def handle_reaction(
             (c for c in contributors if c["uid"] == emoji_dicts[contributor_emoji]),
             None,
         )
-        if contributor and str(contributor["uid"]) != str(
-            user.id
-        ):  # Check if the user who reacted is not the contributor
-            message_link = reaction.message.jump_url
-            logger.info("Emoji react found, DMing contributor")
-            await send_dm_once(bot, contributor, message_link)
+        if contributor and str(contributor["uid"]) != str(user.id):  # Exclude self-reactions
+            if contributor["uid"] not in notified_contributors[message_id]:  # Check if not yet notified
+                message_link = reaction.message.jump_url
+                logger.info("Emoji react found, DMing contributor")
+                await send_dm_once(bot, contributor, message_link)
+                notified_contributors[message_id].add(contributor["uid"])  # Mark as notified
 
 
 async def process_reaction_add(bot, payload):
