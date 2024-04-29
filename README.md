@@ -98,7 +98,10 @@ Permissions:
 
 2. Modify values in snapshot/snapshot.js. This will include:
 - RPC
-- Snapshot space details (ENS, ChainID (network), and hub URL). Note: Anything testnet snapshot relaxed has a subdomain of testnet. IE testnet.hub.snapshot.org, testnet.snapshot.org.
+- Snapshot space details (ENS, ChainID (network), and hub URL). Note: Anything testnet snapshot related has a subdomain of testnet. IE:
+
+```testnet.hub.snapshot.org```
+```testnet.snapshot.org.```
 
 3. (Optional) If you wish to change the starting values for proposals, modify config/config.ini
 
