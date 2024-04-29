@@ -27,7 +27,7 @@ Permissions:
 - Add reactions
 
 
-# Quick start guide:
+# Quick start guide
 
 1. Ensure there are existing channels in Bloom Collective, and Bloom Studio Discord servers with the channel names set in constants.py. The bot will determine the required channel IDs / Forum Channel IDs from the channel names in it's respective server.
 
@@ -92,7 +92,30 @@ Permissions:
     
 ```
 
-# Help:
+# Dev Setup Guide
+
+1. Modify values in consts/constants.py, or create discord channel names that align with the values.
+
+2. Modify values in snapshot/snapshot.js. This will include:
+- RPC
+- Snapshot space details (ENS, ChainID (network), and hub URL). Note: Anything testnet snapshot relaxed has a subdomain of testnet. IE testnet.hub.snapshot.org, testnet.snapshot.org.
+
+3. (Optional) If you wish to change the starting values for proposals, modify config/config.ini
+
+4. Set your ETH_ADDRESS, ETH_PRIVATE_KEY, and DISCORD_BOT_TOKEN env vars
+
+5. (Optional) If you wish to reduce the voting timeframes, modify the values in proposals/proposals.py, line188. Will look at consolidating these where it makes sense for ease of adjusting, or adding a debug option for ease of use.
+
+```
+"end_time": time.time() + 48 * 60 * 60,  # 48 hours from now
+```
+
+Outside of scope:
+
+- Configuring your own snapshot space on testnet.snapshot.org
+- Configuring your own Discord server
+
+# Help
 
 You can type ```/help``` to get details about what commands can be used, along with a brief description of them
 
@@ -181,7 +204,7 @@ Reassess: 0
 Abstain: 0
 ```
 
-# Events:
+# Events
 
 When a bloomer creates an event within Blooms Discord server, there will initially be a 30 minute delay from the time of creation to when the details of the event are posted in Discord. This will allow the bloomer time to make changes to the details, starting time, and so on.
 
@@ -189,7 +212,7 @@ There is a scheduled task that will identify events starting within the next 24 
 
 Events can be deleted through a command, detailed below.
 
-# Commands:
+# Commands
 
 The following commands can be used to delete, and list events.
 
