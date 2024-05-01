@@ -29,7 +29,7 @@ async function createProposal(title, abstract, background, additional, choices) 
       throw new Error('Ethereum address or private key not provided in environment variables');
     }
 
-    const provider = new ethers.providers.JsonRpcProvider('https://eth.llamarpc.com');
+    const provider = new ethers.providers.JsonRpcProvider('https://arbitrum.llamarpc.com');
 
     const wallet = new ethers.Wallet(ethPrivateKey, provider);
 
@@ -51,7 +51,7 @@ async function createProposal(title, abstract, background, additional, choices) 
       start: currentTime,
       end: currentTime + fortyeighthoursinSeconds, // 48 hours from now
       snapshot: await provider.getBlockNumber(), // Current block number as snapshot
-      network: '1',
+      network: '4261',
       plugins: JSON.stringify({}),
       app: 'Bloom-Gov' // provide the name of your project using this Snapshot.js integration
     };
