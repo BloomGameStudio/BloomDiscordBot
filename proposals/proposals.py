@@ -180,7 +180,7 @@ async def publish_draft(
         await thread.message.reply(f"\n{draft['background']}")
         await thread.message.reply(f"\n{draft['additional']}")
 
-        vote_message = await thread.message.reply(f"**{constants.YES_VOTE} Yes**\n**{constants.NO_VOTE} Reassess**\n**{constants.ABSTAIN_VOTE} Abstain**\nVote will conclude in 48h from now.")
+        vote_message = await thread.message.reply(f"**{constants.YES_VOTE} Adopt**\n\n**{constants.NO_VOTE} Reassess**\n\n**{constants.ABSTAIN_VOTE} Abstain**\n\nVote will conclude in 48h from now.")
 
         proposal_id = str(thread.message.id)
         proposal_data = {
