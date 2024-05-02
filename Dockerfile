@@ -8,26 +8,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends gcc
 RUN curl -sL https://deb.nodesource.com/setup_18.x | bash -
 RUN apt-get install -y nodejs
 
-WORKDIR /bloomdiscordbot
+WORKDIR /app
 
-# Copy only Pipfile (ignore Pipfile.lock)
+# Copy Pipfile and install dependencies
 COPY Pipfile .
-
-# Install python dependencies in /.venv
 RUN pipenv install --deploy
 
-# Copy package.json and package-lock.json (if available)
-COPY snapshot/package*.json ./snapshot/
+# Copy JavaScript dependencies files and install
+COPY snapshot/package*.json /app/snapshot/
+RUN cd /app/snapshot && npm install
 
-# Install JavaScript dependencies
-RUN cd snapshot && npm install
+# Copy the entire application
+COPY . /app
 
-# Create a volume directory
-VOLUME /main/data
-
-# Install application into container
-COPY . .
-
-# Run the application
-CMD pipenv run python main.py
-# CMD ["pipenv", "run", "python", "main.py"]
+# Command to run the application
+CMD ["pipenv", "run", "python", "main.py"]
