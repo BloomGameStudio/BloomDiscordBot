@@ -9,9 +9,15 @@ import requests
 import asyncio
 import os
 import discord
-from consts.constants import GENERAL_CHANNEL, RULES_MESSAGE_ID, DISCORD_ROLE_TRIGGERS, COLLAB_LAND_CHANNEL, START_HERE_CHANNEL
+from consts.constants import (
+    GENERAL_CHANNEL,
+    RULES_MESSAGE_ID,
+    DISCORD_ROLE_TRIGGERS,
+    COLLAB_LAND_CHANNEL,
+    START_HERE_CHANNEL,
+)
 from config.config import POSTED_EVENTS_FILE_PATH
-from helpers import get_channel_by_name, send_dm_once
+from helpers.helpers import get_channel_by_name, send_dm_once
 from datetime import datetime, timezone
 from typing import List, Optional, Any, Dict, Union
 from discord import ScheduledEvent, Reaction, User, Message
@@ -180,7 +186,9 @@ async def process_new_member(member: discord.Member) -> None:
     try:
         # Get the welcome channel
         welcome_channel = get_channel_by_name(member.guild, GENERAL_CHANNEL)
-        collab_land_join_channel = get_channel_by_name(member.guild, COLLAB_LAND_CHANNEL)
+        collab_land_join_channel = get_channel_by_name(
+            member.guild, COLLAB_LAND_CHANNEL
+        )
         start_here_channel = get_channel_by_name(member.guild, START_HERE_CHANNEL)
 
         # Send the welcome message
@@ -198,111 +206,93 @@ async def process_new_member(member: discord.Member) -> None:
 
 
 async def handle_message(
-    bot: commands.Bot,
-    message: Message,
-    data: Dict[str, Dict[str, Union[List[Dict[str, str]], Dict[str, str]]]],
-    proposals: List[Dict[str, Union[str, int]]],
+    bot: commands.Bot, message: discord.Message, emoji_dicts: Dict[str, Dict[str, str]]
 ) -> None:
     """
     Handles a new message in the server.
-    If a contributors emoji is found, a DM is sent to the contributor.
+    If a contributors emoji is found, a DM is sent to them.
 
-    Args:
+
+    Parameters:
         bot (commands.Bot): The bot instance.
         message (Message): The new message.
-        data (Dict): The server data.
-        proposals (List): The list of proposals.
+        emoji_dicts (Dict[str, Dict[str, str]]): The dictionary of emoji to user mappings for each server.
+
     """
+    if message.content.lower().startswith(".update_commands"):
+        try:
+            logger.info("Updating commands")
+            await bot.tree.sync()
+            logger.info(("Commands updated"))
+        except Exception as e:
+            logger.error(f"Error updating commands: {e}")
+
     # Ignore messages from the bot itself
     if message.author == bot.user:
         return
 
     server_name = message.guild.name
-    server_data = data["servers"].get(server_name)
-
-    # Log a warning if no data is found for the server
-    if server_data is None:
-        logger.warning(f"No data found for server: {server_name}")
-        return
-
-    contributors = server_data["contributors"]
-    emoji_dicts = server_data["emoji_dictionary"]
+    emoji_dict = emoji_dicts[server_name]
 
     # Check if any emoji in the message matches an emoji in the emoji dictionary
-    for emoji_id, contributor_uid in emoji_dicts.items():
-        contributor = next(
-            (c for c in contributors if c["uid"] == contributor_uid), None
-        )
+    for emoji_id, user_id in emoji_dict.items():
         if emoji_id in message.content:
-            logger.info("Emoji Found in message! %s", emoji_id)
-            if contributor and str(contributor["uid"]) != str(
-                message.author.id
-            ):  # Convert both IDs to strings before comparing
+            if str(user_id) != str(message.author.id):
                 try:
-                    logger.info(f'Messaging the user, {contributor["uid"]}')
+                    logger.info(f"Messaging the user, {user_id}")
                     message_link = message.jump_url
-                    await send_dm_once(bot, contributor, message_link)
+                    user = await bot.fetch_user(int(user_id))
+                    if user:
+                        await send_dm_once(bot, user, message_link)
                 except discord.errors.NotFound:
-                    logger.warning(f'User not found: {contributor["uid"]}')
+                    logger.warning(f"User not found: {user_id}")
 
 
 async def handle_reaction(
     bot: commands.Bot,
     reaction: Reaction,
     user: User,
-    data: Dict[str, Dict[str, Union[List[Dict[str, str]], Dict[str, str]]]],
-    proposals: List[Dict[str, Union[str, int]]],
+    emoji_dicts: Dict[str, Dict[str, str]],
 ) -> None:
     """
     Handles a new reaction in the server.
-    If a contributors emoji is found, a DM is sent to the contributor.
+    If a contributors emoji is found, a DM is sent to them.
 
-    Args:
-        bot (commands.Bot): The bot instance.
-        reaction (Reaction): The new reaction.
-        user (User): The user who added the reaction.
-        data (Dict): The server data.
-        proposals (List): The list of proposals.
-        new_proposal_emoji (str): The emoji for new proposals.
+    Parameters:
+    bot (commands.Bot): The bot instance
+    reaction (Reaction): The new reaction
+    user (User): The user who added the reaction
+    emoji_dicts (Dict[str, Dict[str, str]]): The dictionary of emoji to user mappings for each server.
     """
-    # Get the server name and data
+    # Get the server name from the reaction
     server_name = reaction.message.guild.name
-    server_data = data["servers"].get(server_name)
 
-    # Log a warning if no data is found for the server
-    if server_data is None:
-        logger.warning(f"No data found for server: {server_name}")
+    # Get emoji dictionary and contributors for the server
+    server_emoji_dict = emoji_dicts.get(server_name)
+
+    if not server_emoji_dict:
+        logger.warning(f"No emoji dictionary found for the server: {server_name}")
         return
 
-    # Ignore reactions from the bot itself
-    if user == bot.user:
-        return
-
-    contributors = server_data["contributors"]
-    emoji_dicts = server_data["emoji_dictionary"]
-
-    # Check if the reaction emoji matches any in the emoji dictionary
     contributor_emoji = next(
         (
             emoji_id
-            for emoji_id, contributor_uid in emoji_dicts.items()
+            for emoji_id, contributor_uid in server_emoji_dict.items()
             if str(reaction.emoji) == emoji_id
         ),
         None,
     )
 
-    # If a matching emoji is found, send a DM to the contributor
     if contributor_emoji:
-        contributor = next(
-            (c for c in contributors if c["uid"] == emoji_dicts[contributor_emoji]),
-            None,
-        )
-        if contributor and str(contributor["uid"]) != str(
-            user.id
-        ):  # Check if the user who reacted is not the contributor
+        contributor_uid = server_emoji_dict.get(contributor_emoji)
+        if contributor_uid and str(contributor_uid) != str(user.id):
             message_link = reaction.message.jump_url
-            logger.info("Emoji react found, DMing contributor")
-            await send_dm_once(bot, contributor, message_link)
+            try:
+                contributor_user = await bot.fetch_user(int(contributor_uid))
+                if contributor_user:
+                    await send_dm_once(bot, contributor_user, message_link)
+            except discord.errors.NotFound:
+                logger.warning(f"User not found: {contributor_uid}")
 
 
 async def process_reaction_add(bot, payload):
