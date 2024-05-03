@@ -145,7 +145,7 @@ async def check_concluded_proposals_task(bot: commands.Bot):
                         proposal_data["draft"]["background"],
                         proposal_data["draft"]["additional"],
                         "Adopt",
-                        "Reasses",
+                        "Reassess",
                         "Abstain",
                     ],
                     check=True,
