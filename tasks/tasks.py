@@ -1,11 +1,18 @@
 """
-tasks module contains the check_events task that is responsible for checking for upcoming events every 60 minutes, and the concluded_proposals_task that is responsible for checking for any proposals that have ended every 5 minutes.
-If there are any new events, they are posted to Discord. Interested users are identified and event details are formatted in a message and sent to the general channel.
+Tasks module is responsible for running tasks at various intervals.
+
+Specifically: 
+- check_events: This task runs every 60 minutes and checks for upcoming events in the next 24 hours.
+- check_concluded_proposals_task: This task runs every 5 minutes and checks ongoing proposals to see if they have ended.
+- check_snapshot_votes: This task runs every 30 minutes and checks for active proposals on Snapshot.
+
+Refer to each tasks docstring for more information.
 """
 
 import time
 import subprocess
 import discord
+import datetime
 import random
 from logger.logger import logger
 from discord.ext import tasks, commands
@@ -14,13 +21,24 @@ from events.event_operations import (
     save_posted_events,
     fetch_upcoming_events,
 )
-from helpers.helpers import get_channel_by_name, update_ongoing_votes_file, fetch_first_open_proposal_url
-from consts.constants import GENERAL_CHANNEL, YES_VOTE, NO_VOTE, ABSTAIN_VOTE, PROPOSAL_CONCLUSION_EMOJIS
+from helpers.helpers import get_channel_by_name, update_ongoing_votes_file, fetch_first_open_proposal_url, fetch_active_proposals
+from consts.constants import GENERAL_CHANNEL, YES_VOTE, NO_VOTE, ABSTAIN_VOTE, PROPOSAL_CONCLUSION_EMOJIS, SNAPSHOT_SPACE, QUORUM_THRESHOLD
 from config.config import ONGOING_VOTES_FILE_PATH
 
+sent_reminders = {}
 
 @tasks.loop(minutes=60)
 async def check_events(bot: commands.Bot) -> None:
+    """
+    This function is a task that runs every 60 minutes. It checks for upcoming events in the next 24 hours.
+    If there are upcoming events, it will post a message in the general channel of the guild.
+
+    Parameters:
+    bot (commands.Bot): The bot instance containing the posted_events attribute.
+
+    Returns:
+    None
+    """
     if not bot.is_ready():
         return
 
@@ -184,3 +202,52 @@ async def check_concluded_proposals_task(bot: commands.Bot):
 
     except Exception as e:
         logger.error(f"An error occurred while checking ongoing proposals: {e}")
+
+@tasks.loop(minutes=20)
+async def check_snapshot_votes(bot: commands.Bot):
+    """
+    Checks for active proposals on Snapshot and sends reminders in specific guild when there are 24 and 12 hours left.
+    
+    Parameters:
+    bot (commands.Bot): The bot instance
+    
+    Returns:
+    None
+    """
+    if not bot.is_ready():
+        logger.info("Bot is not ready.")
+        return
+    
+    logger.info("Checking for active proposals on Snapshot")
+    proposals = fetch_active_proposals()
+
+    if proposals:
+        now = datetime.datetime.now(datetime.timezone.utc)
+
+        for guild in bot.guilds:
+            if guild.name == "Bloom Studio":
+                try:
+                    channel = get_channel_by_name(guild, GENERAL_CHANNEL)
+                except ValueError as e:
+                    logger.error(f"Cannot check snapshot votes for guild {guild}, Error: {e}")
+                    continue  # Continue to check next guild if any
+
+                for proposal in proposals:
+                    proposal_id = proposal['id']
+                    end_val = proposal.get('end')
+                    if isinstance(end_val, int):
+                        end_time = datetime.datetime.fromtimestamp(end_val, datetime.timezone.utc)
+                        remaining = (end_time - now).total_seconds() / 60  # Calculate remaining time in minutes
+                        total_votes = proposal.get('scores_total', 0)
+                        proposal_url = f"https://snapshot.org/#{SNAPSHOT_SPACE}/proposal/{proposal_id}"
+
+                        if proposal_id not in sent_reminders:
+                            sent_reminders[proposal_id] = set()
+
+                        if total_votes < QUORUM_THRESHOLD:
+                            if 1380 <= remaining <= 1500 and '24_hour' not in sent_reminders[proposal_id]:  # Check for 24 hour reminder
+                                await channel.send(f"**Reminder** :hourglass: @here Only 24 hours left to vote on **{proposal['title']}**. \n\n**Cast your vote:** {proposal_url}")
+                                sent_reminders[proposal_id].add('24_hour')
+                            if 690 <= remaining <= 750 and '12_hour' not in sent_reminders[proposal_id]:  # Check for 12 hour reminder
+                                await channel.send(f"**Reminder** :hourglass_flowing_sand: @here Only 12 hours left to vote on **{proposal['title']}**. \n\n**Cast your vote:** {proposal_url}")
+                                sent_reminders[proposal_id].add('12_hour')

@@ -23,6 +23,40 @@ import requests
 from typing import Optional, Dict, Any, List, Tuple
 from logger.logger import logger
 
+# It appears that you cannot query the Snapshot space Quorum settings directly, thus it has been declared in consts/constants.py
+def fetch_active_proposals():
+    url = "https://hub.snapshot.org/graphql"
+    query = """
+    query ActiveProposals {
+      proposals (
+        first: 10,
+        skip: 0,
+        where: {
+          space_in: ["%s"],
+          state: "active"
+        },
+        orderBy: "end",
+        orderDirection: asc
+      ) {
+        id
+        title
+        end
+        scores_total
+      }
+    }
+    """ % constants.SNAPSHOT_SPACE
+    response = requests.post(url, json={"query": query})
+
+    if response.status_code == 200:
+        data = response.json()
+        if 'data' in data and 'proposals' in data['data']:
+            return data['data']['proposals']
+        else:
+            print(f"Unexpected response data: {json.dumps(data, indent=2)}")
+            return None
+    else:
+        print(f"Failed to fetch proposals. Status: {response.status_code}, Response: {response.text}")
+        return None
 
 def fetch_first_open_proposal_url(concluded_proposal_title):
     url = "https://hub.snapshot.org/graphql"

@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Reminder post if Quorum is not currently reached as a task.
+
 - Added helper function to retrieve snapshot URL to include in a discord announcement & thread for easier access to the live vote.
 - Title check to ensure char limit is not exceeded
 - Sync of commands outside of on_ready to prevent rate limits from discord.

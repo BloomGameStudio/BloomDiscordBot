@@ -39,6 +39,7 @@ COLLAB_LAND_CHANNEL = "🤖│collabland-join"
 START_HERE_CHANNEL = "start-here"
 SNAPSHOT_SPACE = "gov.bloomstudio.eth"
 PROPOSAL_CONCLUSION_EMOJIS = ["<a:blob_time:1230791614851584060>", "<a:saber_pepe:1230791417220300800>", "<:inevitable_bloom:1192384857691656212>", ":tada:", ":hibiscus:"]
+QUORUM_THRESHOLD = 25000000
 
 YES_VOTE = "👍"
 NO_VOTE = "👎"

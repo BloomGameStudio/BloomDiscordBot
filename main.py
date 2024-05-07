@@ -7,7 +7,7 @@ import discord
 import os
 import asyncio
 from discord.ext import commands
-from tasks.tasks import check_events, check_concluded_proposals_task
+from tasks.tasks import check_events, check_concluded_proposals_task, check_snapshot_votes
 from helpers.helpers import (
     load_posted_events,
     load_contributors_and_emoji_dicts,
@@ -25,6 +25,7 @@ class Bot:
         # Start the background tasks
         check_events.start(self.bot)
         check_concluded_proposals_task.start(self.bot)
+        check_snapshot_votes.start(self.bot)
 
     async def main(self):
         # Setup the bot with intents
