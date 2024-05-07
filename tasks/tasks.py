@@ -14,18 +14,8 @@ from events.event_operations import (
     save_posted_events,
     fetch_upcoming_events,
 )
-from helpers import (
-    get_channel_by_name,
-    update_ongoing_votes_file,
-    fetch_first_open_proposal_url,
-)
-from consts.constants import (
-    GENERAL_CHANNEL,
-    YES_VOTE,
-    NO_VOTE,
-    ABSTAIN_VOTE,
-    PROPOSAL_CONCLUSION_EMOJIS,
-)
+from helpers.helpers import get_channel_by_name, update_ongoing_votes_file, fetch_first_open_proposal_url
+from consts.constants import GENERAL_CHANNEL, YES_VOTE, NO_VOTE, ABSTAIN_VOTE, PROPOSAL_CONCLUSION_EMOJIS
 from config.config import ONGOING_VOTES_FILE_PATH
 
 
@@ -161,7 +151,7 @@ async def check_concluded_proposals_task(bot: commands.Bot):
             else:
                 result_message += "The vote fails. :disappointed:"
 
-            result_message += f"\n**Adopt:** {proposal_data['yes_count']}\nReassess: {proposal_data['no_count']}\nAbstain: {proposal_data['abstain_count']}"
+            result_message += f"\nAdopt: {proposal_data['yes_count']}\nReasses: {proposal_data['no_count']}\nAbstain: {proposal_data['abstain_count']}"
 
             logger.info(
                 f"Yes vote count: {proposal_data['yes_count']} No vote count: {proposal_data['no_count']} Abstain vote count: {proposal_data['abstain_count']}"

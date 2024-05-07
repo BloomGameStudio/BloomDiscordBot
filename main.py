@@ -7,18 +7,18 @@ import discord
 import os
 import asyncio
 from discord.ext import commands
-from events.events import setup_event_events
 from tasks.tasks import check_events, check_concluded_proposals_task
-from helpers import (
+from helpers.helpers import (
     load_posted_events,
     load_contributors_and_emoji_dicts,
     load_ongoing_votes,
 )
 from cogs.help import HelpCommandCog
 from cogs.contributors import ContributorCommandsCog
-from cogs.events import EventCommandsCog
+from cogs.events import EventsCog
 from cogs.help import HelpCommandCog
 from cogs.gov import GovCommandsCog
+
 
 class Bot:
     async def setup_background_tasks(self):
@@ -45,17 +45,17 @@ class Bot:
             ContributorCommandsCog(self.bot, self.contributors, self.emoji_dicts)
         )
         await self.bot.add_cog(GovCommandsCog(self.bot))
-        await self.bot.add_cog(EventCommandsCog(self.bot))
-
-        # Setup bots events
-        setup_event_events(self.bot)
+        await self.bot.add_cog(
+            EventsCog(self.bot, self.contributors, self.emoji_dicts)
+        )
 
         # Setup and start background tasks
         await self.setup_background_tasks()
 
         # Run the bot
         await self.bot.start(os.getenv("DISCORD_BOT_TOKEN"))
-        
+
+
 if __name__ == "__main__":
     bot = Bot()
-    asyncio.run(bot.main()) 
+    asyncio.run(bot.main())
