@@ -6,6 +6,7 @@ If there are any new events, they are posted to Discord. Interested users are id
 import time
 import subprocess
 import discord
+import random
 from logger.logger import logger
 from discord.ext import tasks, commands
 from events.event_operations import (
@@ -13,8 +14,8 @@ from events.event_operations import (
     save_posted_events,
     fetch_upcoming_events,
 )
-from helpers.helpers import get_channel_by_name, update_ongoing_votes_file
-from consts.constants import GENERAL_CHANNEL, YES_VOTE, NO_VOTE, ABSTAIN_VOTE
+from helpers.helpers import get_channel_by_name, update_ongoing_votes_file, fetch_first_open_proposal_url
+from consts.constants import GENERAL_CHANNEL, YES_VOTE, NO_VOTE, ABSTAIN_VOTE, PROPOSAL_CONCLUSION_EMOJIS
 from config.config import ONGOING_VOTES_FILE_PATH
 
 
@@ -79,6 +80,7 @@ async def check_concluded_proposals_task(bot: commands.Bot):
     """
     if not bot.is_ready():
         return
+
     logger.info("Checking to see if proposals have ended")
     try:
         keys_to_remove = []  # Initialize list to store keys for removal
@@ -88,7 +90,6 @@ async def check_concluded_proposals_task(bot: commands.Bot):
                 continue
 
             channel = bot.get_channel(int(proposal_data["channel_id"]))
-
             if channel:
                 thread = channel.get_thread(int(proposal_data["thread_id"]))
                 if thread:
@@ -111,31 +112,22 @@ async def check_concluded_proposals_task(bot: commands.Bot):
                 )
                 continue
 
-            # Update the Yes/No/Abstain counts from message reactions
             counts = {
-                f"{YES_VOTE}": "yes_count",
-                f"{NO_VOTE}": "no_count",
-                f"{ABSTAIN_VOTE}": "abstain_count",
+                YES_VOTE: "yes_count",
+                NO_VOTE: "no_count",
+                ABSTAIN_VOTE: "abstain_count",
             }
             for reaction in message.reactions:
                 emoji = str(reaction.emoji)
                 if emoji in counts:
-                    # Subtract 1 from the count to account for the bot's own reaction
+                    # Subtract 1 to account for the bots reaction
                     proposal_data[counts[emoji]] = reaction.count - 1
 
-            # Check if the proposal has passed based off the yes and no count, and quorum of 5.
-            if (
-                proposal_data["yes_count"] > proposal_data["no_count"]
-                and proposal_data["yes_count"] >= 5
-            ):
-                passed = True
-            else:
-                passed = False
+            # Check if the proposal has passed based off the yes and no count, and if the yes count is great than or equal to 5
+            passed = proposal_data["yes_count"] > proposal_data["no_count"] and proposal_data["yes_count"] >= 5
+            result_message = f"Vote for **{proposal_data['title']}** has concluded:\n\n"
 
-            # Modify the result message based on the new condition
-            result_message = f"Vote for '{proposal_data['title']}' has concluded:\n\n"
             if passed:
-                # Call the snapshot creation function
                 subprocess.run(
                     [
                         "node",
@@ -145,14 +137,17 @@ async def check_concluded_proposals_task(bot: commands.Bot):
                         proposal_data["draft"]["background"],
                         proposal_data["draft"]["additional"],
                         "Adopt",
-                        "Reasses",
+                        "Reassess",
                         "Abstain",
                     ],
                     check=True,
                 )
-                result_message += (
-                    "The vote passes! :tada: Snapshot proposal will now be created."
-                )
+                # Call the fetch_first_open_proposal_url after subprocess call
+                proposal_url = fetch_first_open_proposal_url(proposal_data["title"])
+                if proposal_url:
+                    result_message += f"The vote passes! {random.choice(PROPOSAL_CONCLUSION_EMOJIS)}\n\nSnapshot proposal has been created: **{proposal_url}**"
+                else:
+                    result_message += f"The vote passes! {random.choice(PROPOSAL_CONCLUSION_EMOJIS)}"
             else:
                 result_message += "The vote fails. :disappointed:"
 
@@ -168,13 +163,23 @@ async def check_concluded_proposals_task(bot: commands.Bot):
             except discord.HTTPException as e:
                 logger.error(f"An error occurred while posting the result message: {e}")
 
-            keys_to_remove.append(proposal_id)  # Add the key for removal
+            guild = channel.guild
+            general_channel = get_channel_by_name(guild, GENERAL_CHANNEL)
 
-        # Remove the concluded votes from ongoing_proposals
+            if general_channel:
+                try:
+                    await general_channel.send(result_message)
+                except discord.HTTPException as e:
+                    logger.error(f"An error occurred while posting the result message: {e}")
+            else:
+                logger.error(f"Unable to find the general channel in guild: {guild.name}")
+
+            keys_to_remove.append(proposal_id)
+
+        # Remove concluded votes
         for key in keys_to_remove:
             bot.ongoing_votes.pop(key)
 
-        # Save to ongoing_votes.json
         update_ongoing_votes_file(bot.ongoing_votes, ONGOING_VOTES_FILE_PATH)
 
     except Exception as e:
