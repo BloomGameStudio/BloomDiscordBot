@@ -14,8 +14,8 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 /**
- * 
- * @param {string} title - The title of the proposal 
+ *
+ * @param {string} title - The title of the proposal
  * @param {*} abstract  - The abstract of the proposal
  * @param {*} background - The background of the proposal
  * @param {*} choices - The choices for the proposal
@@ -29,7 +29,7 @@ async function createProposal(title, abstract, background, additional, choices) 
       throw new Error('Ethereum address or private key not provided in environment variables');
     }
 
-    const provider = new ethers.providers.JsonRpcProvider('https://eth.llamarpc.com');
+    const provider = new ethers.providers.JsonRpcProvider('https://arbitrum.llamarpc.com');
 
     const wallet = new ethers.Wallet(ethPrivateKey, provider);
 
@@ -40,7 +40,7 @@ async function createProposal(title, abstract, background, additional, choices) 
 
     // Define proposal parameters
     const currentTime = Math.floor(new Date().getTime() / 1000); // Current time in seconds
-    const fortyeighthoursinSeconds = 48 * 3600;
+    const seventyTwoHoursInSeconds = 72 * 3600;
 
     const proposalParams = {
       space: 'gov.bloomstudio.eth',
@@ -49,9 +49,9 @@ async function createProposal(title, abstract, background, additional, choices) 
       body: `\n ${abstract}\n\n \n ${background}\n\n \n ${additional}`,
       choices: choices,
       start: currentTime,
-      end: currentTime + fortyeighthoursinSeconds, // 48 hours from now
+      end: currentTime + seventyTwoHoursInSeconds, // 72 hours from now
       snapshot: await provider.getBlockNumber(), // Current block number as snapshot
-      network: '1',
+      network: '4261',
       plugins: JSON.stringify({}),
       app: 'Bloom-Gov' // provide the name of your project using this Snapshot.js integration
     };

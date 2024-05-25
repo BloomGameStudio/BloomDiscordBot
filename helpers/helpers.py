@@ -11,7 +11,7 @@ The functions in this module are:
 - send_dm_once: Sends a direct message to a contributor if they are mentioned in a message.
 - load_posted_events: Load the event IDs that have already been posted to Discord from the JSON file.
 - load_contributors_and_emoji_dicts: Load the contributors and emoji dictionaries from the JSON file.
-
+- fetch_first_open_proposal_url: Fetch the URL of the first open proposal on Snapshot.
 """
 
 import discord
@@ -19,8 +19,46 @@ import json
 import consts.constants as constants
 import config.config as cfg
 import discord
+import requests
 from typing import Optional, Dict, Any, List, Tuple
 from logger.logger import logger
+
+
+def fetch_first_open_proposal_url(concluded_proposal_title):
+    url = "https://hub.snapshot.org/graphql"
+    query = """
+    query {
+        proposals (
+            first: 1,
+            where: {
+                space: "%s",
+                state: "open"
+            },
+            orderBy: "created",
+            orderDirection: desc
+        ) {
+            id
+            title
+        }
+    }
+    """ % (
+        constants.SNAPSHOT_SPACE
+    )
+
+    response = requests.post(url, json={"query": query})
+
+    if response.status_code == 200:
+        data = response.json()
+        proposals = data.get("data", {}).get("proposals", [])
+        if proposals and proposals[0]["title"] == concluded_proposal_title:
+            proposal_id = proposals[0]["id"]
+            return f"https://snapshot.org/#/{constants.SNAPSHOT_SPACE}/proposal/{proposal_id}"
+        else:
+            return None
+    else:
+        raise Exception(
+            f"Query failed with status code {response.status_code}. {response.text}"
+        )
 
 
 def get_channel_by_name(guild: discord.Guild, channel_name: str) -> discord.TextChannel:
@@ -147,7 +185,7 @@ def update_json_file(server_name: str, server_data: Dict[str, Any]) -> None:
 
 
 async def send_dm_once(
-    bot: discord.Client, contributor: Dict[str, str], message_link: str
+    bot: discord.Client, user: discord.User, message_link: str
 ) -> None:
     """
     Sends a direct message to a contributor if they are mentioned in a message.
@@ -157,14 +195,15 @@ async def send_dm_once(
 
     Parameters:
     bot (discord.Client): The bot instance.
-    contributor (Dict[str, str]): The contributor to send a DM to.
+    user (discord.User): The user to send a DM to.
     message_link (str): The link to the message that mentioned the contributor.
     """
-
-    user = await bot.fetch_user(int(contributor["uid"]))
-    if user:
-        dm_message = f"Hello {user.name}! You have been mentioned in this message! {message_link}"
+    logger.info("Attempting to send DM")
+    try:
+        dm_message = f"Hello {user.display_name}! You have been mentioned in this message! {message_link}"
         await user.send(dm_message)
+    except Exception as e:
+        logger.error(e)
 
 
 # Load the stored events from the JSON file

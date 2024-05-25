@@ -25,7 +25,7 @@ from discord.ext import commands
 from consts.types import GOVERNANCE_ID_TYPE, BUDGET_ID_TYPE
 from logger.logger import logger
 from typing import Any, Dict, List, Tuple
-from helpers import update_ongoing_votes_file
+from helpers.helpers import get_channel_by_name, update_ongoing_votes_file
 
 
 proposals: List[Dict[str, Any]] = []
@@ -159,10 +159,10 @@ async def publish_draft(
 
         # Post additional information and start the vote
         await thread.message.reply(f"\n{draft['background']}")
-        await thread.message.reply(f"\n{draft['additional']}")
-        vote_message = await thread.message.reply(
-            f"**{constants.YES_VOTE} Yes**\n**{constants.NO_VOTE} Reassess**\n**{constants.ABSTAIN_VOTE} Abstain**\nVote will conclude in 48h from now."
-        )
+        if 'additional' in draft and draft['additional'].strip():
+            await thread.message.reply(f"\n{draft['additional']}")
+
+        vote_message = await thread.message.reply(f"**{constants.YES_VOTE} Adopt**\n\n**{constants.NO_VOTE} Reassess**\n\n**{constants.ABSTAIN_VOTE} Abstain**\n\nVote will conclude in 48h from now.")
 
         proposal_id = str(thread.message.id)
         proposal_data = {
