@@ -59,7 +59,7 @@ class DeleteProposalSelect(discord.ui.Select):
                 await interaction.response.edit_message(content=" ", embed=e, view=None)
                 return
 
-        await interaction.response.send_message("Proposal not found.")
+        await interaction.response.send_message("Proposal not found.", ephemeral=True)
 
 
 class EditProposalSelect(discord.ui.Select):
@@ -78,7 +78,7 @@ class EditProposalSelect(discord.ui.Select):
                 selected_proposal = proposal
                 break
         else:
-            await interaction.response.send_message("Proposal not found.")
+            await interaction.response.send_message("Proposal not found.", ephemeral=True)
             return
 
         # Open the ProposalModal with the selected proposal

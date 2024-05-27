@@ -31,7 +31,7 @@ class GovCommandsCog(commands.Cog):
             view = ProposalButtonsView(proposals)
             await interaction.response.send_message(
                 "Click create to create a new proposal, edit, or delete to modify an existing proposal.",
-                view=view,
+                view=view, ephemeral=True
             )
         except Exception as e:
             await interaction.response.send_message("Couldn't access proposal data.")
@@ -47,6 +47,6 @@ class GovCommandsCog(commands.Cog):
         try:
             view = discord.ui.View()
             view.add_item(PublishDraftSelect(proposals, self.bot))
-            await interaction.response.send_message("Select a proposal.", view=view)
+            await interaction.response.send_message("Select a proposal.", view=view, ephemeral=True)
         except Exception as e:
-            await interaction.response.send_message("Couldn't access proposal data.")
+            await interaction.response.send_message("Couldn't access proposal data.", ephemeral=True)
