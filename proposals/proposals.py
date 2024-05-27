@@ -102,19 +102,14 @@ async def prepare_draft(
     if draft_type not in [BUDGET_ID_TYPE, GOVERNANCE_ID_TYPE]:
         raise ValueError(f"Invalid draft type: {draft_type}")
 
-    # Temporarily increment ID for use in the title
     if draft_type == BUDGET_ID_TYPE:
         id_type = BUDGET_ID_TYPE
         channel_name = constants.GOVERNANCE_BUDGET_CHANNEL
-        current_budget_id = cfg.config.getint("ID_START_VALUES", "budget_id") + 1
-        title = f"Bloom Budget Proposal (BBP) #{current_budget_id}: {draft['title']}"
+        title = f"Bloom Budget Proposal (BBP): {draft['title']}"
     else:
         id_type = GOVERNANCE_ID_TYPE
         channel_name = constants.GOVERNANCE_CHANNEL
-        current_governance_id = (
-            cfg.config.getint("ID_START_VALUES", "governance_id") + 1
-        )
-        title = f"Bloom Governance Proposal (BGP) #{current_governance_id}: {draft['title']}"
+        title = f"Bloom General Proposal (BGP): {draft['title']}"
 
     return id_type, channel_name, title
 
@@ -151,18 +146,14 @@ async def publish_draft(
             name=title, content=f"{draft['abstract']}"
         )
 
-        # Assume publication is successful and update IDs
-        if id_type == BUDGET_ID_TYPE:
-            cfg.increment_config_id(BUDGET_ID_TYPE, 1)
-        else:
-            cfg.increment_config_id(GOVERNANCE_ID_TYPE, 1)
-
         # Post additional information and start the vote
         await thread.message.reply(f"\n{draft['background']}")
-        if 'additional' in draft and draft['additional'].strip():
+        if "additional" in draft and draft["additional"].strip():
             await thread.message.reply(f"\n{draft['additional']}")
 
-        vote_message = await thread.message.reply(f"**{constants.YES_VOTE} Adopt**\n\n**{constants.NO_VOTE} Reassess**\n\n**{constants.ABSTAIN_VOTE} Abstain**\n\nVote will conclude in 48h from now.")
+        vote_message = await thread.message.reply(
+            f"**{constants.YES_VOTE} Adopt**\n\n**{constants.NO_VOTE} Reassess**\n\n**{constants.ABSTAIN_VOTE} Abstain**\n\nVote will conclude in 48h from now."
+        )
 
         proposal_id = str(thread.message.id)
         proposal_data = {
