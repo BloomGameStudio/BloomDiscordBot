@@ -8,6 +8,7 @@ from proposals.proposals import proposals
 from config import config as cfg
 from consts.types import GOVERNANCE_ID_TYPE, BUDGET_ID_TYPE
 
+
 class ProposalModal(ui.Modal, title="Create/Edit Proposal"):
     name = ui.TextInput(
         label="Proposal title:", style=discord.TextStyle.short, required=True
@@ -52,9 +53,9 @@ class ProposalModal(ui.Modal, title="Create/Edit Proposal"):
 
     def generate_full_title(self, proposal_type, draft_title):
         if proposal_type == "governance":
-            prefix = f"Bloom General Proposal (BGP) #{cfg.current_governance_id}: "
+            prefix = f"Bloom General Proposal (BBP): "
         elif proposal_type == "budget":
-            prefix = f"Bloom Budget Proposal (BBP) #{cfg.current_budget_id}: "
+            prefix = f"Bloom Budget Proposal (BGP): "
         else:
             prefix = ""
 
@@ -75,15 +76,17 @@ class ProposalModal(ui.Modal, title="Create/Edit Proposal"):
         # Validate title length
         if len(full_title) > 100:
             await interaction.response.send_message(
-                'The total length of the proposal title including prefix exceeds 100 characters. Please shorten your title.',
+                "The total length of the proposal title including prefix exceeds 100 characters. Please shorten your title.",
                 ephemeral=True,
             )
             return
 
         # Check if a proposal with the same name already exists
-        if self.proposal is None and any(proposal["title"] == self.name.value for proposal in proposals):
+        if self.proposal is None and any(
+            proposal["title"] == self.name.value for proposal in proposals
+        ):
             await interaction.response.send_message(
-                'A proposal with this name already exists.',
+                "A proposal with this name already exists.",
                 ephemeral=True,
             )
             return
