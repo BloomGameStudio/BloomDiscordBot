@@ -53,9 +53,9 @@ class ProposalModal(ui.Modal, title="Create/Edit Proposal"):
 
     def generate_full_title(self, proposal_type, draft_title):
         if proposal_type == "governance":
-            prefix = f"Bloom Budget Proposal (BBP): "
+            prefix = f"Bloom General Proposal (BBP): "
         elif proposal_type == "budget":
-            prefix = f"Bloom General Proposal (BGP): "
+            prefix = f"Bloom Budget Proposal (BGP): "
         else:
             prefix = ""
 
