@@ -14,9 +14,19 @@ from events.event_operations import (
     save_posted_events,
     fetch_upcoming_events,
 )
-from helpers.helpers import get_channel_by_name, update_ongoing_votes_file, fetch_first_open_proposal_url
-from consts.constants import GENERAL_CHANNEL, YES_VOTE, NO_VOTE, ABSTAIN_VOTE, PROPOSAL_CONCLUSION_EMOJIS
-from config.config import ONGOING_VOTES_FILE_PATH
+from helpers.helpers import (
+    get_channel_by_name,
+    update_ongoing_votes_file,
+    fetch_first_open_proposal_url,
+)
+from consts.constants import (
+    GENERAL_CHANNEL,
+    YES_VOTE,
+    NO_VOTE,
+    ABSTAIN_VOTE,
+    PROPOSAL_CONCLUSION_EMOJIS,
+)
+import config.config as cfg
 
 
 @tasks.loop(minutes=60)
@@ -120,19 +130,37 @@ async def check_concluded_proposals_task(bot: commands.Bot):
             for reaction in message.reactions:
                 emoji = str(reaction.emoji)
                 if emoji in counts:
-                    # Subtract 1 to account for the bots reaction
                     proposal_data[counts[emoji]] = reaction.count - 1
 
-            # Check if the proposal has passed based off the yes and no count, and if the yes count is great than or equal to 5
-            passed = proposal_data["yes_count"] > proposal_data["no_count"] and proposal_data["yes_count"] >= 5
+            passed = (
+                proposal_data["yes_count"] > proposal_data["no_count"]
+                and proposal_data["yes_count"] >= 5
+            )
             result_message = f"Vote for **{proposal_data['title']}** has concluded:\n\n"
 
             if passed:
+                draft_title = proposal_data["draft"]["title"]
+                proposal_type = proposal_data["draft"]["type"]
+
+                if proposal_type == "budget":
+                    current_budget_id = (
+                        cfg.config.getint("ID_START_VALUES", "budget_id") + 1
+                    )
+                    title = f"Bloom Budget Proposal #{current_budget_id}: {draft_title}"
+                elif proposal_type == "governance":
+                    current_governance_id = (
+                        cfg.config.getint("ID_START_VALUES", "governance_id") + 1
+                    )
+                    title = f"Bloom General Proposal #{current_governance_id}: {draft_title}"
+                else:
+                    logger.error(f"Unknown proposal type: {proposal_type}")
+                    continue
+
                 subprocess.run(
                     [
                         "node",
                         "./snapshot/wrapper.js",
-                        proposal_data["title"],
+                        title,
                         proposal_data["draft"]["abstract"],
                         proposal_data["draft"]["background"],
                         proposal_data["draft"]["additional"],
@@ -142,12 +170,17 @@ async def check_concluded_proposals_task(bot: commands.Bot):
                     ],
                     check=True,
                 )
-                # Call the fetch_first_open_proposal_url after subprocess call
-                proposal_url = fetch_first_open_proposal_url(proposal_data["title"])
+                proposal_url = fetch_first_open_proposal_url(title)
                 if proposal_url:
                     result_message += f"The vote passes! {random.choice(PROPOSAL_CONCLUSION_EMOJIS)}\n\nSnapshot proposal has been created: **{proposal_url}**"
+                    if proposal_type == "budget":
+                        cfg.increment_config_id("budget", 1)
+                    elif proposal_type == "governance":
+                        cfg.increment_config_id("governance", 1)
                 else:
-                    result_message += f"The vote passes! {random.choice(PROPOSAL_CONCLUSION_EMOJIS)}"
+                    result_message += (
+                        f"The vote passes! {random.choice(PROPOSAL_CONCLUSION_EMOJIS)}"
+                    )
             else:
                 result_message += "The vote fails. :disappointed:"
 
@@ -157,7 +190,6 @@ async def check_concluded_proposals_task(bot: commands.Bot):
                 f"Yes vote count: {proposal_data['yes_count']} No vote count: {proposal_data['no_count']} Abstain vote count: {proposal_data['abstain_count']}"
             )
 
-            # Post the result message to the corresponding thread
             try:
                 await thread.send(result_message)
             except discord.HTTPException as e:
@@ -170,17 +202,20 @@ async def check_concluded_proposals_task(bot: commands.Bot):
                 try:
                     await general_channel.send(result_message)
                 except discord.HTTPException as e:
-                    logger.error(f"An error occurred while posting the result message: {e}")
+                    logger.error(
+                        f"An error occurred while posting the result message: {e}"
+                    )
             else:
-                logger.error(f"Unable to find the general channel in guild: {guild.name}")
+                logger.error(
+                    f"Unable to find the general channel in guild: {guild.name}"
+                )
 
             keys_to_remove.append(proposal_id)
 
-        # Remove concluded votes
         for key in keys_to_remove:
             bot.ongoing_votes.pop(key)
 
-        update_ongoing_votes_file(bot.ongoing_votes, ONGOING_VOTES_FILE_PATH)
+        update_ongoing_votes_file(bot.ongoing_votes, cfg.ONGOING_VOTES_FILE_PATH)
 
     except Exception as e:
         logger.error(f"An error occurred while checking ongoing proposals: {e}")
