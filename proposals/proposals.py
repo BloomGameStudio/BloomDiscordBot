@@ -105,11 +105,11 @@ async def prepare_draft(
     if draft_type == BUDGET_ID_TYPE:
         id_type = BUDGET_ID_TYPE
         channel_name = constants.GOVERNANCE_BUDGET_CHANNEL
-        title = f"Bloom Budget Proposal (BBP): {draft['title']}"
+        title = f"Bloom Budget Proposal: {draft['title']}"
     else:
         id_type = GOVERNANCE_ID_TYPE
         channel_name = constants.GOVERNANCE_CHANNEL
-        title = f"Bloom General Proposal (BGP): {draft['title']}"
+        title = f"Bloom General Proposal: {draft['title']}"
 
     return id_type, channel_name, title
 
