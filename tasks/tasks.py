@@ -146,12 +146,12 @@ async def check_concluded_proposals_task(bot: commands.Bot):
                     current_budget_id = (
                         cfg.config.getint("ID_START_VALUES", "budget_id") + 1
                     )
-                    title = f"Bloom Budget Proposal (BBP) #{current_budget_id}: {draft_title}"
+                    title = f"Bloom Budget Proposal #{current_budget_id}: {draft_title}"
                 elif proposal_type == "governance":
                     current_governance_id = (
                         cfg.config.getint("ID_START_VALUES", "governance_id") + 1
                     )
-                    title = f"Bloom General Proposal (BGP) #{current_governance_id}: {draft_title}"
+                    title = f"Bloom General Proposal #{current_governance_id}: {draft_title}"
                 else:
                     logger.error(f"Unknown proposal type: {proposal_type}")
                     continue
