@@ -1,10 +1,12 @@
 /**
  * This file contains the code for creating a proposal on Snapshot.
- * It uses the ethers.js library to interact with the Ethereum blockchain.
+ * It uses the ethers.js library to interact with the blockchain.
  * The proposal is created using the Snapshot.js library.
- * The environment variables ETH_ADDRESS and ETH_PRIVATE_KEY must be set in a .env file.
+ * The environment variables ETH_ADDRESS, ETH_PRIVATE_KEY, PRIMARY_RPC, and SECONDARY_RPC must be set in a .env file.
  * The ETH_ADDRESS is the address of the account that will create the proposal.
  * The ETH_PRIVATE_KEY is the private key of the ETH_ADDRESS account.
+ * The PRIMARY_RPC is the primary RPC URL you wish to use for submitting proposals.
+ * The SECONDARY_RPC is the secondary RPC URL you wish to use for submitting proposals.
  * wrapper.js is responsible for calling this function with the correct arguments.
  */
 const { ethers } = require('ethers');
@@ -21,48 +23,93 @@ dotenv.config();
  * @param {*} choices - The choices for the proposal
  */
 async function createProposal(title, abstract, background, additional, choices) {
-  try {
-    const ethAddress = process.env.ETH_ADDRESS;
-    const ethPrivateKey = process.env.ETH_PRIVATE_KEY;
+  const ethAddress = process.env.ETH_ADDRESS;
+  const ethPrivateKey = process.env.ETH_PRIVATE_KEY;
+  const primaryRpc = process.env.PRIMARY_RPC;
+  const secondaryRpc = process.env.SECONDARY_RPC;
 
-    if (!ethAddress || !ethPrivateKey) {
-      throw new Error('Ethereum address or private key not provided in environment variables');
+  const maxRetries = 3; // Number of retry attempts
+  const initialRetryDelay = 5000; // Initial delay between retries in milliseconds (e.g., 5000ms = 5s)
+
+  if (!ethAddress || !ethPrivateKey) {
+    throw new Error('Ethereum address or private key not provided in environment variables');
+  }
+
+  async function submitProposal(providerRpc) {
+    try {
+      const provider = new ethers.providers.JsonRpcProvider(providerRpc);
+      const wallet = new ethers.Wallet(ethPrivateKey, provider);
+
+      const hub = 'https://hub.snapshot.org';
+
+      // Initialize Snapshot client
+      const client = new snapshot.Client712(hub);
+
+      // Define proposal parameters
+      const currentTime = Math.floor(new Date().getTime() / 1000); // Current time in seconds
+      const seventyTwoHoursInSeconds = 72 * 3600;
+
+      const proposalParams = {
+        space: 'gov.bloomstudio.eth',
+        type: 'weighted', // define the voting system
+        title: title,
+        body: `\n ${abstract}\n\n \n ${background}\n\n \n ${additional}`,
+        choices: choices,
+        start: currentTime,
+        end: currentTime + seventyTwoHoursInSeconds, // 72 hours from now
+        snapshot: await provider.getBlockNumber(), // Current block number as snapshot
+        network: '42161',
+        plugins: JSON.stringify({}),
+        app: 'Gov' // provide the name of your project using this Snapshot.js integration
+      };
+
+      // Submit the proposal
+      const receipt = await client.proposal(wallet, ethAddress, proposalParams);
+
+      // Log the receipt details
+      console.log('Proposal submitted. Receipt:', receipt);
+      return true; // Indicate success
+    } catch (error) {
+      console.error(`Error creating proposal with RPC ${providerRpc}:`, error);
+      return false; // Indicate failure
+    }
+  }
+
+  // Delay function
+  function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  // Attempt to submit the proposal with a retry mechanism
+  let attempt = 0;
+  let success = false;
+  let retryDelay = initialRetryDelay;
+
+  while (attempt < maxRetries && !success) {
+    attempt++;
+    console.log(`Attempt ${attempt} to submit proposal...`);
+
+    // Try using the primary RPC
+    success = await submitProposal(primaryRpc);
+
+    // If primary RPC fails, try using the secondary RPC
+    if (!success) {
+      console.log('Retrying with secondary RPC...');
+      success = await submitProposal(secondaryRpc);
     }
 
-    const provider = new ethers.providers.JsonRpcProvider('https://arbitrum.llamarpc.com');
+    if (!success) {
+      console.log(`Attempt ${attempt} failed.`);
+      if (attempt < maxRetries) {
+        console.log(`Waiting for ${retryDelay / 1000} seconds before retrying...`);
+        await delay(retryDelay); // Wait before the next attempt
+        retryDelay *= 2; // Exponential backoff
+      }
+    }
+  }
 
-    const wallet = new ethers.Wallet(ethPrivateKey, provider);
-
-    const hub = 'https://hub.snapshot.org';
-
-    // Initialize Snapshot client
-    const client = new snapshot.Client712(hub);
-
-    // Define proposal parameters
-    const currentTime = Math.floor(new Date().getTime() / 1000); // Current time in seconds
-    const seventyTwoHoursInSeconds = 72 * 3600;
-
-    const proposalParams = {
-      space: 'gov.bloomstudio.eth',
-      type: 'weighted', // define the voting system
-      title: title,
-      body: `\n ${abstract}\n\n \n ${background}\n\n \n ${additional}`,
-      choices: choices,
-      start: currentTime,
-      end: currentTime + seventyTwoHoursInSeconds, // 72 hours from now
-      snapshot: await provider.getBlockNumber(), // Current block number as snapshot
-      network: '4261',
-      plugins: JSON.stringify({}),
-      app: 'Bloom-Gov' // provide the name of your project using this Snapshot.js integration
-    };
-
-    // Submit the proposal
-    const receipt = await client.proposal(wallet, ethAddress, proposalParams);
-
-    // Log the receipt details
-    console.log('Proposal submitted. Receipt:', receipt);
-  } catch (error) {
-    console.error('Error creating proposal:', error);
+  if (!success) {
+    console.error('Failed to submit proposal after multiple attempts with both RPC endpoints');
   }
 }
 
