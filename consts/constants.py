@@ -38,7 +38,7 @@ GOVERNANCE_TALK_CHANNEL = "🐬│governance"
 COLLAB_LAND_CHANNEL = "🤖│collabland-join"
 START_HERE_CHANNEL = "start-here"
 SNAPSHOT_SPACE = "gov.bloomstudio.eth"
-PROPOSAL_CONCLUSION_EMOJIS = ["<a:blob_time:1230791614851584060>", "<a:saber_pepe:1230791417220300800>", "<:inevitable_bloom:1192384857691656212>", ":tada:", ":hibiscus:"]
+PROPOSAL_CONCLUSION_EMOJIS = ["<a:blob_time:1230791614851584060>", "<a:saber_pepe:1230791417220300800>", "<:inevitable_bloom:1250212480785842248>", ":tada:", ":hibiscus:"]
 
 YES_VOTE = "👍"
 NO_VOTE = "👎"
