@@ -16,3 +16,4 @@ const receipt = await client.proposal(web3, account, {
   plugins: JSON.stringify({}),
   app: 'my-app' // provide the name of your project which is using this snapshot.js integration
 });
+
