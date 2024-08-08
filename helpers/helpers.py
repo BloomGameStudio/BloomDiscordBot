@@ -20,12 +20,75 @@ import consts.constants as constants
 import config.config as cfg
 import discord
 import requests
+import os
 from typing import Optional, Dict, Any, List, Tuple
 from logger.logger import logger
+from web3 import Web3
+
+
+def fetch_XP_Tokens():
+    web3 = Web3(Web3.HTTPProvider(os.getenv("PRIMARY_RPC")))
+
+    # Check if we are connected to the node
+    if not web3.is_connected():
+        logger.error("Failed to connect to primary RPC, let's try the second")
+        web3 = Web3(Web3.HTTPProvider(os.getenv("SECONDARY_RPC")))
+        if not web3.is_connected():
+            # Let's retry
+            logger.error("Failed to connect to secondary RPC, shutting down")
+            exit(1)
+
+    token_abi = [
+        {
+            "constant": True,
+            "inputs": [],
+            "name": "totalSupply",
+            "outputs": [{"name": "", "type": "uint256"}],
+            "type": "function",
+        }
+    ]
+
+    token_addresses = [
+        "0x206d247F61cb82B9711318381cDb7Bc5039d2A2c",
+        "0x4cd06ada7d8564830018000d784c69bd542b1e6a",
+        "0x57d3a929fdc4faf1b35e7092d9dee7af097afb6a",
+    ]
+
+    # Initialize total supply counter
+    total_supply_sum = 0
+
+    # Loop over each token address and fetch the total supply
+    for address in token_addresses:
+        try:
+            # Convert to checksum address
+            checksum_address = Web3.to_checksum_address(address)
+            token_contract = web3.eth.contract(address=checksum_address, abi=token_abi)
+            total_supply = token_contract.functions.totalSupply().call()
+            total_supply_in_tokens = int(
+                web3.from_wei(total_supply, "ether")
+            )  # Convert to integer
+            if total_supply_in_tokens is not None:
+                logger.info(
+                    f"The total supply of the token at address {address} is {total_supply_in_tokens} tokens."
+                )
+                total_supply_sum += total_supply_in_tokens
+        except Exception as e:
+            logger.error(
+                f"An error occurred while fetching the total supply for address {address}: {str(e)}"
+            )
+
+    # Calculate 25% of the total supply
+    total_supply_25_percent = total_supply_sum * 0.25
+
+    # Log the results to the console
+    logger.info(f"The total supply of all tokens is {total_supply_sum} tokens.")
+    logger.info(f"25% of the total supply is {int(total_supply_25_percent)} tokens.")
+
+    return total_supply_sum, int(total_supply_25_percent)
 
 
 def fetch_first_open_proposal_url(concluded_proposal_title):
-    url = "https://hub.snapshot.org/graphql"
+    url = "https://testnet.hub.snapshot.org/graphql"
     query = """
     query {
         proposals (
@@ -52,7 +115,7 @@ def fetch_first_open_proposal_url(concluded_proposal_title):
         proposals = data.get("data", {}).get("proposals", [])
         if proposals and proposals[0]["title"] == concluded_proposal_title:
             proposal_id = proposals[0]["id"]
-            return f"https://snapshot.org/#/{constants.SNAPSHOT_SPACE}/proposal/{proposal_id}"
+            return f"https://testnet.snapshot.org/#/{constants.SNAPSHOT_SPACE}/proposal/{proposal_id}"
         else:
             return None
     else:
