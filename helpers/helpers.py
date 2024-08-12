@@ -27,15 +27,22 @@ from web3 import Web3
 
 
 def fetch_XP_Tokens():
-    web3 = Web3(Web3.HTTPProvider(os.getenv("PRIMARY_RPC")))
+    # Fetch RPC URLs from environment variables
+    primary_rpc = os.getenv("PRIMARY_RPC")
+    secondary_rpc = os.getenv("SECONDARY_RPC")
+
+    if not primary_rpc or not secondary_rpc:
+        logger.error("RPC URLs not set in environment variables.")
+        return
+
+    web3 = Web3(Web3.HTTPProvider(primary_rpc))
 
     # Check if we are connected to the node
     if not web3.is_connected():
-        logger.error("Failed to connect to primary RPC, let's try the second")
-        web3 = Web3(Web3.HTTPProvider(os.getenv("SECONDARY_RPC")))
+        logger.error("Failed to connect to PRIMARY_RPC, let's try the SECONDARY_RPC")
+        web3 = Web3(Web3.HTTPProvider(secondary_rpc))
         if not web3.is_connected():
-            # Let's retry
-            logger.error("Failed to connect to secondary RPC, shutting down")
+            logger.error("Failed to connect to SECONDARY_RPC, shutting down")
             exit(1)
 
     token_abi = [
@@ -88,7 +95,7 @@ def fetch_XP_Tokens():
 
 
 def fetch_first_open_proposal_url(concluded_proposal_title):
-    url = "https://testnet.hub.snapshot.org/graphql"
+    url = "https://hub.snapshot.org/graphql"
     query = """
     query {
         proposals (
@@ -115,7 +122,7 @@ def fetch_first_open_proposal_url(concluded_proposal_title):
         proposals = data.get("data", {}).get("proposals", [])
         if proposals and proposals[0]["title"] == concluded_proposal_title:
             proposal_id = proposals[0]["id"]
-            return f"https://testnet.snapshot.org/#/{constants.SNAPSHOT_SPACE}/proposal/{proposal_id}"
+            return f"https://snapshot.org/#/{constants.SNAPSHOT_SPACE}/proposal/{proposal_id}"
         else:
             return None
     else:

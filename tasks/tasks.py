@@ -145,12 +145,20 @@ async def check_concluded_proposals_task(bot: commands.Bot):
                 logger.info(f"Total supply of all tokens: {total_supply_sum}")
                 logger.info(f"25% of total supply: {total_supply_25_percent}")
 
-                # Call the JavaScript script to update the Snapshot space settings
+                # Modify space settings
                 quorum_value = str(total_supply_25_percent)
-                subprocess.run(
-                    ["node", "./snapshot/modify_space.js", quorum_value],
-                    check=True,
-                )
+                modify_space_command = [
+                    "node",
+                    "./snapshot/modify_space.js",
+                    quorum_value,
+                ]
+
+                try:
+                    subprocess.run(modify_space_command, check=True)
+                    logger.info("Space settings modified successfully.")
+                except subprocess.CalledProcessError as e:
+                    logger.error(f"Error modifying space settings: {e}")
+                    continue
 
                 draft_title = proposal_data["draft"]["title"]
                 proposal_type = proposal_data["draft"]["type"]
@@ -169,20 +177,26 @@ async def check_concluded_proposals_task(bot: commands.Bot):
                     logger.error(f"Unknown proposal type: {proposal_type}")
                     continue
 
-                subprocess.run(
-                    [
-                        "node",
-                        "./snapshot/wrapper.js",
-                        title,
-                        proposal_data["draft"]["abstract"],
-                        proposal_data["draft"]["background"],
-                        proposal_data["draft"]["additional"],
-                        "Adopt",
-                        "Reassess",
-                        "Abstain",
-                    ],
-                    check=True,
-                )
+                # Create snapshot proposal by calling the wrapper script
+                proposal_command = [
+                    "node",
+                    "./snapshot/wrapper.js",
+                    title,
+                    proposal_data["draft"]["abstract"],
+                    proposal_data["draft"]["background"],
+                    proposal_data["draft"]["additional"],
+                    "Adopt",
+                    "Reassess",
+                    "Abstain",
+                ]
+
+                try:
+                    subprocess.run(proposal_command, check=True)
+                    logger.info("Snapshot proposal created successfully.")
+                except subprocess.CalledProcessError as e:
+                    logger.error(f"Error creating snapshot proposal: {e}")
+                    continue
+
                 proposal_url = fetch_first_open_proposal_url(title)
                 if proposal_url:
                     result_message += f"The vote passes! {random.choice(PROPOSAL_CONCLUSION_EMOJIS)}\n\nSnapshot proposal has been created: **{proposal_url}**"
@@ -228,7 +242,11 @@ async def check_concluded_proposals_task(bot: commands.Bot):
         for key in keys_to_remove:
             bot.ongoing_votes.pop(key)
 
+        logger.info("Removing concluded proposals from ongoing votes.")
         update_ongoing_votes_file(bot.ongoing_votes, cfg.ONGOING_VOTES_FILE_PATH)
+
+        # Log the current state of ongoing_votes to ensure it was updated
+        logger.info(f"Current ongoing_votes: {bot.ongoing_votes}")
 
     except Exception as e:
         logger.error(f"An error occurred while checking ongoing proposals: {e}")
