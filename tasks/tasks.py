@@ -18,7 +18,9 @@ from helpers.helpers import (
     get_channel_by_name,
     update_ongoing_votes_file,
     fetch_first_open_proposal_url,
-    fetch_XP_Tokens,
+    fetch_XP_quorum,
+    modify_space_settings,
+    create_snapshot_proposal
 )
 from consts.constants import (
     GENERAL_CHANNEL,
@@ -140,23 +142,14 @@ async def check_concluded_proposals_task(bot: commands.Bot):
             result_message = f"Vote for **{proposal_data['title']}** has concluded:\n\n"
 
             if passed:
-                # Fetch total supply and 25% of it before calling the subprocess
-                total_supply_sum, total_supply_25_percent = fetch_XP_Tokens()
-                logger.info(f"Total supply of all tokens: {total_supply_sum}")
-                logger.info(f"25% of total supply: {total_supply_25_percent}")
+                # Fetch the quorum value
+                quorum_value = fetch_XP_quorum()
 
-                # Modify space settings
-                quorum_value = str(total_supply_25_percent)
-                modify_space_command = [
-                    "node",
-                    "./snapshot/modify_space.js",
-                    quorum_value,
-                ]
+                logger.info(f"Quorum value to be set: {quorum_value}")
 
                 try:
-                    subprocess.run(modify_space_command, check=True)
-                    logger.info("Space settings modified successfully.")
-                except subprocess.CalledProcessError as e:
+                    modify_space_settings(str(quorum_value))
+                except Exception as e:
                     logger.error(f"Error modifying space settings: {e}")
                     continue
 
@@ -177,23 +170,9 @@ async def check_concluded_proposals_task(bot: commands.Bot):
                     logger.error(f"Unknown proposal type: {proposal_type}")
                     continue
 
-                # Create snapshot proposal by calling the wrapper script
-                proposal_command = [
-                    "node",
-                    "./snapshot/wrapper.js",
-                    title,
-                    proposal_data["draft"]["abstract"],
-                    proposal_data["draft"]["background"],
-                    proposal_data["draft"]["additional"],
-                    "Adopt",
-                    "Reassess",
-                    "Abstain",
-                ]
-
                 try:
-                    subprocess.run(proposal_command, check=True)
-                    logger.info("Snapshot proposal created successfully.")
-                except subprocess.CalledProcessError as e:
+                    create_snapshot_proposal(proposal_data, title)
+                except Exception as e:
                     logger.error(f"Error creating snapshot proposal: {e}")
                     continue
 

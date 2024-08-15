@@ -20,20 +20,63 @@ import consts.constants as constants
 import config.config as cfg
 import discord
 import requests
+import subprocess
 import os
 from typing import Optional, Dict, Any, List, Tuple
 from logger.logger import logger
 from web3 import Web3
 
 
-def fetch_XP_Tokens():
+def modify_space_settings(quorum_value):
+    modify_space_command = [
+        "node",
+        "./snapshot/modify_space.js",
+        quorum_value,
+    ]
+
+    try:
+        subprocess.run(modify_space_command, check=True)
+        logger.info("Space settings modified successfully.")
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Error modifying space settings: {e}")
+        raise
+
+
+def create_snapshot_proposal(proposal_data, title):
+    proposal_command = [
+        "node",
+        "./snapshot/wrapper.js",
+        title,
+        proposal_data["draft"]["abstract"],
+        proposal_data["draft"]["background"],
+        proposal_data["draft"]["additional"],
+        "Adopt",
+        "Reassess",
+        "Abstain",
+    ]
+
+    try:
+        subprocess.run(proposal_command, check=True)
+        logger.info("Snapshot proposal created successfully.")
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Error creating snapshot proposal: {e}")
+        raise
+
+
+def fetch_XP_total_supply() -> int:
+    """
+    Fetch the total supply of tokens across all specified addresses and convert it to ether.
+
+    Returns:
+    int: The total supply of all tokens converted to ether.
+    """
     # Fetch RPC URLs from environment variables
     primary_rpc = os.getenv("PRIMARY_RPC")
     secondary_rpc = os.getenv("SECONDARY_RPC")
 
     if not primary_rpc or not secondary_rpc:
         logger.error("RPC URLs not set in environment variables.")
-        return
+        return None
 
     web3 = Web3(Web3.HTTPProvider(primary_rpc))
 
@@ -64,34 +107,52 @@ def fetch_XP_Tokens():
     # Initialize total supply counter
     total_supply_sum = 0
 
-    # Loop over each token address and fetch the total supply
+    # Loop over each token address and fetch the total supply, converting it to ether
     for address in token_addresses:
         try:
             # Convert to checksum address
             checksum_address = Web3.to_checksum_address(address)
             token_contract = web3.eth.contract(address=checksum_address, abi=token_abi)
             total_supply = token_contract.functions.totalSupply().call()
-            total_supply_in_tokens = int(
-                web3.from_wei(total_supply, "ether")
-            )  # Convert to integer
-            if total_supply_in_tokens is not None:
+            if total_supply is not None:
+                total_supply_in_ether = web3.from_wei(total_supply, "ether")
                 logger.info(
-                    f"The total supply of the token at address {address} is {total_supply_in_tokens} tokens."
+                    f"The total supply of the token at address {address} is {total_supply_in_ether}."
                 )
-                total_supply_sum += total_supply_in_tokens
+                total_supply_sum += total_supply_in_ether
         except Exception as e:
             logger.error(
                 f"An error occurred while fetching the total supply for address {address}: {str(e)}"
             )
 
-    # Calculate 25% of the total supply
-    total_supply_25_percent = total_supply_sum * 0.25
+    # Log the total supply result
+    logger.info(f"The total supply of all tokens is {total_supply_sum} ether.")
 
-    # Log the results to the console
-    logger.info(f"The total supply of all tokens is {total_supply_sum} tokens.")
-    logger.info(f"25% of the total supply is {int(total_supply_25_percent)} tokens.")
+    return total_supply_sum
 
-    return total_supply_sum, int(total_supply_25_percent)
+
+def fetch_XP_quorum(percentage: int = 25) -> int:
+    """
+    Calculate a percentage of the total supply of tokens.
+
+    Parameters:
+    percentage (int): The percentage of the total supply to calculate (default is 25%).
+
+    Returns:
+    int: The calculated percentage of the total supply as an integer.
+    """
+    total_supply_sum = fetch_XP_total_supply()
+
+    if total_supply_sum is None:
+        logger.error("Failed to fetch total supply.")
+        return None
+
+    # Calculate the specified percentage of the total supply
+    quorum = (total_supply_sum * percentage) // 100
+
+    logger.info(f"{percentage}% of the total supply is {quorum}.")
+
+    return quorum
 
 
 def fetch_first_open_proposal_url(concluded_proposal_title):

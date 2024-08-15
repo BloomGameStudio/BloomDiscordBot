@@ -1,3 +1,12 @@
+/**
+ * This file contains the code for modifying the space settings on Snapshot.
+ * It uses the ethers.js library to interact with the blockchain and the Snapshot.js library to update space settings.
+ * The environment variables ETH_PRIVATE_KEY, PRIMARY_RPC, and SECONDARY_RPC must be set in a .env file.
+ * The ETH_PRIVATE_KEY is the private key of the account that will modify the space settings.
+ * The PRIMARY_RPC is the primary RPC URL used for submitting the space settings.
+ * The SECONDARY_RPC is the secondary RPC URL used as a fallback if the primary RPC fails.
+ */
+
 const { ethers } = require('ethers');
 const snapshot = require('@snapshot-labs/snapshot.js');
 
@@ -12,7 +21,9 @@ if (!ethPrivateKey) {
   throw new Error('Private key not provided in environment variables');
 }
 
-async function submitSpaceSettings(providerRpc) {
+const quorumValue = parseInt(process.argv[2]);
+
+async function submitSpaceSettings(providerRpc, quorumValue) {
   try {
     const provider = new ethers.providers.JsonRpcProvider(providerRpc);
     const wallet = new ethers.Wallet(ethPrivateKey, provider);
@@ -36,7 +47,7 @@ async function submitSpaceSettings(providerRpc) {
       plugins: {},
       children: [],
       voting: {
-        quorum: parseInt(process.argv[2]),  // Use the provided quorum value
+        quorum: quorumValue,
         hideAbstain: false
       },
       strategies: [
@@ -91,7 +102,7 @@ async function submitSpaceSettings(providerRpc) {
     console.log('Settings JSON String:', settingsString);
 
     const receipt = await client.space(wallet, account, {
-      space: "testnet-1.eth",
+      space: "gov.bloomstudio.eth",
       settings: settingsString
     });
 
@@ -119,12 +130,12 @@ async function modifySpace() {
     console.log(`Attempt ${attempt} to update space settings...`);
 
     // Try using the primary RPC
-    success = await submitSpaceSettings(primaryRpc);
+    success = await submitSpaceSettings(primaryRpc, quorumValue);
 
     // If primary RPC fails, try using the secondary RPC
     if (!success) {
       console.log('Retrying with secondary RPC...');
-      success = await submitSpaceSettings(secondaryRpc);
+      success = await submitSpaceSettings(secondaryRpc, quorumValue);
     }
 
     if (!success) {
@@ -144,3 +155,4 @@ async function modifySpace() {
 
 // Call the function
 modifySpace().catch(console.error);
+
