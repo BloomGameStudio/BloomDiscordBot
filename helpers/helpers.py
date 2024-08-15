@@ -28,6 +28,16 @@ from web3 import Web3
 
 
 def modify_space_settings(quorum_value):
+    """
+    Submit a command to modify the space settings on Snapshot.
+    Called from tasks/tasks.py.
+
+    Parameters:
+    quorum_value (str): The value to set the quorum to.
+
+    Raises:
+    subprocess.CalledProcessError: If an error occurs while modifying the space
+    """
     modify_space_command = [
         "node",
         "./snapshot/modify_space.js",
@@ -43,6 +53,17 @@ def modify_space_settings(quorum_value):
 
 
 def create_snapshot_proposal(proposal_data, title):
+    """
+    Create a Snapshot proposal using the proposal data.
+    Called from tasks/tasks.py.
+
+    Parameters:
+    proposal_data (Dict): The proposal data to create the proposal with.
+    title (str): The title of the proposal.
+
+    Raises:
+    subprocess.CalledProcessError: If an error occurs while creating the proposal
+    """
     proposal_command = [
         "node",
         "./snapshot/wrapper.js",
@@ -126,7 +147,7 @@ def fetch_XP_total_supply() -> int:
             )
 
     # Log the total supply result
-    logger.info(f"The total supply of all tokens is {total_supply_sum} ether.")
+    logger.info(f"The total supply of all tokens is {total_supply_sum}.")
 
     return total_supply_sum
 
