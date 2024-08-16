@@ -18,6 +18,9 @@ from helpers.helpers import (
     get_channel_by_name,
     update_ongoing_votes_file,
     fetch_first_open_proposal_url,
+    fetch_XP_quorum,
+    modify_space_settings,
+    create_snapshot_proposal
 )
 from consts.constants import (
     GENERAL_CHANNEL,
@@ -139,6 +142,17 @@ async def check_concluded_proposals_task(bot: commands.Bot):
             result_message = f"Vote for **{proposal_data['title']}** has concluded:\n\n"
 
             if passed:
+                # Fetch the quorum value
+                quorum_value = fetch_XP_quorum()
+
+                logger.info(f"Quorum value to be set: {quorum_value}")
+
+                try:
+                    modify_space_settings(str(quorum_value))
+                except Exception as e:
+                    logger.error(f"Error modifying space settings: {e}")
+                    continue
+
                 draft_title = proposal_data["draft"]["title"]
                 proposal_type = proposal_data["draft"]["type"]
 
@@ -156,20 +170,12 @@ async def check_concluded_proposals_task(bot: commands.Bot):
                     logger.error(f"Unknown proposal type: {proposal_type}")
                     continue
 
-                subprocess.run(
-                    [
-                        "node",
-                        "./snapshot/wrapper.js",
-                        title,
-                        proposal_data["draft"]["abstract"],
-                        proposal_data["draft"]["background"],
-                        proposal_data["draft"]["additional"],
-                        "Adopt",
-                        "Reassess",
-                        "Abstain",
-                    ],
-                    check=True,
-                )
+                try:
+                    create_snapshot_proposal(proposal_data, title)
+                except Exception as e:
+                    logger.error(f"Error creating snapshot proposal: {e}")
+                    continue
+
                 proposal_url = fetch_first_open_proposal_url(title)
                 if proposal_url:
                     result_message += f"The vote passes! {random.choice(PROPOSAL_CONCLUSION_EMOJIS)}\n\nSnapshot proposal has been created: **{proposal_url}**"
@@ -215,7 +221,11 @@ async def check_concluded_proposals_task(bot: commands.Bot):
         for key in keys_to_remove:
             bot.ongoing_votes.pop(key)
 
+        logger.info("Removing concluded proposals from ongoing votes.")
         update_ongoing_votes_file(bot.ongoing_votes, cfg.ONGOING_VOTES_FILE_PATH)
+
+        # Log the current state of ongoing_votes to ensure it was updated
+        logger.info(f"Current ongoing_votes: {bot.ongoing_votes}")
 
     except Exception as e:
         logger.error(f"An error occurred while checking ongoing proposals: {e}")

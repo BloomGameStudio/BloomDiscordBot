@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added helper func to calculate quorum requirement, corresponding .js code to update Snapshot space prior to calling proposal submission subprocess
+
 - RPC Fallback and timeout to navigate some client errors that may occur
 
 - handling if optional textInputs are empty
