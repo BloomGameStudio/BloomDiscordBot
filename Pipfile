@@ -8,6 +8,7 @@ name = "pypi"
 "pytz" = "*"
 "requests" = "*"
 "configparser" = "*"
+"Web3" = "*"
 
 [dev-packages]
 
