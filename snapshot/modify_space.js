@@ -42,7 +42,7 @@ async function submitSpaceSettings(providerRpc, quorumValue) {
       private: false,
       admins: [],
       moderators: [],
-      members: ["0x5B3eADC33DF96e51ba69907112f32eA863870FD4"],
+      members: ["0xd80e4ef6169e5f737430be8a845237befb9a0adb"],
       categories: [],
       plugins: {},
       children: [],
