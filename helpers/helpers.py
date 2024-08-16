@@ -30,7 +30,6 @@ from web3 import Web3
 def modify_space_settings(quorum_value):
     """
     Submit a command to modify the space settings on Snapshot.
-    Called from tasks/tasks.py.
 
     Parameters:
     quorum_value (str): The value to set the quorum to.
@@ -55,7 +54,6 @@ def modify_space_settings(quorum_value):
 def create_snapshot_proposal(proposal_data, title):
     """
     Create a Snapshot proposal using the proposal data.
-    Called from tasks/tasks.py.
 
     Parameters:
     proposal_data (Dict): The proposal data to create the proposal with.
@@ -91,7 +89,7 @@ def fetch_XP_total_supply() -> int:
     Returns:
     int: The total supply of all tokens converted to ether.
     """
-    # Fetch RPC URLs from environment variables
+
     primary_rpc = os.getenv("PRIMARY_RPC")
     secondary_rpc = os.getenv("SECONDARY_RPC")
 
@@ -101,7 +99,6 @@ def fetch_XP_total_supply() -> int:
 
     web3 = Web3(Web3.HTTPProvider(primary_rpc))
 
-    # Check if we are connected to the node
     if not web3.is_connected():
         logger.error("Failed to connect to PRIMARY_RPC, let's try the SECONDARY_RPC")
         web3 = Web3(Web3.HTTPProvider(secondary_rpc))
@@ -125,13 +122,10 @@ def fetch_XP_total_supply() -> int:
         "0x57d3a929fdc4faf1b35e7092d9dee7af097afb6a",
     ]
 
-    # Initialize total supply counter
     total_supply_sum = 0
 
-    # Loop over each token address and fetch the total supply, converting it to ether
     for address in token_addresses:
         try:
-            # Convert to checksum address
             checksum_address = Web3.to_checksum_address(address)
             token_contract = web3.eth.contract(address=checksum_address, abi=token_abi)
             total_supply = token_contract.functions.totalSupply().call()
@@ -146,7 +140,6 @@ def fetch_XP_total_supply() -> int:
                 f"An error occurred while fetching the total supply for address {address}: {str(e)}"
             )
 
-    # Log the total supply result
     logger.info(f"The total supply of all tokens is {total_supply_sum}.")
 
     return total_supply_sum
@@ -168,7 +161,6 @@ def fetch_XP_quorum(percentage: int = 25) -> int:
         logger.error("Failed to fetch total supply.")
         return None
 
-    # Calculate the specified percentage of the total supply
     quorum = (total_supply_sum * percentage) // 100
 
     logger.info(f"{percentage}% of the total supply is {quorum}.")
@@ -229,16 +221,14 @@ def get_channel_by_name(guild: discord.Guild, channel_name: str) -> discord.Text
     ValueError: If no channel containing the channel_name exists in the guild or its fallback mapping.
     """
 
-    # try to find the preferred channel name directly
     for channel in guild.channels:
         if isinstance(channel, discord.TextChannel) and channel.name == channel_name:
             return channel
 
-    # If the preferred channel is not found, try to use the fallback mapping
     fallback_channel_name = constants.CONSTANT_FALLBACK_MAPPING.get(channel_name)
     if (
         fallback_channel_name
-    ):  # If a fallback name is defined for the given channel_name
+    ): 
         for channel in guild.channels:
             if (
                 isinstance(channel, discord.TextChannel)
@@ -269,16 +259,14 @@ async def get_forum_channel_by_name(
     If the preferred ForumChannel name is not found, this function tries to use the fallback mapping
     to retrieve the ForumChannel with the fallback name.
     """
-    # First, try to find the preferred forum channel name directly
     for channel in guild.channels:
         if isinstance(channel, discord.ForumChannel) and channel.name == channel_name:
             return channel
 
-    # If the preferred forum channel is not found, try to use the fallback mapping
     fallback_channel_name = constants.CONSTANT_FALLBACK_MAPPING.get(channel_name)
     if (
         fallback_channel_name
-    ):  # If a fallback name is defined for the given channel_name
+    ):
         for channel in guild.channels:
             if (
                 isinstance(channel, discord.ForumChannel)
@@ -286,7 +274,7 @@ async def get_forum_channel_by_name(
             ):
                 return channel
 
-    return None  # Return None if neither the channel_name nor the fallback mapping is found
+    return None
 
 
 async def get_guild_member_check_role(interaction: discord.Interaction) -> bool:
@@ -300,11 +288,9 @@ async def get_guild_member_check_role(interaction: discord.Interaction) -> bool:
     bool: True if the member has the 'core' role, False otherwise.
     """
 
-    # Retrieve the guild member who invoked the command
     member = await interaction.guild.fetch_member(interaction.user.id)
     permitted = False  # default value
 
-    # Check if they have the 'core' role.
     if any(role.name.lower() == "core" for role in member.roles):
         permitted = True
 
@@ -324,14 +310,11 @@ def update_json_file(server_name: str, server_data: Dict[str, Any]) -> None:
     server_name (str): The name of the server to update.
     server_data (Dict[str, Any]): The data to update the server with.
     """
-    # Read the existing data
     with open(cfg.CONTRIBUTORS_FILE_PATH, "r") as json_file:
         data = json.load(json_file)
 
-    # Update the specific server's data
     data["servers"][server_name] = server_data
 
-    # Write the updated data back to the file
     with open(cfg.CONTRIBUTORS_FILE_PATH, "w") as json_file:
         json.dump(data, json_file, indent=4)
 
@@ -358,7 +341,6 @@ async def send_dm_once(
         logger.error(e)
 
 
-# Load the stored events from the JSON file
 def load_posted_events() -> List[int]:
     """
     Load the event IDs that have already been posted to Discord from the JSON file.
@@ -382,7 +364,6 @@ def update_ongoing_votes_file(data, file_path):
     data (Dict): The data to update the ongoing_votes with.
     file_path (str): The file path to ongoing_votes.json.
     """
-    # Write the updated data to the file
     with open(file_path, "w") as json_file:
         json.dump(data, json_file, indent=4)
 
