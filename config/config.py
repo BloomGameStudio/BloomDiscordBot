@@ -13,24 +13,10 @@ ONGOING_VOTES_FILE_PATH = "./data/ongoing_votes.json"
 
 # Load configuration
 config: configparser.ConfigParser = configparser.ConfigParser()
-config.read("config/config.ini")
+config.read(CONFIG_ABSOLUTE_PATH)
 
 current_governance_id: int = config.getint("ID_START_VALUES", "governance_id")
 current_budget_id: int = config.getint("ID_START_VALUES", "budget_id")
-
-
-# Update values when proposals are submitted.
-def update_id_values(id_value: int, id_type: str) -> None:
-    config = configparser.ConfigParser()
-    config.read("config/config.ini")
-
-    if id_type.lower() == "governance":
-        config["ID_START_VALUES"]["governance_id"] = str(id_value)
-    elif id_type.lower() == "budget":
-        config["ID_START_VALUES"]["budget_id"] = str(id_value)
-
-    with open("config/config.ini", "w") as configfile:
-        config.write(configfile)
 
 
 def increment_config_id(
@@ -58,7 +44,8 @@ def increment_config_id(
         raise ValueError(err_msg)
 
     key = CONFIG_ID_MAP[id_type]
-    config["ID_START_VALUES"][key] += str(increment)
+    new_value = int(config["ID_START_VALUES"][key]) + increment
+    config["ID_START_VALUES"][key] = str(new_value)
 
     try:
         with open(CONFIG_ABSOLUTE_PATH, "w") as f:

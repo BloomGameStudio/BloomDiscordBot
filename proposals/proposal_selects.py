@@ -19,7 +19,6 @@ class PublishDraftSelect(discord.ui.Select):
         super().__init__(placeholder="proposals..", options=options)
 
     async def callback(self, interaction: discord.Interaction):
-        # Find the selected proposal
         for proposal in self.proposals:
             if proposal["title"] == self.values[0]:
                 selected_proposal = proposal
@@ -28,7 +27,6 @@ class PublishDraftSelect(discord.ui.Select):
             await interaction.response.send_message("Proposal not found.")
             return
 
-        # Call handle_publishdraft
         await handle_publishdraft(
             interaction, selected_proposal["title"], self.proposals, self.bot
         )
@@ -44,11 +42,10 @@ class DeleteProposalSelect(discord.ui.Select):
         super().__init__(placeholder="Select a proposal to delete", options=options)
 
     async def callback(self, interaction: discord.Interaction):
-        # Find the selected proposal
         for index, proposal in enumerate(self.proposals):
             if proposal["title"] == self.values[0]:
                 selected_proposal = proposal
-                del self.proposals[index]  # Delete the selected proposal from the list
+                del self.proposals[index]
                 e = discord.Embed(
                     title=f'Proposal "{selected_proposal["title"]}" has been deleted',
                     color=discord.Color.red(),
@@ -60,7 +57,7 @@ class DeleteProposalSelect(discord.ui.Select):
                 await interaction.response.edit_message(content=" ", embed=e, view=None)
                 return
 
-        await interaction.response.send_message("Proposal not found.")
+        await interaction.response.send_message("Proposal not found.", ephemeral=True)
 
 
 class EditProposalSelect(discord.ui.Select):
@@ -73,16 +70,14 @@ class EditProposalSelect(discord.ui.Select):
         super().__init__(placeholder="Select a proposal to edit", options=options)
 
     async def callback(self, interaction: discord.Interaction):
-        # Find the selected proposal
         for proposal in self.proposals:
             if proposal["title"] == self.values[0]:
                 selected_proposal = proposal
                 break
         else:
-            await interaction.response.send_message("Proposal not found.")
+            await interaction.response.send_message("Proposal not found.", ephemeral=True)
             return
 
-        # Open the ProposalModal with the selected proposal
         modal = ProposalModal(interaction.channel, selected_proposal)
         await interaction.response.send_modal(modal)
 
@@ -97,7 +92,7 @@ class PreviewProposalSelect(discord.ui.Select):
         super().__init__(placeholder="Select a proposal to preview", options=options)
 
     async def callback(self, interaction: discord.Interaction):
-        # Find the selected proposal
+
         for proposal in self.proposals:
             if proposal["title"] == self.values[0]:
                 selected_proposal = proposal
@@ -108,26 +103,25 @@ class PreviewProposalSelect(discord.ui.Select):
             )
             return
 
-        # Send proposal attributes as individual messages
         await interaction.response.send_message(
-            "This is what your proposal will look like upon being published to Discord. The title will be the thread title.",
+            "This is what your proposal will look like upon being published to Discord. The title will be the thread title:",
             ephemeral=True,
         )
         if selected_proposal["type"] == "governance":
             await interaction.followup.send(
-                f'Bloom General Proposal (BGP) #{cfg.current_governance_id + 1}: {selected_proposal["title"]}'
+                f'Bloom General Proposal (BGP) #{cfg.current_governance_id + 1}: {selected_proposal["title"]}', ephemeral=True
             )
         else:
             await interaction.followup.send(
-                f'Bloom Budget Proposal (BBP) #{cfg.current_budget_id + 1}: {selected_proposal["title"]}'
+                f'Bloom Budget Proposal (BBP) #{cfg.current_budget_id + 1}: {selected_proposal["title"]}', ephemeral=True
             )
-        await interaction.followup.send(f'{selected_proposal["background"]}')
-        await interaction.followup.send(f'{selected_proposal["abstract"]}')
+        await interaction.followup.send(f'{selected_proposal["background"]}', ephemeral=True)
+        await interaction.followup.send(f'{selected_proposal["abstract"]}', ephemeral=True)
 
         # Check if additional information is present
         if selected_proposal["additional"]:
-            await interaction.followup.send(f'{selected_proposal["additional"]}')
+            await interaction.followup.send(f'{selected_proposal["additional"]}', ephemeral=True)
         await interaction.followup.send(
-            "Preview complete. Use the /vote_draft command again to edit or delete an existing proposal.",
+            "**Preview complete.** Use the /vote_draft command again to edit, preview or delete an existing proposal.",
             ephemeral=True,
         )

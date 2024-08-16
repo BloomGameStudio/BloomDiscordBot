@@ -6,6 +6,7 @@ If there are any new events, they are posted to Discord. Interested users are id
 import time
 import subprocess
 import discord
+import random
 from logger.logger import logger
 from discord.ext import tasks, commands
 from events.event_operations import (
@@ -13,9 +14,22 @@ from events.event_operations import (
     save_posted_events,
     fetch_upcoming_events,
 )
-from helpers import get_channel_by_name, update_ongoing_votes_file
-from consts.constants import GENERAL_CHANNEL, YES_VOTE, NO_VOTE, ABSTAIN_VOTE
-from config.config import ONGOING_VOTES_FILE_PATH
+from helpers.helpers import (
+    get_channel_by_name,
+    update_ongoing_votes_file,
+    fetch_first_open_proposal_url,
+    fetch_XP_quorum,
+    modify_space_settings,
+    create_snapshot_proposal
+)
+from consts.constants import (
+    GENERAL_CHANNEL,
+    YES_VOTE,
+    NO_VOTE,
+    ABSTAIN_VOTE,
+    PROPOSAL_CONCLUSION_EMOJIS,
+)
+import config.config as cfg
 
 
 @tasks.loop(minutes=60)
@@ -79,6 +93,7 @@ async def check_concluded_proposals_task(bot: commands.Bot):
     """
     if not bot.is_ready():
         return
+
     logger.info("Checking to see if proposals have ended")
     try:
         keys_to_remove = []  # Initialize list to store keys for removal
@@ -88,7 +103,6 @@ async def check_concluded_proposals_task(bot: commands.Bot):
                 continue
 
             channel = bot.get_channel(int(proposal_data["channel_id"]))
-
             if channel:
                 thread = channel.get_thread(int(proposal_data["thread_id"]))
                 if thread:
@@ -111,71 +125,107 @@ async def check_concluded_proposals_task(bot: commands.Bot):
                 )
                 continue
 
-            # Update the Yes/No/Abstain counts from message reactions
             counts = {
-                f"{YES_VOTE}": "yes_count",
-                f"{NO_VOTE}": "no_count",
-                f"{ABSTAIN_VOTE}": "abstain_count",
+                YES_VOTE: "yes_count",
+                NO_VOTE: "no_count",
+                ABSTAIN_VOTE: "abstain_count",
             }
             for reaction in message.reactions:
                 emoji = str(reaction.emoji)
                 if emoji in counts:
-                    # Subtract 1 from the count to account for the bot's own reaction
                     proposal_data[counts[emoji]] = reaction.count - 1
 
-            # Check if the proposal has passed based off the yes and no count, and quorum of 5.
-            if (
+            passed = (
                 proposal_data["yes_count"] > proposal_data["no_count"]
                 and proposal_data["yes_count"] >= 5
-            ):
-                passed = True
-            else:
-                passed = False
+            )
+            result_message = f"Vote for **{proposal_data['title']}** has concluded:\n\n"
 
-            # Modify the result message based on the new condition
-            result_message = f"Vote for '{proposal_data['title']}' has concluded:\n\n"
             if passed:
-                # Call the snapshot creation function
-                subprocess.run(
-                    [
-                        "node",
-                        "./snapshot/wrapper.js",
-                        proposal_data["title"],
-                        proposal_data["draft"]["abstract"],
-                        proposal_data["draft"]["background"],
-                        proposal_data["draft"]["additional"],
-                        "Adopt",
-                        "Reasses",
-                        "Abstain",
-                    ],
-                    check=True,
-                )
-                result_message += (
-                    "The vote passes! :tada: Snapshot proposal will now be created."
-                )
+                # Fetch the quorum value
+                quorum_value = fetch_XP_quorum()
+
+                logger.info(f"Quorum value to be set: {quorum_value}")
+
+                try:
+                    modify_space_settings(str(quorum_value))
+                except Exception as e:
+                    logger.error(f"Error modifying space settings: {e}")
+                    continue
+
+                draft_title = proposal_data["draft"]["title"]
+                proposal_type = proposal_data["draft"]["type"]
+
+                if proposal_type == "budget":
+                    current_budget_id = (
+                        cfg.config.getint("ID_START_VALUES", "budget_id") + 1
+                    )
+                    title = f"Bloom Budget Proposal #{current_budget_id}: {draft_title}"
+                elif proposal_type == "governance":
+                    current_governance_id = (
+                        cfg.config.getint("ID_START_VALUES", "governance_id") + 1
+                    )
+                    title = f"Bloom General Proposal #{current_governance_id}: {draft_title}"
+                else:
+                    logger.error(f"Unknown proposal type: {proposal_type}")
+                    continue
+
+                try:
+                    create_snapshot_proposal(proposal_data, title)
+                except Exception as e:
+                    logger.error(f"Error creating snapshot proposal: {e}")
+                    continue
+
+                proposal_url = fetch_first_open_proposal_url(title)
+                if proposal_url:
+                    result_message += f"The vote passes! {random.choice(PROPOSAL_CONCLUSION_EMOJIS)}\n\nSnapshot proposal has been created: **{proposal_url}**"
+                    if proposal_type == "budget":
+                        cfg.increment_config_id("budget", 1)
+                    elif proposal_type == "governance":
+                        cfg.increment_config_id("governance", 1)
+                else:
+                    result_message += (
+                        f"The vote passes! {random.choice(PROPOSAL_CONCLUSION_EMOJIS)}"
+                    )
             else:
                 result_message += "The vote fails. :disappointed:"
 
-            result_message += f"\n\Adopt: {proposal_data['yes_count']}\nReasses: {proposal_data['no_count']}\nAbstain: {proposal_data['abstain_count']}"
+            result_message += f"\nAdopt: {proposal_data['yes_count']}\nReassess: {proposal_data['no_count']}\nAbstain: {proposal_data['abstain_count']}"
 
             logger.info(
                 f"Yes vote count: {proposal_data['yes_count']} No vote count: {proposal_data['no_count']} Abstain vote count: {proposal_data['abstain_count']}"
             )
 
-            # Post the result message to the corresponding thread
             try:
                 await thread.send(result_message)
             except discord.HTTPException as e:
                 logger.error(f"An error occurred while posting the result message: {e}")
 
-            keys_to_remove.append(proposal_id)  # Add the key for removal
+            guild = channel.guild
+            general_channel = get_channel_by_name(guild, GENERAL_CHANNEL)
 
-        # Remove the concluded votes from ongoing_proposals
+            if general_channel:
+                try:
+                    await general_channel.send(result_message)
+                except discord.HTTPException as e:
+                    logger.error(
+                        f"An error occurred while posting the result message: {e}"
+                    )
+            else:
+                logger.error(
+                    f"Unable to find the general channel in guild: {guild.name}"
+                )
+
+            keys_to_remove.append(proposal_id)
+
         for key in keys_to_remove:
             bot.ongoing_votes.pop(key)
 
-        # Save to ongoing_votes.json
-        update_ongoing_votes_file(bot.ongoing_votes, ONGOING_VOTES_FILE_PATH)
+        logger.info("Removing concluded proposals from ongoing votes.")
+        update_ongoing_votes_file(bot.ongoing_votes, cfg.ONGOING_VOTES_FILE_PATH)
+
+        # Log the current state of ongoing_votes to ensure it was updated
+        logger.info(f"Current ongoing_votes: {bot.ongoing_votes}")
 
     except Exception as e:
         logger.error(f"An error occurred while checking ongoing proposals: {e}")

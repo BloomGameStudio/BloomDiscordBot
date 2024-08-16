@@ -22,20 +22,10 @@ class ProposalButtonsView(discord.ui.View):
     @discord.ui.button(label="Edit", style=discord.ButtonStyle.blurple)
     async def edit(self, interaction: discord.Interaction, button: discord.ui.Button):
         if not self.proposals:
-            await interaction.response.send_message("No proposals to edit.")
+            await interaction.response.send_message("No proposals to edit.", ephemeral=True)
         else:
             self.clear_items()
             self.add_item(EditProposalSelect(self.proposals))
-            await interaction.response.edit_message(view=self)
-
-    @discord.ui.button(label="Delete", style=discord.ButtonStyle.red)
-    async def delete(self, interaction: discord.Interaction, button: discord.ui.Button):
-        # Check if there are any proposals to delete
-        if not self.proposals:
-            await interaction.response.send_message("No proposals to delete.")
-        else:
-            self.clear_items()
-            self.add_item(DeleteProposalSelect(self.proposals))
             await interaction.response.edit_message(view=self)
 
     @discord.ui.button(label="Preview", style=discord.ButtonStyle.grey)
@@ -46,4 +36,15 @@ class ProposalButtonsView(discord.ui.View):
         else:
             self.clear_items()
             self.add_item(PreviewProposalSelect(self.proposals))
+            await interaction.response.edit_message(view=self)
+            await interaction.response.send_message(view=self)
+ 
+    @discord.ui.button(label="Delete", style=discord.ButtonStyle.red)
+    async def delete(self, interaction: discord.Interaction, button: discord.ui.Button):
+        # Check if there are any proposals to delete
+        if not self.proposals:
+            await interaction.response.send_message("No proposals to delete.", ephemeral=True)
+        else:
+            self.clear_items()
+            self.add_item(DeleteProposalSelect(self.proposals))
             await interaction.response.edit_message(view=self)

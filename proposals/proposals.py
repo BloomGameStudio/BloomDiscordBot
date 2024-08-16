@@ -25,37 +25,10 @@ from discord.ext import commands
 from consts.types import GOVERNANCE_ID_TYPE, BUDGET_ID_TYPE
 from logger.logger import logger
 from typing import Any, Dict, List, Tuple
-from helpers import get_channel_by_name, update_ongoing_votes_file
+from helpers.helpers import update_ongoing_votes_file
 
 
 proposals: List[Dict[str, Any]] = []
-
-async def handle_votedraft(
-    ctx: commands.Context, proposals: List[Dict[str, str]], new_proposal_emoji: str
-) -> None:
-    """
-    Handles the vote draft command. This command allows users to draft a proposal.
-
-    Parameters:
-    ctx (commands.Context): The context in which the command was called.
-    proposals (List[Dict[str, str]]): The list of proposals.
-    new_proposal_emoji (str): The emoji for new proposals.
-    """
-    try:
-        # Get the channel with the name 'governance' in the server
-        governance_talk_channel = get_channel_by_name(
-            ctx.guild, constants.GOVERNANCE_TALK_CHANNEL
-        )
-    except ValueError as e:
-        await ctx.send(f"Cannot find governance channel in this server.")
-        logger.error(f"Error drafting a vote: {str(e)}")
-        return
-
-    if ctx.channel.id != governance_talk_channel.id:
-        await ctx.send(
-            f"This command can only be used in <#{governance_talk_channel.id}>"
-        )
-        return
 
 
 async def handle_publishdraft(
@@ -65,21 +38,21 @@ async def handle_publishdraft(
     bot: commands.Bot,
 ) -> None:
     """
-    Handle the publishing of a draft.
-
-    This function searches for a draft with the given name in the list of proposals.
-    If the draft is found, it is published and removed from the list of proposals.
-    If the draft is not found, a message is sent to the interaction.
+    Handle the publish draft command by publishing the draft if it exists in the proposals list.
 
     Parameters:
-    interaction (discord.Interaction): The interaction that triggered the command.
-    draft_name (str): The name of the draft to publish.
+    interaction (discord.Interaction): The interaction object.
+    draft_name (str): The name of the draft to be published.
     proposals (List[Dict[str, str]]): The list of proposals.
     bot (commands.Bot): The bot instance.
 
     Returns:
     None
     """
+    # Defer the response if it might take some time to process
+    if not interaction.response.is_done():
+        await interaction.response.defer()
+
     draft_to_publish = next(
         (
             item
@@ -90,22 +63,24 @@ async def handle_publishdraft(
     )
 
     if draft_to_publish:
-        embed = discord.Embed(
-            title=f"Published Draft: {draft_to_publish['title']}",
-            description=f"The draft '{draft_to_publish['title']}' has been published.",
-            color=discord.Color.green(),
-        )
-        embed.set_author(
-            name="Draft Publishing", icon_url=interaction.user.display_avatar.url
-        )
-        await interaction.response.send_message(embed=embed)
-
-        proposals.remove(draft_to_publish)
-        await publish_draft(
+        published_successfully = await publish_draft(
             draft_to_publish, bot, interaction.guild.id, interaction.guild
         )
+        if published_successfully:
+            proposals.remove(draft_to_publish)
+            embed = discord.Embed(
+                title=f"Published Draft: {draft_to_publish['title']}",
+                description=f"The draft '{draft_to_publish['title']}' has been published.",
+                color=discord.Color.green(),
+            )
+            embed.set_author(
+                name="Draft Publishing", icon_url=interaction.user.display_avatar.url
+            )
+            await interaction.followup.send(embed=embed)  # Use followup if deferred
+        else:
+            await interaction.followup.send(f"Failed to publish draft: {draft_name}")
     else:
-        await interaction.response.send_message(f"Draft not found: {draft_name}")
+        await interaction.followup.send(f"Draft not found: {draft_name}")
 
 
 # prepare the draft by setting the type, channel ID, and title based on the draft type
@@ -114,7 +89,7 @@ async def prepare_draft(
 ) -> Tuple[str, str, str]:
     """
     Prepare the draft by setting the type, channel ID, and title based on the draft type.
-    Increment the current ID and update the config file.
+    This version uses a temporarily incremented ID for the title generation but does not update the config file.
 
     Parameters:
     guild (discord.Guild): The guild to search for the channel in.
@@ -130,21 +105,11 @@ async def prepare_draft(
     if draft_type == BUDGET_ID_TYPE:
         id_type = BUDGET_ID_TYPE
         channel_name = constants.GOVERNANCE_BUDGET_CHANNEL
-        cfg.current_budget_id += 1
-        cfg.update_id_values(
-            cfg.current_budget_id, id_type
-        )  # Update the governance ID in the config file
-        title = (
-            f"Bloom Budget Proposal (BBP) #{cfg.current_budget_id}: {draft['title']}"
-        )
+        title = f"Bloom Budget Proposal: {draft['title']}"
     else:
         id_type = GOVERNANCE_ID_TYPE
         channel_name = constants.GOVERNANCE_CHANNEL
-        cfg.current_governance_id += 1
-        cfg.update_id_values(
-            cfg.current_governance_id, id_type
-        )  # Update the governance ID in the config file
-        title = f"Bloom General Proposal (BGP) #{cfg.current_governance_id}: {draft['title']}"
+        title = f"Bloom General Proposal: {draft['title']}"
 
     return id_type, channel_name, title
 
@@ -152,15 +117,19 @@ async def prepare_draft(
 # publish the draft by creating a thread with the prepared content and starting a vote timer
 async def publish_draft(
     draft: Dict[str, Any], bot: Bot, guild_id: int, guild: discord.Guild
-):
+) -> bool:
     """
-    Publish the draft by creating a thread with the prepared content.
+    Publish the draft by creating a thread with the prepared content and starting a vote timer.
+    Returns a boolean indicating whether the publication was successful.
 
     Parameters:
     draft (Dict[str, Any]): The draft to be published.
     bot (Bot): The bot instance.
     guild_id (int): The ID of the guild.
     guild (discord.Guild): The guild to publish the draft in.
+
+    Returns:
+    bool: True if successfully published, False otherwise.
     """
     try:
         id_type, channel_name, title = await prepare_draft(guild, draft)
@@ -171,16 +140,20 @@ async def publish_draft(
             logger.error(
                 f"Error: Unable to publish draft, Forum Channel not found. Please verify a channel exists with the name {channel_name} and it aligns with shared/constants.py"
             )
-            return
+            return False
 
-        # Create a thread with the title and abstract
-        thread = await forum_channel.create_thread(name=title, content=f"{draft['abstract']}")
+        thread = await forum_channel.create_thread(
+            name=title, content=f"{draft['abstract']}"
+        )
 
-        # Post the background, additional information, and vote options
+        # Post additional information and start the vote
         await thread.message.reply(f"\n{draft['background']}")
-        await thread.message.reply(f"\n{draft['additional']}")
+        if "additional" in draft and draft["additional"].strip():
+            await thread.message.reply(f"\n{draft['additional']}")
 
-        vote_message = await thread.message.reply(f"**{constants.YES_VOTE} Yes**\n**{constants.NO_VOTE} Reassess**\n**{constants.ABSTAIN_VOTE} Abstain**\nVote will conclude in 48h from now.")
+        vote_message = await thread.message.reply(
+            f"**{constants.YES_VOTE} Adopt**\n\n**{constants.NO_VOTE} Reassess**\n\n**{constants.ABSTAIN_VOTE} Abstain**\n\nVote will conclude in 48h from now."
+        )
 
         proposal_id = str(thread.message.id)
         proposal_data = {
@@ -201,9 +174,15 @@ async def publish_draft(
         # Save to ongoing_votes.json
         update_ongoing_votes_file(bot.ongoing_votes, cfg.ONGOING_VOTES_FILE_PATH)
 
-        await react_to_vote(vote_message.id, bot, guild_id, channel_name, thread.thread.id)
+        await react_to_vote(
+            vote_message.id, bot, guild_id, channel_name, thread.thread.id
+        )
+        return True
+
     except Exception as e:
         logger.error(f"Error publishing draft: {str(e)}")
+        return False
+
 
 async def react_to_vote(
     message_id: int, bot: Bot, guild_id: int, channel_name: str, thread_id: int
