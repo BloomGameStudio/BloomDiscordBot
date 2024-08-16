@@ -130,11 +130,10 @@ def fetch_XP_total_supply() -> int:
             token_contract = web3.eth.contract(address=checksum_address, abi=token_abi)
             total_supply = token_contract.functions.totalSupply().call()
             if total_supply is not None:
-                total_supply_in_ether = web3.from_wei(total_supply, "ether")
                 logger.info(
-                    f"The total supply of the token at address {address} is {total_supply_in_ether}."
+                    f"The total supply of the token at address {address} is {total_supply}."
                 )
-                total_supply_sum += total_supply_in_ether
+                total_supply_sum += total_supply
         except Exception as e:
             logger.error(
                 f"An error occurred while fetching the total supply for address {address}: {str(e)}"
@@ -161,7 +160,9 @@ def fetch_XP_quorum(percentage: int = 25) -> int:
         logger.error("Failed to fetch total supply.")
         return None
 
-    quorum = (total_supply_sum * percentage) // 100
+    web3 = Web3()
+    total_supply_in_ether = web3.from_wei(total_supply_sum, "ether")
+    quorum = (total_supply_in_ether * percentage) // 100
 
     logger.info(f"{percentage}% of the total supply is {quorum}.")
 
