@@ -94,11 +94,16 @@ class PreviewProposalSelect(discord.ui.Select):
         super().__init__(placeholder="Select a proposal to preview", options=options)
 
     async def callback(self, interaction: discord.Interaction):
-        for proposal in self.proposals:
-            if proposal["title"] == self.values[0]:
-                selected_proposal = proposal
-                break
-        else:
+        selected_proposal = next(
+            (
+                proposal
+                for proposal in self.proposals
+                if proposal["title"] == self.values[0]
+            ),
+            None,
+        )
+
+        if not selected_proposal:
             await interaction.response.send_message(
                 "Proposal not found.", ephemeral=True
             )
@@ -108,16 +113,16 @@ class PreviewProposalSelect(discord.ui.Select):
             "This is what your proposal will look like upon being published to Discord. The title will be the thread title:",
             ephemeral=True,
         )
-        if selected_proposal["type"] == "governance":
-            await interaction.followup.send(
-                f'Bloom General Proposal (BGP) #{cfg.current_governance_id + 1}: {selected_proposal["title"]}',
-                ephemeral=True,
-            )
-        else:
-            await interaction.followup.send(
-                f'Bloom Budget Proposal (BBP) #{cfg.current_budget_id + 1}: {selected_proposal["title"]}',
-                ephemeral=True,
-            )
+
+        proposal_type = (
+            "General" if selected_proposal["type"] == "governance" else "Budget"
+        )
+
+        await interaction.followup.send(
+            f'Bloom {proposal_type} Proposal: {selected_proposal["title"]}',
+            ephemeral=True,
+        )
+
         await interaction.followup.send(
             f'{selected_proposal["background"]}', ephemeral=True
         )
@@ -129,6 +134,7 @@ class PreviewProposalSelect(discord.ui.Select):
             await interaction.followup.send(
                 f'{selected_proposal["additional"]}', ephemeral=True
             )
+
         await interaction.followup.send(
             "**Preview complete.** Use the /vote_draft command again to edit, preview or delete an existing proposal.",
             ephemeral=True,
