@@ -75,7 +75,9 @@ class EditProposalSelect(discord.ui.Select):
                 selected_proposal = proposal
                 break
         else:
-            await interaction.response.send_message("Proposal not found.", ephemeral=True)
+            await interaction.response.send_message(
+                "Proposal not found.", ephemeral=True
+            )
             return
 
         modal = ProposalModal(interaction.channel, selected_proposal)
@@ -92,7 +94,6 @@ class PreviewProposalSelect(discord.ui.Select):
         super().__init__(placeholder="Select a proposal to preview", options=options)
 
     async def callback(self, interaction: discord.Interaction):
-
         for proposal in self.proposals:
             if proposal["title"] == self.values[0]:
                 selected_proposal = proposal
@@ -109,18 +110,25 @@ class PreviewProposalSelect(discord.ui.Select):
         )
         if selected_proposal["type"] == "governance":
             await interaction.followup.send(
-                f'Bloom General Proposal (BGP) #{cfg.current_governance_id + 1}: {selected_proposal["title"]}', ephemeral=True
+                f'Bloom General Proposal (BGP) #{cfg.current_governance_id + 1}: {selected_proposal["title"]}',
+                ephemeral=True,
             )
         else:
             await interaction.followup.send(
-                f'Bloom Budget Proposal (BBP) #{cfg.current_budget_id + 1}: {selected_proposal["title"]}', ephemeral=True
+                f'Bloom Budget Proposal (BBP) #{cfg.current_budget_id + 1}: {selected_proposal["title"]}',
+                ephemeral=True,
             )
-        await interaction.followup.send(f'{selected_proposal["background"]}', ephemeral=True)
-        await interaction.followup.send(f'{selected_proposal["abstract"]}', ephemeral=True)
+        await interaction.followup.send(
+            f'{selected_proposal["background"]}', ephemeral=True
+        )
+        await interaction.followup.send(
+            f'{selected_proposal["abstract"]}', ephemeral=True
+        )
 
-        # Check if additional information is present
         if selected_proposal["additional"]:
-            await interaction.followup.send(f'{selected_proposal["additional"]}', ephemeral=True)
+            await interaction.followup.send(
+                f'{selected_proposal["additional"]}', ephemeral=True
+            )
         await interaction.followup.send(
             "**Preview complete.** Use the /vote_draft command again to edit, preview or delete an existing proposal.",
             ephemeral=True,

@@ -14,9 +14,7 @@ class ProposalButtonsView(discord.ui.View):
 
     @discord.ui.button(label="Create", style=discord.ButtonStyle.green)
     async def create(self, interaction: discord.Interaction, button: discord.ui.Button):
-        # Create a new ProposalModal
         modal = ProposalModal(interaction.channel, None)
-        # Send the modal as a response to the interaction
         await interaction.response.send_modal(modal)
 
     @discord.ui.button(label="Edit", style=discord.ButtonStyle.blurple)
@@ -30,7 +28,6 @@ class ProposalButtonsView(discord.ui.View):
 
     @discord.ui.button(label="Preview", style=discord.ButtonStyle.grey)
     async def preview(self, interaction: discord.Interaction, button: discord.ui.Button):
-        # Check if there are any proposals to preview
         if not self.proposals:
             await interaction.response.send_message("No proposals to preview.", ephemeral=True)
         else:
@@ -41,7 +38,6 @@ class ProposalButtonsView(discord.ui.View):
  
     @discord.ui.button(label="Delete", style=discord.ButtonStyle.red)
     async def delete(self, interaction: discord.Interaction, button: discord.ui.Button):
-        # Check if there are any proposals to delete
         if not self.proposals:
             await interaction.response.send_message("No proposals to delete.", ephemeral=True)
         else:
