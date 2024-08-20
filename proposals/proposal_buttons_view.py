@@ -4,7 +4,7 @@ ProposalButtonsView is a discord.ui.View that contains buttons for creating, edi
 
 import discord
 from .proposal_modal import ProposalModal
-from .proposal_selects import DeleteProposalSelect, EditProposalSelect
+from .proposal_selects import DeleteProposalSelect, EditProposalSelect, PreviewProposalSelect
 
 
 class ProposalButtonsView(discord.ui.View):
@@ -14,9 +14,7 @@ class ProposalButtonsView(discord.ui.View):
 
     @discord.ui.button(label="Create", style=discord.ButtonStyle.green)
     async def create(self, interaction: discord.Interaction, button: discord.ui.Button):
-        # Create a new ProposalModal
         modal = ProposalModal(interaction.channel, None)
-        # Send the modal as a response to the interaction
         await interaction.response.send_modal(modal)
 
     @discord.ui.button(label="Edit", style=discord.ButtonStyle.blurple)
@@ -28,12 +26,21 @@ class ProposalButtonsView(discord.ui.View):
             self.add_item(EditProposalSelect(self.proposals))
             await interaction.response.edit_message(view=self)
 
+    @discord.ui.button(label="Preview", style=discord.ButtonStyle.grey)
+    async def preview(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if not self.proposals:
+            await interaction.response.send_message("No proposals to preview.", ephemeral=True)
+        else:
+            self.clear_items()
+            self.add_item(PreviewProposalSelect(self.proposals))
+            await interaction.response.edit_message(view=self)
+            await interaction.response.send_message(view=self)
+ 
     @discord.ui.button(label="Delete", style=discord.ButtonStyle.red)
     async def delete(self, interaction: discord.Interaction, button: discord.ui.Button):
-        # Check if there are any proposals to delete
         if not self.proposals:
             await interaction.response.send_message("No proposals to delete.", ephemeral=True)
         else:
             self.clear_items()
             self.add_item(DeleteProposalSelect(self.proposals))
-            await interaction.response.send_message(view=self)
+            await interaction.response.edit_message(view=self)
