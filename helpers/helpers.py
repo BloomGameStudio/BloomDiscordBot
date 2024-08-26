@@ -29,27 +29,32 @@ from web3 import Web3
 
 def modify_space_settings(quorum_value):
     """
-    Submit a command to modify the space settings on Snapshot.
+    Modify Snapshot space settings using the specified quorum value.
 
     Parameters:
-    quorum_value (str): The value to set the quorum to.
+    quorum_value (int): The quorum value to set in the space settings.
 
     Raises:
-    subprocess.CalledProcessError: If an error occurs while modifying the space
+    subprocess.CalledProcessError: If an error occurs while modifying the space settings.
     """
-    modify_space_command = [
-        "node",
-        "./snapshot/modify_space.js",
-        quorum_value,
-    ]
+    command = ["node", "./snapshot/modify_space.js", str(quorum_value)]
+
+    env = os.environ.copy()
+    env['SNAPSHOT_HUB'] = cfg.SNAPSHOT_HUB
+    env['SNAPSHOT_SPACE'] = cfg.SNAPSHOT_SPACE
+    env['NETWORK'] = cfg.NETWORK_ID
+    env['SETTINGS_NAME'] = cfg.SETTINGS_NAME
+    env['SETTINGS_ABOUT'] = cfg.SETTINGS_ABOUT
+    env['SETTINGS_SYMBOL'] = cfg.SETTINGS_SYMBOL
+    env['SETTINGS_MEMBERS'] = ','.join(cfg.SETTINGS_MEMBERS)
+    env['SETTINGS_STRATEGIES'] = cfg.SETTINGS_STRATEGIES
 
     try:
-        subprocess.run(modify_space_command, check=True)
-        logger.info("Space settings modified successfully.")
+        subprocess.run(command, check=True, env=env)
+        logger.info("Snapshot space settings modified successfully.")
     except subprocess.CalledProcessError as e:
-        logger.error(f"Error modifying space settings: {e}")
+        logger.error(f"Error modifying snapshot space settings: {e}")
         raise
-
 
 def create_snapshot_proposal(proposal_data, title):
     """
@@ -73,6 +78,11 @@ def create_snapshot_proposal(proposal_data, title):
         "Reassess",
         "Abstain",
     ]
+
+    env = os.environ.copy()
+    env['SNAPSHOT_HUB'] = cfg.SNAPSHOT_HUB
+    env['SNAPSHOT_SPACE'] = cfg.SNAPSHOT_SPACE
+    env['NETWORK_ID'] = cfg.NETWORK_ID
 
     try:
         subprocess.run(proposal_command, check=True)
@@ -170,7 +180,9 @@ def fetch_XP_quorum(percentage: int = 25) -> int:
 
 
 def fetch_first_open_proposal_url(concluded_proposal_title):
-    url = "https://hub.snapshot.org/graphql"
+
+    url = f"{cfg.SNAPSHOT_HUB}/graphql"
+
     query = """
     query {
         proposals (
@@ -187,7 +199,7 @@ def fetch_first_open_proposal_url(concluded_proposal_title):
         }
     }
     """ % (
-        constants.SNAPSHOT_SPACE
+        cfg.SNAPSHOT_SPACE
     )
 
     response = requests.post(url, json={"query": query})
@@ -197,7 +209,7 @@ def fetch_first_open_proposal_url(concluded_proposal_title):
         proposals = data.get("data", {}).get("proposals", [])
         if proposals and proposals[0]["title"] == concluded_proposal_title:
             proposal_id = proposals[0]["id"]
-            return f"https://snapshot.org/#/{constants.SNAPSHOT_SPACE}/proposal/{proposal_id}"
+            return f"{cfg.SNAPSHOT_URL_PREFIX}{cfg.SNAPSHOT_SPACE}/proposal/{proposal_id}"
         else:
             return None
     else:

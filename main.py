@@ -19,7 +19,6 @@ from cogs.events import EventsCog
 from cogs.help import HelpCommandCog
 from cogs.gov import GovCommandsCog
 
-
 class Bot:
     async def setup_background_tasks(self):
         # Start the background tasks

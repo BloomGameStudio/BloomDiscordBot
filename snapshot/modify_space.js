@@ -9,10 +9,21 @@
 
 const { ethers } = require('ethers');
 const snapshot = require('@snapshot-labs/snapshot.js');
+const dotenv = require('dotenv');
+
+dotenv.config();
 
 const ethPrivateKey = process.env.ETH_PRIVATE_KEY;
 const primaryRpc = process.env.PRIMARY_RPC;
 const secondaryRpc = process.env.SECONDARY_RPC;
+const hub = process.env.SNAPSHOT_HUB;
+const snapshotSpace = process.env.SNAPSHOT_SPACE;
+const network = process.env.NETWORK;
+const settingsName = process.env.SETTINGS_NAME;
+const settingsAbout = process.env.SETTINGS_ABOUT;
+const settingsSymbol = process.env.SETTINGS_SYMBOL;
+const settingsMembers = process.env.SETTINGS_MEMBERS.split(',');
+const settingsStrategies = JSON.parse(process.env.SETTINGS_STRATEGIES);
 
 const maxRetries = 3; // Number of retry attempts
 const initialRetryDelay = 5000; // Initial delay between retries in milliseconds (e.g., 5000ms = 5s)
@@ -28,21 +39,20 @@ async function submitSpaceSettings(providerRpc, quorumValue) {
     const provider = new ethers.providers.JsonRpcProvider(providerRpc);
     const wallet = new ethers.Wallet(ethPrivateKey, provider);
 
-    const hub = 'https://hub.snapshot.org';
     const client = new snapshot.Client712(hub);
 
     const account = await wallet.getAddress();
     console.log('Using account:', account);
 
     const settings = {
-      name: "Bloom Studio",
-      about: "Bloom is a decentralized studio creating immersive, expressive games & other audiovisual experiences within a scalable, collective micro-economy",
-      network: "42161",
-      symbol: "govXP",
+      name: settingsName,
+      about: settingsAbout,
+      network: network,
+      symbol: settingsSymbol,
       private: false,
       admins: [],
       moderators: [],
-      members: ["0xd80e4ef6169e5f737430be8a845237befb9a0adb"],
+      members: settingsMembers,
       categories: [],
       plugins: {},
       children: [],
@@ -50,35 +60,7 @@ async function submitSpaceSettings(providerRpc, quorumValue) {
         quorum: quorumValue,
         hideAbstain: false
       },
-      strategies: [
-        {
-          name: "erc20-balance-of",
-          network: "42161",
-          params: {
-            symbol: "uXP",
-            address: "0x57d3a929fdc4faf1b35e7092d9dee7af097afb6a",
-            decimals: 18
-          }
-        },
-        {
-          name: "erc20-balance-of",
-          network: "42161",
-          params: {
-            symbol: "aXP",
-            address: "0x206d247F61cb82B9711318381cDb7Bc5039d2A2c",
-            decimals: 18
-          }
-        },
-        {
-          name: "erc20-balance-of",
-          network: "42161",
-          params: {
-            symbol: "bXP",
-            address: "0x4cd06ada7d8564830018000d784c69bd542b1e6a",
-            decimals: 18
-          }
-        }
-      ],
+      strategies: settingsStrategies,
       validation: {
         name: "any",
         params: {}
@@ -102,7 +84,7 @@ async function submitSpaceSettings(providerRpc, quorumValue) {
     console.log('Settings JSON String:', settingsString);
 
     const receipt = await client.space(wallet, account, {
-      space: "gov.bloomstudio.eth",
+      space: snapshotSpace,
       settings: settingsString
     });
 
@@ -155,4 +137,3 @@ async function modifySpace() {
 
 // Call the function
 modifySpace().catch(console.error);
-

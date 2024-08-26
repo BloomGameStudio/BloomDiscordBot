@@ -30,14 +30,12 @@ MENU_COPY: A string containing the help menu for the bot. This menu lists all th
 
 """
 
-# Preferred consts
 GENERAL_CHANNEL = "🌺│home"
 GOVERNANCE_CHANNEL = "improvement-props"
 GOVERNANCE_BUDGET_CHANNEL = "budgetary-props"
 GOVERNANCE_TALK_CHANNEL = "🐬│governance"
 COLLAB_LAND_CHANNEL = "🤖│collabland-join"
 START_HERE_CHANNEL = "start-here"
-SNAPSHOT_SPACE = "gov.bloomstudio.eth"
 PROPOSAL_CONCLUSION_EMOJIS = ["<a:blob_time:1230791614851584060>", "<a:saber_pepe:1230791417220300800>", "<:inevitable_bloom:1192384857691656212>", ":tada:", ":hibiscus:"]
 
 YES_VOTE = "👍"

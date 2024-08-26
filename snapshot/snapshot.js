@@ -27,6 +27,11 @@ async function createProposal(title, abstract, background, additional, choices) 
   const ethPrivateKey = process.env.ETH_PRIVATE_KEY;
   const primaryRpc = process.env.PRIMARY_RPC;
   const secondaryRpc = process.env.SECONDARY_RPC;
+  
+  // Load environment-specific settings
+  const hub = process.env.SNAPSHOT_HUB;  // Use the dynamic SNAPSHOT_HUB value
+  const snapshotSpace = process.env.SNAPSHOT_SPACE;  // Use the dynamic SNAPSHOT_SPACE value
+  const network = process.env.NETWORK;  // Use the dynamic NETWORK value
 
   const maxRetries = 3; // Number of retry attempts
   const initialRetryDelay = 5000; // Initial delay between retries in milliseconds (e.g., 5000ms = 5s)
@@ -40,27 +45,23 @@ async function createProposal(title, abstract, background, additional, choices) 
       const provider = new ethers.providers.JsonRpcProvider(providerRpc);
       const wallet = new ethers.Wallet(ethPrivateKey, provider);
 
-      const hub = 'https://hub.snapshot.org';
-
-      // Initialize Snapshot client
       const client = new snapshot.Client712(hub);
 
-      // Define proposal parameters
       const currentTime = Math.floor(new Date().getTime() / 1000); // Current time in seconds
       const seventyTwoHoursInSeconds = 72 * 3600;
 
       const proposalParams = {
-        space: 'gov.bloomstudio.eth',
-        type: 'weighted', // define the voting system
+        space: snapshotSpace,
+        type: 'weighted',
         title: title,
         body: `\n ${abstract}\n\n \n ${background}\n\n \n ${additional}`,
         choices: choices,
         start: currentTime,
         end: currentTime + seventyTwoHoursInSeconds, // 72 hours from now
         snapshot: await provider.getBlockNumber(), // Current block number as snapshot
-        network: '42161',
+        network: network,
         plugins: JSON.stringify({}),
-        app: 'Gov' // provide the name of your project using this Snapshot.js integration
+        app: 'Gov'
       };
 
       // Submit the proposal
