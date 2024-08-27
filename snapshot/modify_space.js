@@ -16,29 +16,25 @@ dotenv.config();
 const ethPrivateKey = process.env.ETH_PRIVATE_KEY;
 const primaryRpc = process.env.PRIMARY_RPC;
 const secondaryRpc = process.env.SECONDARY_RPC;
+
 const hub = process.env.SNAPSHOT_HUB;
 const snapshotSpace = process.env.SNAPSHOT_SPACE;
-const network = process.env.NETWORK;
+const network = process.env.NETWORK_ID || '11155111'; // Fallback network ID
 const settingsName = process.env.SETTINGS_NAME;
 const settingsAbout = process.env.SETTINGS_ABOUT;
 const settingsSymbol = process.env.SETTINGS_SYMBOL;
 const settingsMembers = process.env.SETTINGS_MEMBERS.split(',');
 const settingsStrategies = JSON.parse(process.env.SETTINGS_STRATEGIES);
 
-const maxRetries = 3; // Number of retry attempts
-const initialRetryDelay = 5000; // Initial delay between retries in milliseconds (e.g., 5000ms = 5s)
+const maxRetries = 3;
+const initialRetryDelay = 5000;
 
-if (!ethPrivateKey) {
-  throw new Error('Private key not provided in environment variables');
-}
-
-const quorumValue = parseInt(process.argv[2]);
+const quorumValue = parseInt(process.argv[2], 10);
 
 async function submitSpaceSettings(providerRpc, quorumValue) {
   try {
     const provider = new ethers.providers.JsonRpcProvider(providerRpc);
     const wallet = new ethers.Wallet(ethPrivateKey, provider);
-
     const client = new snapshot.Client712(hub);
 
     const account = await wallet.getAddress();
@@ -89,19 +85,23 @@ async function submitSpaceSettings(providerRpc, quorumValue) {
     });
 
     console.log('Space settings updated', receipt);
-    return true; // Indicate success
+    return true;
   } catch (error) {
-    console.error(`Error updating space settings with RPC ${providerRpc}:`, error);
-    return false; // Indicate failure
+    if (error.response && typeof error.response.text === 'function') {
+      console.error(`Error response from server: ${await error.response.text()}`);
+    } else if (error instanceof Error) {
+      console.error(`Error: ${error.message}`);
+    } else {
+      console.error('Unexpected error:', error);
+    }
+    return false;
   }
 }
 
-// Delay function
 function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// Attempt to submit the space settings with a retry mechanism
 async function modifySpace() {
   let attempt = 0;
   let success = false;
@@ -111,10 +111,8 @@ async function modifySpace() {
     attempt++;
     console.log(`Attempt ${attempt} to update space settings...`);
 
-    // Try using the primary RPC
     success = await submitSpaceSettings(primaryRpc, quorumValue);
 
-    // If primary RPC fails, try using the secondary RPC
     if (!success) {
       console.log('Retrying with secondary RPC...');
       success = await submitSpaceSettings(secondaryRpc, quorumValue);
@@ -124,8 +122,8 @@ async function modifySpace() {
       console.log(`Attempt ${attempt} failed.`);
       if (attempt < maxRetries) {
         console.log(`Waiting for ${retryDelay / 1000} seconds before retrying...`);
-        await delay(retryDelay); // Wait before the next attempt
-        retryDelay *= 2; // Exponential backoff
+        await delay(retryDelay);
+        retryDelay *= 2;
       }
     }
   }
@@ -135,5 +133,4 @@ async function modifySpace() {
   }
 }
 
-// Call the function
 modifySpace().catch(console.error);

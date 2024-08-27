@@ -34,8 +34,10 @@ SECONDARY_RPC_URL = config.get(ENV, "SECONDARY_RPC_URL")
 SETTINGS_NAME = config.get(ENV, "SETTINGS_NAME")
 SETTINGS_ABOUT = config.get(ENV, "SETTINGS_ABOUT")
 SETTINGS_SYMBOL = config.get(ENV, "SETTINGS_SYMBOL")
-SETTINGS_MEMBERS = config.get(ENV, "SETTINGS_MEMBERS").split(',')
+SETTINGS_MEMBERS = config.get(ENV, "SETTINGS_MEMBERS").split(",")
 SETTINGS_STRATEGIES = config.get(ENV, "SETTINGS_STRATEGIES")
+TOKEN_ADDRESSES = config.get(ENV, "TOKEN_ADDRESSES").split(",")
+
 
 def increment_config_id(
     id_type: str, increment: int = +1, config: configparser.ConfigParser = config

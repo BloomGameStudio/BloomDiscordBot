@@ -40,14 +40,14 @@ def modify_space_settings(quorum_value):
     command = ["node", "./snapshot/modify_space.js", str(quorum_value)]
 
     env = os.environ.copy()
-    env['SNAPSHOT_HUB'] = cfg.SNAPSHOT_HUB
-    env['SNAPSHOT_SPACE'] = cfg.SNAPSHOT_SPACE
-    env['NETWORK'] = cfg.NETWORK_ID
-    env['SETTINGS_NAME'] = cfg.SETTINGS_NAME
-    env['SETTINGS_ABOUT'] = cfg.SETTINGS_ABOUT
-    env['SETTINGS_SYMBOL'] = cfg.SETTINGS_SYMBOL
-    env['SETTINGS_MEMBERS'] = ','.join(cfg.SETTINGS_MEMBERS)
-    env['SETTINGS_STRATEGIES'] = cfg.SETTINGS_STRATEGIES
+    env["SNAPSHOT_HUB"] = cfg.SNAPSHOT_HUB
+    env["SNAPSHOT_SPACE"] = cfg.SNAPSHOT_SPACE
+    env["NETWORK"] = cfg.NETWORK_ID
+    env["SETTINGS_NAME"] = cfg.SETTINGS_NAME
+    env["SETTINGS_ABOUT"] = cfg.SETTINGS_ABOUT
+    env["SETTINGS_SYMBOL"] = cfg.SETTINGS_SYMBOL
+    env["SETTINGS_MEMBERS"] = ",".join(cfg.SETTINGS_MEMBERS)
+    env["SETTINGS_STRATEGIES"] = cfg.SETTINGS_STRATEGIES
 
     try:
         subprocess.run(command, check=True, env=env)
@@ -55,6 +55,7 @@ def modify_space_settings(quorum_value):
     except subprocess.CalledProcessError as e:
         logger.error(f"Error modifying snapshot space settings: {e}")
         raise
+
 
 def create_snapshot_proposal(proposal_data, title):
     """
@@ -80,12 +81,12 @@ def create_snapshot_proposal(proposal_data, title):
     ]
 
     env = os.environ.copy()
-    env['SNAPSHOT_HUB'] = cfg.SNAPSHOT_HUB
-    env['SNAPSHOT_SPACE'] = cfg.SNAPSHOT_SPACE
-    env['NETWORK_ID'] = cfg.NETWORK_ID
+    env["SNAPSHOT_HUB"] = cfg.SNAPSHOT_HUB
+    env["SNAPSHOT_SPACE"] = cfg.SNAPSHOT_SPACE
+    env["NETWORK_ID"] = cfg.NETWORK_ID
 
     try:
-        subprocess.run(proposal_command, check=True)
+        subprocess.run(proposal_command, check=True, env=env)
         logger.info("Snapshot proposal created successfully.")
     except subprocess.CalledProcessError as e:
         logger.error(f"Error creating snapshot proposal: {e}")
@@ -126,15 +127,9 @@ def fetch_XP_total_supply() -> int:
         }
     ]
 
-    token_addresses = [
-        "0x206d247F61cb82B9711318381cDb7Bc5039d2A2c",
-        "0x4cd06ada7d8564830018000d784c69bd542b1e6a",
-        "0x57d3a929fdc4faf1b35e7092d9dee7af097afb6a",
-    ]
-
     total_supply_sum = 0
 
-    for address in token_addresses:
+    for address in cfg.TOKEN_ADDRESSES:
         try:
             checksum_address = Web3.to_checksum_address(address)
             token_contract = web3.eth.contract(address=checksum_address, abi=token_abi)
@@ -180,7 +175,6 @@ def fetch_XP_quorum(percentage: int = 25) -> int:
 
 
 def fetch_first_open_proposal_url(concluded_proposal_title):
-
     url = f"{cfg.SNAPSHOT_HUB}/graphql"
 
     query = """
@@ -209,7 +203,9 @@ def fetch_first_open_proposal_url(concluded_proposal_title):
         proposals = data.get("data", {}).get("proposals", [])
         if proposals and proposals[0]["title"] == concluded_proposal_title:
             proposal_id = proposals[0]["id"]
-            return f"{cfg.SNAPSHOT_URL_PREFIX}{cfg.SNAPSHOT_SPACE}/proposal/{proposal_id}"
+            return (
+                f"{cfg.SNAPSHOT_URL_PREFIX}{cfg.SNAPSHOT_SPACE}/proposal/{proposal_id}"
+            )
         else:
             return None
     else:
@@ -239,9 +235,7 @@ def get_channel_by_name(guild: discord.Guild, channel_name: str) -> discord.Text
             return channel
 
     fallback_channel_name = constants.CONSTANT_FALLBACK_MAPPING.get(channel_name)
-    if (
-        fallback_channel_name
-    ): 
+    if fallback_channel_name:
         for channel in guild.channels:
             if (
                 isinstance(channel, discord.TextChannel)
@@ -277,9 +271,7 @@ async def get_forum_channel_by_name(
             return channel
 
     fallback_channel_name = constants.CONSTANT_FALLBACK_MAPPING.get(channel_name)
-    if (
-        fallback_channel_name
-    ):
+    if fallback_channel_name:
         for channel in guild.channels:
             if (
                 isinstance(channel, discord.ForumChannel)

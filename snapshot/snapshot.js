@@ -27,14 +27,12 @@ async function createProposal(title, abstract, background, additional, choices) 
   const ethPrivateKey = process.env.ETH_PRIVATE_KEY;
   const primaryRpc = process.env.PRIMARY_RPC;
   const secondaryRpc = process.env.SECONDARY_RPC;
-  
-  // Load environment-specific settings
-  const hub = process.env.SNAPSHOT_HUB;  // Use the dynamic SNAPSHOT_HUB value
-  const snapshotSpace = process.env.SNAPSHOT_SPACE;  // Use the dynamic SNAPSHOT_SPACE value
-  const network = process.env.NETWORK;  // Use the dynamic NETWORK value
+  const hub = process.env.SNAPSHOT_HUB;
+  const snapshotSpace = process.env.SNAPSHOT_SPACE;
+  const network = process.env.NETWORK;
 
-  const maxRetries = 3; // Number of retry attempts
-  const initialRetryDelay = 5000; // Initial delay between retries in milliseconds (e.g., 5000ms = 5s)
+  const maxRetries = 3;
+  const initialRetryDelay = 5000;
 
   if (!ethAddress || !ethPrivateKey) {
     throw new Error('Ethereum address or private key not provided in environment variables');
@@ -47,7 +45,7 @@ async function createProposal(title, abstract, background, additional, choices) 
 
       const client = new snapshot.Client712(hub);
 
-      const currentTime = Math.floor(new Date().getTime() / 1000); // Current time in seconds
+      const currentTime = Math.floor(new Date().getTime() / 1000);
       const seventyTwoHoursInSeconds = 72 * 3600;
 
       const proposalParams = {
@@ -57,31 +55,27 @@ async function createProposal(title, abstract, background, additional, choices) 
         body: `\n ${abstract}\n\n \n ${background}\n\n \n ${additional}`,
         choices: choices,
         start: currentTime,
-        end: currentTime + seventyTwoHoursInSeconds, // 72 hours from now
-        snapshot: await provider.getBlockNumber(), // Current block number as snapshot
+        end: currentTime + seventyTwoHoursInSeconds,
+        snapshot: await provider.getBlockNumber(),
         network: network,
         plugins: JSON.stringify({}),
         app: 'Gov'
       };
 
-      // Submit the proposal
       const receipt = await client.proposal(wallet, ethAddress, proposalParams);
 
-      // Log the receipt details
       console.log('Proposal submitted. Receipt:', receipt);
-      return true; // Indicate success
+      return true;
     } catch (error) {
       console.error(`Error creating proposal with RPC ${providerRpc}:`, error);
-      return false; // Indicate failure
+      return false;
     }
   }
 
-  // Delay function
   function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  // Attempt to submit the proposal with a retry mechanism
   let attempt = 0;
   let success = false;
   let retryDelay = initialRetryDelay;
@@ -90,10 +84,8 @@ async function createProposal(title, abstract, background, additional, choices) 
     attempt++;
     console.log(`Attempt ${attempt} to submit proposal...`);
 
-    // Try using the primary RPC
     success = await submitProposal(primaryRpc);
 
-    // If primary RPC fails, try using the secondary RPC
     if (!success) {
       console.log('Retrying with secondary RPC...');
       success = await submitProposal(secondaryRpc);
@@ -103,8 +95,8 @@ async function createProposal(title, abstract, background, additional, choices) 
       console.log(`Attempt ${attempt} failed.`);
       if (attempt < maxRetries) {
         console.log(`Waiting for ${retryDelay / 1000} seconds before retrying...`);
-        await delay(retryDelay); // Wait before the next attempt
-        retryDelay *= 2; // Exponential backoff
+        await delay(retryDelay);
+        retryDelay *= 2;
       }
     }
   }
