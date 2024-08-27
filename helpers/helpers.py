@@ -129,7 +129,7 @@ def fetch_XP_total_supply() -> int:
 
     total_supply_sum = 0
 
-    for address in cfg.TOKEN_ADDRESSES:
+    for address in cfg.SETTINGS_TOKEN_ADDRESSES:
         try:
             checksum_address = Web3.to_checksum_address(address)
             token_contract = web3.eth.contract(address=checksum_address, abi=token_abi)
