@@ -25,8 +25,8 @@ dotenv.config();
 async function createProposal(title, abstract, background, additional, choices) {
   const ethAddress = process.env.ETH_ADDRESS;
   const ethPrivateKey = process.env.ETH_PRIVATE_KEY;
-  const primaryRpc = process.env.PRIMARY_RPC;
-  const secondaryRpc = process.env.SECONDARY_RPC;
+  const primaryRpc = process.env.PRIMARY_RPC_URL;
+  const secondaryRpc = process.env.SECONDARY_RPC_URL;
   const hub = process.env.SNAPSHOT_HUB;
   const snapshotSpace = process.env.SNAPSHOT_SPACE;
   const network = process.env.NETWORK;

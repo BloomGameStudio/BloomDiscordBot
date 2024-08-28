@@ -26,6 +26,8 @@ from typing import Optional, Dict, Any, List, Tuple
 from logger.logger import logger
 from web3 import Web3
 
+env = os.environ.copy()
+
 
 def modify_space_settings(quorum_value):
     """
@@ -39,7 +41,6 @@ def modify_space_settings(quorum_value):
     """
     command = ["node", "./snapshot/modify_space.js", str(quorum_value)]
 
-    env = os.environ.copy()
     env["SNAPSHOT_HUB"] = cfg.SNAPSHOT_HUB
     env["SNAPSHOT_SPACE"] = cfg.SNAPSHOT_SPACE
     env["NETWORK"] = cfg.NETWORK_ID
@@ -80,10 +81,11 @@ def create_snapshot_proposal(proposal_data, title):
         "Abstain",
     ]
 
-    env = os.environ.copy()
     env["SNAPSHOT_HUB"] = cfg.SNAPSHOT_HUB
     env["SNAPSHOT_SPACE"] = cfg.SNAPSHOT_SPACE
-    env["NETWORK_ID"] = cfg.NETWORK_ID
+    env["NETWORK"] = cfg.NETWORK_ID
+    env["PRIMARY_RPC_URL"] = cfg.PRIMARY_RPC_URL
+    env["SECONDARY_RPC_URL"] = cfg.SECONDARY_RPC_URL
 
     try:
         subprocess.run(proposal_command, check=True, env=env)
@@ -101,8 +103,8 @@ def fetch_XP_total_supply() -> int:
     int: The total supply of all tokens converted to ether.
     """
 
-    primary_rpc = os.getenv("PRIMARY_RPC")
-    secondary_rpc = os.getenv("SECONDARY_RPC")
+    primary_rpc = cfg.PRIMARY_RPC_URL
+    secondary_rpc = cfg.SECONDARY_RPC_URL
 
     if not primary_rpc or not secondary_rpc:
         logger.error("RPC URLs not set in environment variables.")

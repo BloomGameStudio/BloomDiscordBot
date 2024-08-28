@@ -29,27 +29,12 @@ Permissions:
 
 # Quick start guide:
 
-1. Ensure there are existing channels in Bloom Collective, and Bloom Studio Discord servers with the channel names set in constants.py. The bot will determine the required channel IDs / Forum Channel IDs from the channel names in it's respective server.
+1. To run in prod set env var "ENV" to prod. Ensure there are existing channels in Bloom Studio Discord servers with the channel names set in constants.py. The bot will determine the required channel IDs / Forum Channel IDs from the channel names in it's respective server."
 
 2. Create a .env file. Reference .env.example for what is required. 
 
-3. Set the proposal parameters and space settings to be used in ./snapshot/snapshot.js. For example:
+3. To run in dev, reach out to Sarah for access to the dev server. Alternatively make your own server, and snapshot space. refer to step 1, and modify config/config.ini accordingly.Bot **will** default to dev if this env var is not set.
 
-```
-    const proposalParams = {
-      space: 'bloomtest.eth', // Set the space
-      type: 'weighted', // Define the voting system
-      title: removeMarkdown(title),
-      body: `Abstract:\n ${removeMarkdown(abstract)}\n\n Background:\n ${removeMarkdown(background)}`,
-      choices: choices.map(removeMarkdown),
-      start: currentTime,
-      end: currentTime + fortyeighthoursinSeconds,
-      snapshot: await provider.getBlockNumber(), 
-      network: '1',
-      plugins: JSON.stringify({}),
-      app: 'Gov-test' // provide the name of your project using this Snapshot.js integration
-    };
-```
 
 **Docker-Compose**
 
