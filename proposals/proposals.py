@@ -81,6 +81,7 @@ async def handle_publishdraft(
     else:
         await interaction.followup.send(f"Draft not found: {draft_name}")
 
+
 async def prepare_draft(
     guild: discord.Guild, draft: Dict[str, Any]
 ) -> Tuple[str, str, str]:
@@ -109,6 +110,7 @@ async def prepare_draft(
         title = f"Bloom General Proposal: {draft['title']}"
 
     return id_type, channel_name, title
+
 
 async def publish_draft(
     draft: Dict[str, Any], bot: Bot, guild_id: int, guild: discord.Guild
@@ -156,7 +158,7 @@ async def publish_draft(
             "yes_count": 0,
             "title": title,
             "channel_id": str(forum_channel.id),
-            "thread_id": str(thread.thread.id), 
+            "thread_id": str(thread.thread.id),
             "message_id": str(vote_message.id),
         }
 
