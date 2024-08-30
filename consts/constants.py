@@ -36,7 +36,13 @@ GOVERNANCE_BUDGET_CHANNEL = "budgetary-props"
 GOVERNANCE_TALK_CHANNEL = "🐬│governance"
 COLLAB_LAND_CHANNEL = "🤖│collabland-join"
 START_HERE_CHANNEL = "start-here"
-PROPOSAL_CONCLUSION_EMOJIS = ["<a:blob_time:1230791614851584060>", "<a:saber_pepe:1230791417220300800>", "<:inevitable_bloom:1192384857691656212>", ":tada:", ":hibiscus:"]
+PROPOSAL_CONCLUSION_EMOJIS = [
+    "<a:blob_time:1230791614851584060>",
+    "<a:saber_pepe:1230791417220300800>",
+    "<:inevitable_bloom:1192384857691656212>",
+    ":tada:",
+    ":hibiscus:",
+]
 
 YES_VOTE = "👍"
 NO_VOTE = "👎"
@@ -61,9 +67,17 @@ CONSTANT_FALLBACK_MAPPING = {
 RULES_MESSAGE_ID = 1202059311681904661  # Set to ID of whatever message you want to be used as rules / to welcome a user
 DISCORD_ROLE_TRIGGERS = [
     {"name": "Client", "emoji_id": 1199583728129802322, "role": "Client Pod"},
-    {"name": "Graphics & Design", "emoji_id": 980752213347549234, "role": "Graphics Pod"},
+    {
+        "name": "Graphics & Design",
+        "emoji_id": 980752213347549234,
+        "role": "Graphics Pod",
+    },
     {"name": "Backend", "emoji_id": 846911453839228938, "role": "Backend Pod"},
-    {"name": "Gameplay & Story Pod", "emoji_id": 961338498525306980, "role": "Gameplay & Story Pod"},
+    {
+        "name": "Gameplay & Story Pod",
+        "emoji_id": 961338498525306980,
+        "role": "Gameplay & Story Pod",
+    },
     {"name": "Operations", "emoji_id": 945177584768004127, "role": "Policy & Ops Pod"},
     {"name": "Financial", "emoji_id": 887872297082449970, "role": "Donator"},
 ]

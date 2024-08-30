@@ -19,7 +19,7 @@ from helpers.helpers import (
     fetch_first_open_proposal_url,
     fetch_XP_quorum,
     modify_space_settings,
-    create_snapshot_proposal
+    create_snapshot_proposal,
 )
 from consts.constants import (
     GENERAL_CHANNEL,

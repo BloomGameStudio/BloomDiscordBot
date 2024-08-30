@@ -78,7 +78,9 @@ class EditProposalSelect(discord.ui.Select):
                 selected_proposal = proposal
                 break
         else:
-            await interaction.response.send_message("Proposal not found.", ephemeral=True)
+            await interaction.response.send_message(
+                "Proposal not found.", ephemeral=True
+            )
             return
 
         # Open the ProposalModal with the selected proposal

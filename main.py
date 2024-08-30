@@ -19,6 +19,7 @@ from cogs.events import EventsCog
 from cogs.help import HelpCommandCog
 from cogs.gov import GovCommandsCog
 
+
 class Bot:
     async def setup_background_tasks(self):
         # Start the background tasks
@@ -44,9 +45,7 @@ class Bot:
             ContributorCommandsCog(self.bot, self.contributors, self.emoji_dicts)
         )
         await self.bot.add_cog(GovCommandsCog(self.bot))
-        await self.bot.add_cog(
-            EventsCog(self.bot, self.contributors, self.emoji_dicts)
-        )
+        await self.bot.add_cog(EventsCog(self.bot, self.contributors, self.emoji_dicts))
 
         # Setup and start background tasks
         await self.setup_background_tasks()
