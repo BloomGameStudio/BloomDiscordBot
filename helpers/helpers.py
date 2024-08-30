@@ -25,6 +25,7 @@ import os
 from typing import Optional, Dict, Any, List, Tuple
 from logger.logger import logger
 from web3 import Web3
+from urllib.parse import urljoin
 
 env = os.environ.copy()
 
@@ -177,8 +178,7 @@ def fetch_XP_quorum(percentage: int = 25) -> int:
 
 
 def fetch_first_open_proposal_url(concluded_proposal_title):
-    url = f"{cfg.SNAPSHOT_HUB}/graphql"
-
+    url = urljoin(cfg.SNAPSHOT_HUB, "graphql")
     query = """
     query {
         proposals (
@@ -205,9 +205,9 @@ def fetch_first_open_proposal_url(concluded_proposal_title):
         proposals = data.get("data", {}).get("proposals", [])
         if proposals and proposals[0]["title"] == concluded_proposal_title:
             proposal_id = proposals[0]["id"]
-            return (
-                f"{cfg.SNAPSHOT_URL_PREFIX}{cfg.SNAPSHOT_SPACE}/proposal/{proposal_id}"
-            )
+            base_url = urljoin(cfg.SNAPSHOT_URL_PREFIX, f"{cfg.SNAPSHOT_SPACE}/")
+            proposal_url = urljoin(base_url, f"proposal/{proposal_id}")
+            return proposal_url
         else:
             return None
     else:

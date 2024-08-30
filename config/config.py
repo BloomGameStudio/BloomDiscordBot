@@ -16,7 +16,7 @@ config: configparser.ConfigParser = configparser.ConfigParser()
 config.read(CONFIG_ABSOLUTE_PATH)
 
 # Determine the environment
-ENV = os.getenv("ENV", "dev").lower()  # Default to 'dev' if ENV is not set
+ENV = os.getenv("ENV", "DEV")
 
 # Load ID values
 current_governance_id: int = config.getint("ID_START_VALUES", "governance_id")
