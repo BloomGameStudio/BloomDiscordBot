@@ -45,9 +45,7 @@ class Bot:
             ContributorCommandsCog(self.bot, self.contributors, self.emoji_dicts)
         )
         await self.bot.add_cog(GovCommandsCog(self.bot))
-        await self.bot.add_cog(
-            EventsCog(self.bot, self.contributors, self.emoji_dicts)
-        )
+        await self.bot.add_cog(EventsCog(self.bot, self.contributors, self.emoji_dicts))
 
         # Setup and start background tasks
         await self.setup_background_tasks()
