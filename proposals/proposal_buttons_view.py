@@ -12,12 +12,14 @@ class ProposalButtonsView(discord.ui.View):
         super().__init__()
         self.proposals = proposals
 
-    @discord.ui.button(label="Create", style=discord.ButtonStyle.green)
-    async def create(self, interaction: discord.Interaction, button: discord.ui.Button):
-        modal = ProposalModal(interaction.channel, None)
-        await interaction.response.send_modal(modal)
+    @discord.ui.button(label="Create Proposal", style=discord.ButtonStyle.green)
+    async def create_proposal(self, interaction: discord.Interaction, button: discord.ui.Button):
+        self.clear_items()
+        self.add_item(CreateGeneralProposalButton(self.proposals))
+        self.add_item(CreateBudgetProposalButton(self.proposals))
+        await interaction.response.edit_message(view=self)
 
-    @discord.ui.button(label="Edit", style=discord.ButtonStyle.blurple)
+    @discord.ui.button(label="Edit Proposal", style=discord.ButtonStyle.blurple)
     async def edit(self, interaction: discord.Interaction, button: discord.ui.Button):
         if not self.proposals:
             await interaction.response.send_message(
@@ -28,7 +30,7 @@ class ProposalButtonsView(discord.ui.View):
             self.add_item(EditProposalSelect(self.proposals))
             await interaction.response.edit_message(view=self)
 
-    @discord.ui.button(label="Preview", style=discord.ButtonStyle.grey)
+    @discord.ui.button(label="Preview Proposal", style=discord.ButtonStyle.grey)
     async def preview(self, interaction: discord.Interaction, button: discord.ui.Button):
         if not self.proposals:
             await interaction.response.send_message("No proposals to preview.", ephemeral=True)
@@ -37,8 +39,8 @@ class ProposalButtonsView(discord.ui.View):
             self.add_item(PreviewProposalSelect(self.proposals))
             await interaction.response.edit_message(view=self)
             await interaction.response.send_message(view=self)
- 
-    @discord.ui.button(label="Delete", style=discord.ButtonStyle.red)
+
+    @discord.ui.button(label="Delete Proposal", style=discord.ButtonStyle.red)
     async def delete(self, interaction: discord.Interaction, button: discord.ui.Button):
         if not self.proposals:
             await interaction.response.send_message(
@@ -48,3 +50,23 @@ class ProposalButtonsView(discord.ui.View):
             self.clear_items()
             self.add_item(DeleteProposalSelect(self.proposals))
             await interaction.response.edit_message(view=self)
+
+
+class CreateGeneralProposalButton(discord.ui.Button):
+    def __init__(self, proposals):
+        super().__init__(label="General Proposal", style=discord.ButtonStyle.green)
+        self.proposals = proposals
+
+    async def callback(self, interaction: discord.Interaction):
+        modal = ProposalModal(interaction.channel, None, proposal_type="governance")
+        await interaction.response.send_modal(modal)
+
+
+class CreateBudgetProposalButton(discord.ui.Button):
+    def __init__(self, proposals):
+        super().__init__(label="Budget Proposal", style=discord.ButtonStyle.green)
+        self.proposals = proposals
+
+    async def callback(self, interaction: discord.Interaction):
+        modal = ProposalModal(interaction.channel, None, proposal_type="budget")
+        await interaction.response.send_modal(modal)
