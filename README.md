@@ -122,9 +122,9 @@ All commands use discords slash commands (/)
 
 ```/vote_draft``` 
 
-Upon typing the command the bot will present you with three buttons: Create, Edit, Delete.
+Upon typing the command the bot will present you with three buttons: Create, Edit, Preview, and Delete. 
 
-These should be self explained, create will allow you to draft a proposal. Edit will allow you to edit an existing proposal, and delete
+These should be self explained, clicking create will prompt you with either general or budget, these options dictate the type of proposal. Edit will allow you to edit an existing proposal, and delete
 will let you delete an existing proposal that has not yet been published. 
 
 You can use this command repeatedly to perform different actions if necessary.
