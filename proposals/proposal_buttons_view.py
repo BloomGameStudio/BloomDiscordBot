@@ -4,7 +4,11 @@ ProposalButtonsView is a discord.ui.View that contains buttons for creating, edi
 
 import discord
 from .proposal_modal import ProposalModal
-from .proposal_selects import DeleteProposalSelect, EditProposalSelect, PreviewProposalSelect
+from .proposal_selects import (
+    DeleteProposalSelect,
+    EditProposalSelect,
+    PreviewProposalSelect,
+)
 
 
 class ProposalButtonsView(discord.ui.View):
@@ -13,11 +17,16 @@ class ProposalButtonsView(discord.ui.View):
         self.proposals = proposals
 
     @discord.ui.button(label="Create Proposal", style=discord.ButtonStyle.green)
-    async def create_proposal(self, interaction: discord.Interaction, button: discord.ui.Button):
-        self.clear_items()
-        self.add_item(CreateGeneralProposalButton(self.proposals))
-        self.add_item(CreateBudgetProposalButton(self.proposals))
-        await interaction.response.edit_message(view=self)
+    async def create_proposal(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
+        view = discord.ui.View()
+        view.add_item(CreateGeneralProposalButton(self.proposals))
+        view.add_item(CreateBudgetProposalButton(self.proposals))
+
+        await interaction.response.send_message(
+            content="Choose a proposal type:", view=view, ephemeral=True
+        )
 
     @discord.ui.button(label="Edit Proposal", style=discord.ButtonStyle.blurple)
     async def edit(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -30,10 +39,14 @@ class ProposalButtonsView(discord.ui.View):
             self.add_item(EditProposalSelect(self.proposals))
             await interaction.response.edit_message(view=self)
 
-    @discord.ui.button(label="Preview Proposal", style=discord.ButtonStyle.grey)
-    async def preview(self, interaction: discord.Interaction, button: discord.ui.Button):
+    @discord.ui.button(label="Preview", style=discord.ButtonStyle.grey)
+    async def preview(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
         if not self.proposals:
-            await interaction.response.send_message("No proposals to preview.", ephemeral=True)
+            await interaction.response.send_message(
+                "No proposals to preview.", ephemeral=True
+            )
         else:
             self.clear_items()
             self.add_item(PreviewProposalSelect(self.proposals))
