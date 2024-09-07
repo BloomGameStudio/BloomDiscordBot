@@ -124,10 +124,11 @@ class PreviewProposalSelect(discord.ui.Select):
         )
 
         await interaction.followup.send(
-            f'{selected_proposal["background"]}', ephemeral=True
-        )
-        await interaction.followup.send(
             f'{selected_proposal["abstract"]}', ephemeral=True
+        )
+
+        await interaction.followup.send(
+            f'{selected_proposal["background"]}', ephemeral=True
         )
 
         if selected_proposal["additional"]:
