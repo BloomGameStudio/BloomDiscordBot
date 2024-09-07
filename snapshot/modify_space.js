@@ -23,7 +23,7 @@ const network = process.env.NETWORK_ID || '11155111';
 const settingsName = process.env.SETTINGS_NAME;
 const settingsAbout = process.env.SETTINGS_ABOUT;
 const settingsSymbol = process.env.SETTINGS_SYMBOL;
-const settingsMembers = process.env.SETTINGS_MEMBERS.split(',');
+const settingsMembers = process.env.SETTINGS_MEMBERS ? process.env.SETTINGS_MEMBERS.split(',') : [];
 const settingsAdmins = process.env.SETTINGS_ADMINS.split(',');
 const settingsStrategies = JSON.parse(process.env.SETTINGS_STRATEGIES);
 
