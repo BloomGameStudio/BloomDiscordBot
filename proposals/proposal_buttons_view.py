@@ -16,7 +16,7 @@ class ProposalButtonsView(discord.ui.View):
         super().__init__()
         self.proposals = proposals
 
-    @discord.ui.button(label="Create Proposal", style=discord.ButtonStyle.green)
+    @discord.ui.button(label="Create", style=discord.ButtonStyle.green)
     async def create_proposal(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
@@ -25,10 +25,10 @@ class ProposalButtonsView(discord.ui.View):
         view.add_item(CreateBudgetProposalButton(self.proposals))
 
         await interaction.response.send_message(
-            content="Choose a proposal type:", view=view, ephemeral=True
+            content="Proposal type:", view=view, ephemeral=True
         )
 
-    @discord.ui.button(label="Edit Proposal", style=discord.ButtonStyle.blurple)
+    @discord.ui.button(label="Edit", style=discord.ButtonStyle.blurple)
     async def edit(self, interaction: discord.Interaction, button: discord.ui.Button):
         if not self.proposals:
             await interaction.response.send_message(
@@ -53,7 +53,7 @@ class ProposalButtonsView(discord.ui.View):
             await interaction.response.edit_message(view=self)
             await interaction.response.send_message(view=self)
 
-    @discord.ui.button(label="Delete Proposal", style=discord.ButtonStyle.red)
+    @discord.ui.button(label="Delete", style=discord.ButtonStyle.red)
     async def delete(self, interaction: discord.Interaction, button: discord.ui.Button):
         if not self.proposals:
             await interaction.response.send_message(
@@ -67,7 +67,7 @@ class ProposalButtonsView(discord.ui.View):
 
 class CreateGeneralProposalButton(discord.ui.Button):
     def __init__(self, proposals):
-        super().__init__(label="General Proposal", style=discord.ButtonStyle.green)
+        super().__init__(label="General", style=discord.ButtonStyle.green)
         self.proposals = proposals
 
     async def callback(self, interaction: discord.Interaction):
@@ -77,7 +77,7 @@ class CreateGeneralProposalButton(discord.ui.Button):
 
 class CreateBudgetProposalButton(discord.ui.Button):
     def __init__(self, proposals):
-        super().__init__(label="Budget Proposal", style=discord.ButtonStyle.green)
+        super().__init__(label="Budget", style=discord.ButtonStyle.green)
         self.proposals = proposals
 
     async def callback(self, interaction: discord.Interaction):

@@ -5,7 +5,6 @@ proposal_modal is a discord.ui.Modal that is used to create or edit a proposal. 
 import discord
 from discord import ui
 from proposals.proposals import proposals
-from config import config as cfg
 
 
 class ProposalModal(ui.Modal, title="Create/Edit Proposal"):
@@ -38,7 +37,9 @@ class ProposalModal(ui.Modal, title="Create/Edit Proposal"):
         super().__init__()
         self.channel = channel
         self.proposal = proposal
-        self.proposal_type = proposal_type
+        self.proposal_type = (
+            proposal.get("type") if proposal is not None else proposal_type
+        )
 
         if proposal is not None:
             self.name.default = proposal["title"]
@@ -60,7 +61,6 @@ class ProposalModal(ui.Modal, title="Create/Edit Proposal"):
         member_id: int = interaction.user.id
 
         full_title = self.generate_full_title(self.proposal_type, self.name.value)
-        # Validate title length
         if len(full_title) > 100:
             await interaction.response.send_message(
                 "The total length of the proposal title including prefix exceeds 100 characters. Please shorten your title.",
@@ -68,7 +68,6 @@ class ProposalModal(ui.Modal, title="Create/Edit Proposal"):
             )
             return
 
-        # Check if a proposal with the same name already exists
         if self.proposal is None and any(
             proposal["title"] == self.name.value for proposal in proposals
         ):
@@ -78,7 +77,6 @@ class ProposalModal(ui.Modal, title="Create/Edit Proposal"):
             )
             return
 
-        # Construct the proposal data dictionary
         proposal_data = {
             "member_id": member_id,
             "title": self.name.value,
@@ -89,13 +87,10 @@ class ProposalModal(ui.Modal, title="Create/Edit Proposal"):
         }
 
         if self.proposal is None:
-            # If it's a new proposal, add it to the list
             proposals.append(proposal_data)
         else:
-            # Update existing proposal
             self.proposal.update(proposal_data)
 
-        # Clear the buttons and show the response when a proposal is created/edited
         e = discord.Embed()
         e.title = f"Thank you, proposal has been created/edited. Use the same command to edit the proposal."
         e.description = f"{self.name.value}"
