@@ -19,11 +19,12 @@ const secondaryRpc = process.env.SECONDARY_RPC_URL;
 
 const hub = process.env.SNAPSHOT_HUB;
 const snapshotSpace = process.env.SNAPSHOT_SPACE;
-const network = process.env.NETWORK_ID || '11155111'; // Fallback network ID
+const network = process.env.NETWORK_ID || '11155111';
 const settingsName = process.env.SETTINGS_NAME;
 const settingsAbout = process.env.SETTINGS_ABOUT;
 const settingsSymbol = process.env.SETTINGS_SYMBOL;
-const settingsMembers = process.env.SETTINGS_MEMBERS.split(',');
+const settingsMembers = process.env.SETTINGS_MEMBERS ? process.env.SETTINGS_MEMBERS.split(',') : [];
+const settingsAdmins = process.env.SETTINGS_ADMINS.split(',');
 const settingsStrategies = JSON.parse(process.env.SETTINGS_STRATEGIES);
 
 const maxRetries = 3;
@@ -46,12 +47,8 @@ async function submitSpaceSettings(providerRpc, quorumValue) {
       network: network,
       symbol: settingsSymbol,
       private: false,
-      admins: [],
-      moderators: [],
       members: settingsMembers,
-      categories: [],
-      plugins: {},
-      children: [],
+      admins: settingsAdmins,
       voting: {
         quorum: quorumValue,
         hideAbstain: false
