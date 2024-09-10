@@ -206,7 +206,7 @@ def fetch_first_open_proposal_url(concluded_proposal_title):
         proposals = data.get("data", {}).get("proposals", [])
         if proposals and proposals[0]["title"] == concluded_proposal_title:
             proposal_id = proposals[0]["id"]
-            base_url = f"{cfg.SNAPSHOT_URL_PREFIX}{cfg.SNAPSHOT_SPACE}/"
+            base_url = f"{cfg.SNAPSHOT_URL_PREFIX}#/{cfg.SNAPSHOT_SPACE}/"
             proposal_url = f"{base_url}proposal/{proposal_id}"
             return proposal_url
         else:
