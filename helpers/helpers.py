@@ -25,29 +25,38 @@ import os
 from typing import Optional, Dict, Any, List, Tuple
 from logger.logger import logger
 from web3 import Web3
+from urllib.parse import urljoin
+
+env = os.environ.copy()
 
 
 def modify_space_settings(quorum_value):
     """
-    Submit a command to modify the space settings on Snapshot.
+    Modify Snapshot space settings using the specified quorum value.
 
     Parameters:
-    quorum_value (str): The value to set the quorum to.
+    quorum_value (int): The quorum value to set in the space settings.
 
     Raises:
-    subprocess.CalledProcessError: If an error occurs while modifying the space
+    subprocess.CalledProcessError: If an error occurs while modifying the space settings.
     """
-    modify_space_command = [
-        "node",
-        "./snapshot/modify_space.js",
-        quorum_value,
-    ]
+    command = ["node", "./snapshot/modify_space.js", str(quorum_value)]
+
+    env["SNAPSHOT_HUB"] = cfg.SNAPSHOT_HUB
+    env["SNAPSHOT_SPACE"] = cfg.SNAPSHOT_SPACE
+    env["NETWORK"] = cfg.NETWORK_ID
+    env["SETTINGS_NAME"] = cfg.SETTINGS_NAME
+    env["SETTINGS_ABOUT"] = cfg.SETTINGS_ABOUT
+    env["SETTINGS_SYMBOL"] = cfg.SETTINGS_SYMBOL
+    env["SETTINGS_MEMBERS"] = ",".join(cfg.SETTINGS_MEMBERS)
+    env["SETTINGS_ADMINS"] = ",".join(cfg.SETTINGS_ADMINS)
+    env["SETTINGS_STRATEGIES"] = cfg.SETTINGS_STRATEGIES
 
     try:
-        subprocess.run(modify_space_command, check=True)
-        logger.info("Space settings modified successfully.")
+        subprocess.run(command, check=True, env=env)
+        logger.info("Snapshot space settings modified successfully.")
     except subprocess.CalledProcessError as e:
-        logger.error(f"Error modifying space settings: {e}")
+        logger.error(f"Error modifying snapshot space settings: {e}")
         raise
 
 
@@ -74,8 +83,14 @@ def create_snapshot_proposal(proposal_data, title):
         "Abstain",
     ]
 
+    env["SNAPSHOT_HUB"] = cfg.SNAPSHOT_HUB
+    env["SNAPSHOT_SPACE"] = cfg.SNAPSHOT_SPACE
+    env["NETWORK"] = cfg.NETWORK_ID
+    env["PRIMARY_RPC_URL"] = cfg.PRIMARY_RPC_URL
+    env["SECONDARY_RPC_URL"] = cfg.SECONDARY_RPC_URL
+
     try:
-        subprocess.run(proposal_command, check=True)
+        subprocess.run(proposal_command, check=True, env=env)
         logger.info("Snapshot proposal created successfully.")
     except subprocess.CalledProcessError as e:
         logger.error(f"Error creating snapshot proposal: {e}")
@@ -90,8 +105,8 @@ def fetch_XP_total_supply() -> int:
     int: The total supply of all tokens converted to ether.
     """
 
-    primary_rpc = os.getenv("PRIMARY_RPC")
-    secondary_rpc = os.getenv("SECONDARY_RPC")
+    primary_rpc = cfg.PRIMARY_RPC_URL
+    secondary_rpc = cfg.SECONDARY_RPC_URL
 
     if not primary_rpc or not secondary_rpc:
         logger.error("RPC URLs not set in environment variables.")
@@ -116,15 +131,9 @@ def fetch_XP_total_supply() -> int:
         }
     ]
 
-    token_addresses = [
-        "0x206d247F61cb82B9711318381cDb7Bc5039d2A2c",
-        "0x4cd06ada7d8564830018000d784c69bd542b1e6a",
-        "0x57d3a929fdc4faf1b35e7092d9dee7af097afb6a",
-    ]
-
     total_supply_sum = 0
 
-    for address in token_addresses:
+    for address in cfg.SETTINGS_TOKEN_ADDRESSES:
         try:
             checksum_address = Web3.to_checksum_address(address)
             token_contract = web3.eth.contract(address=checksum_address, abi=token_abi)
@@ -170,7 +179,7 @@ def fetch_XP_quorum(percentage: int = 25) -> int:
 
 
 def fetch_first_open_proposal_url(concluded_proposal_title):
-    url = "https://hub.snapshot.org/graphql"
+    url = urljoin(cfg.SNAPSHOT_HUB, "graphql")
     query = """
     query {
         proposals (
@@ -187,7 +196,7 @@ def fetch_first_open_proposal_url(concluded_proposal_title):
         }
     }
     """ % (
-        constants.SNAPSHOT_SPACE
+        cfg.SNAPSHOT_SPACE
     )
 
     response = requests.post(url, json={"query": query})
@@ -197,7 +206,9 @@ def fetch_first_open_proposal_url(concluded_proposal_title):
         proposals = data.get("data", {}).get("proposals", [])
         if proposals and proposals[0]["title"] == concluded_proposal_title:
             proposal_id = proposals[0]["id"]
-            return f"https://snapshot.org/#/{constants.SNAPSHOT_SPACE}/proposal/{proposal_id}"
+            base_url = f"{cfg.SNAPSHOT_URL_PREFIX}#/{cfg.SNAPSHOT_SPACE}/"
+            proposal_url = f"{base_url}proposal/{proposal_id}"
+            return proposal_url
         else:
             return None
     else:
@@ -227,9 +238,7 @@ def get_channel_by_name(guild: discord.Guild, channel_name: str) -> discord.Text
             return channel
 
     fallback_channel_name = constants.CONSTANT_FALLBACK_MAPPING.get(channel_name)
-    if (
-        fallback_channel_name
-    ): 
+    if fallback_channel_name:
         for channel in guild.channels:
             if (
                 isinstance(channel, discord.TextChannel)
@@ -265,9 +274,7 @@ async def get_forum_channel_by_name(
             return channel
 
     fallback_channel_name = constants.CONSTANT_FALLBACK_MAPPING.get(channel_name)
-    if (
-        fallback_channel_name
-    ):
+    if fallback_channel_name:
         for channel in guild.channels:
             if (
                 isinstance(channel, discord.ForumChannel)

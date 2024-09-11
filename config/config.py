@@ -1,3 +1,4 @@
+import os
 import configparser
 from logger.logger import logger
 
@@ -10,13 +11,35 @@ CONTRIBUTORS_FILE_PATH = "./data/contributors.json"
 POSTED_EVENTS_FILE_PATH = "./data/posted_events.json"
 ONGOING_VOTES_FILE_PATH = "./data/ongoing_votes.json"
 
-
 # Load configuration
 config: configparser.ConfigParser = configparser.ConfigParser()
 config.read(CONFIG_ABSOLUTE_PATH)
 
+# Determine the environment
+ENV = os.getenv("ENV", "DEV")
+
+# Load ID values
 current_governance_id: int = config.getint("ID_START_VALUES", "governance_id")
 current_budget_id: int = config.getint("ID_START_VALUES", "budget_id")
+
+# Load environment-specific settings
+SNAPSHOT_SPACE = config.get(ENV, "SNAPSHOT_SPACE")
+DISCORD_VOTE_ENDTIME = config.getint(ENV, "DISCORD_VOTE_ENDTIME")
+YES_COUNT_THRESHOLD = config.getint(ENV, "DISCORD_YES_COUNT_THRESHOLD")
+SNAPSHOT_URL_PREFIX = config.get(ENV, "SNAPSHOT_URL_PREFIX")
+SNAPSHOT_HUB = config.get(ENV, "SNAPSHOT_HUB")
+NETWORK_ID = config.get(ENV, "NETWORK_ID")
+SETTINGS_NAME = config.get(ENV, "SETTINGS_NAME")
+SETTINGS_ABOUT = config.get(ENV, "SETTINGS_ABOUT")
+SETTINGS_SYMBOL = config.get(ENV, "SETTINGS_SYMBOL")
+SETTINGS_MEMBERS = config.get(ENV, "SETTINGS_MEMBERS").split(",")
+SETTINGS_ADMINS = config.get(ENV, "SETTINGS_ADMINS").split(",")
+SETTINGS_STRATEGIES = config.get(ENV, "SETTINGS_STRATEGIES")
+SETTINGS_TOKEN_ADDRESSES = config.get(ENV, "SETTINGS_TOKEN_ADDRESSES").split(",")
+
+# Load RPC URLs from env vars
+PRIMARY_RPC_URL = os.getenv("PRIMARY_RPC_URL")
+SECONDARY_RPC_URL = os.getenv("SECONDARY_RPC_URL")
 
 
 def increment_config_id(

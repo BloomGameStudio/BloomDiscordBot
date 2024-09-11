@@ -4,7 +4,6 @@ If there are any new events, they are posted to Discord. Interested users are id
 """
 
 import time
-import subprocess
 import discord
 import random
 from logger.logger import logger
@@ -20,7 +19,7 @@ from helpers.helpers import (
     fetch_first_open_proposal_url,
     fetch_XP_quorum,
     modify_space_settings,
-    create_snapshot_proposal
+    create_snapshot_proposal,
 )
 from consts.constants import (
     GENERAL_CHANNEL,
@@ -137,7 +136,7 @@ async def check_concluded_proposals_task(bot: commands.Bot):
 
             passed = (
                 proposal_data["yes_count"] > proposal_data["no_count"]
-                and proposal_data["yes_count"] >= 5
+                and proposal_data["yes_count"] >= cfg.YES_COUNT_THRESHOLD
             )
             result_message = f"Vote for **{proposal_data['title']}** has concluded:\n\n"
 

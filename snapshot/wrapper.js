@@ -21,6 +21,11 @@ const background = process.argv[4];
 const additional = process.argv[5];
 const choices = process.argv.slice(6);
 
+if (!choices.length) {
+  console.error('No choices provided.');
+  process.exit(1);
+}
+
 createProposal(title, abstract, background, additional, choices).catch(error => {
   console.error('Error in createProposal:', error);
   process.exit(1);

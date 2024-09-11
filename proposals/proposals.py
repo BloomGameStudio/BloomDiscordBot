@@ -49,7 +49,6 @@ async def handle_publishdraft(
     Returns:
     None
     """
-    # Defer the response if it might take some time to process
     if not interaction.response.is_done():
         await interaction.response.defer()
 
@@ -76,14 +75,13 @@ async def handle_publishdraft(
             embed.set_author(
                 name="Draft Publishing", icon_url=interaction.user.display_avatar.url
             )
-            await interaction.followup.send(embed=embed)  # Use followup if deferred
+            await interaction.followup.send(embed=embed)
         else:
             await interaction.followup.send(f"Failed to publish draft: {draft_name}")
     else:
         await interaction.followup.send(f"Draft not found: {draft_name}")
 
 
-# prepare the draft by setting the type, channel ID, and title based on the draft type
 async def prepare_draft(
     guild: discord.Guild, draft: Dict[str, Any]
 ) -> Tuple[str, str, str]:
@@ -114,7 +112,6 @@ async def prepare_draft(
     return id_type, channel_name, title
 
 
-# publish the draft by creating a thread with the prepared content and starting a vote timer
 async def publish_draft(
     draft: Dict[str, Any], bot: Bot, guild_id: int, guild: discord.Guild
 ) -> bool:
@@ -146,7 +143,6 @@ async def publish_draft(
             name=title, content=f"{draft['abstract']}"
         )
 
-        # Post additional information and start the vote
         await thread.message.reply(f"\n{draft['background']}")
         if "additional" in draft and draft["additional"].strip():
             await thread.message.reply(f"\n{draft['additional']}")
@@ -158,20 +154,18 @@ async def publish_draft(
         proposal_id = str(thread.message.id)
         proposal_data = {
             "draft": draft,
-            "end_time": time.time() + 48 * 60 * 60,  # 48 hours from now
+            "end_time": time.time() + cfg.DISCORD_VOTE_ENDTIME,
             "yes_count": 0,
             "title": title,
             "channel_id": str(forum_channel.id),
-            "thread_id": str(thread.thread.id),  # Add the thread ID
-            "message_id": str(vote_message.id),  # Add the message ID
+            "thread_id": str(thread.thread.id),
+            "message_id": str(vote_message.id),
         }
 
-        # Update ongoing_votes with new proposal data
         if not hasattr(bot, "ongoing_votes"):
-            bot.ongoing_votes = {}  # In case ongoing_votes is not initialized
+            bot.ongoing_votes = {}
         bot.ongoing_votes[proposal_id] = proposal_data
 
-        # Save to ongoing_votes.json
         update_ongoing_votes_file(bot.ongoing_votes, cfg.ONGOING_VOTES_FILE_PATH)
 
         await react_to_vote(
@@ -192,19 +186,16 @@ async def react_to_vote(
         logger.error(f"Error: Guild with id {guild_id} not found.")
         return
 
-    # Fetch the channel by name
     channel = discord.utils.get(guild.channels, name=channel_name)
     if not channel:
         logger.error(f"Error: Channel with name {channel_name} not found.")
         return
 
-    # Fetch the thread from the channel
     thread = discord.utils.get(channel.threads, id=thread_id)
     if not thread:
         logger.error(f"Error: Thread with id {thread_id} not found.")
         return
 
-    # Fetch the message using the message ID
     message = await thread.fetch_message(message_id)
 
     await message.add_reaction(constants.YES_VOTE)
