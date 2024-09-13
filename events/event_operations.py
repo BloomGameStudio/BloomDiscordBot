@@ -8,6 +8,7 @@ import json
 import requests
 import asyncio
 import os
+import time
 import discord
 from consts.constants import (
     GENERAL_CHANNEL,
@@ -17,17 +18,15 @@ from consts.constants import (
     START_HERE_CHANNEL,
 )
 from config.config import POSTED_EVENTS_FILE_PATH
-from helpers.helpers import get_channel_by_name, send_dm_once
+from helpers.helpers import get_channel_by_name, send_dm_once, save_notified_events
 from datetime import datetime, timezone
-from typing import List, Optional, Any, Dict, Union
-from discord import ScheduledEvent, Reaction, User, Message
+from typing import List, Optional, Any, Dict
+from discord import ScheduledEvent, Reaction, User
 from discord.utils import get
-from discord.ext.commands import Bot
 from discord.ext import commands
 from logger.logger import logger
 
 
-# Save the posted events to the JSON file
 def save_posted_events(posted_events: List[int]) -> None:
     """
     Save the posted event IDs to the JSON file.
@@ -45,7 +44,6 @@ def save_posted_events(posted_events: List[int]) -> None:
         logger.error(f"Error saving posted events: {e}")
 
 
-# Format the event message and send it to the channel
 def format_event(event: ScheduledEvent, guild_id: int) -> str:
     """
     Formats the event message and returns it.
@@ -58,7 +56,6 @@ def format_event(event: ScheduledEvent, guild_id: int) -> str:
     Returns:
     str: The formatted event message.
     """
-    # Format the event start time for Discord time
     event_url = f"https://discord.com/events/{guild_id}/{event.id}"
 
     formatted_event = (
@@ -72,9 +69,6 @@ def format_event(event: ScheduledEvent, guild_id: int) -> str:
     return formatted_event
 
 
-# NOTE: For some reason it doesn't appear that you can access the userIDs interested
-# in a scheduled event. It's either a count, or a boolean.
-# performing a GET request, however, does allow this.
 def get_guild_scheduled_event_users(
     guild_id: int,
     scheduled_event_id: int,
@@ -118,41 +112,34 @@ def get_guild_scheduled_event_users(
         return None
 
 
-# Notify the channel about the newly created event after a short delay
-async def notify_new_event(bot: Bot, event: ScheduledEvent, guild_id: int) -> None:
+async def notify_new_event(
+    bot: commands.Bot, event: discord.ScheduledEvent, guild_id: int
+) -> None:
     """
     Notify the General channel about the newly created event after a short delay.
     Fetches and formats the event before posting it.
-
-    Parameters:
-    bot (Bot): The bot instance.
-    event (ScheduledEvent): The event that was created.
-    guild_id (int): The ID of the guild in which the event was created.
     """
-
     guild = bot.get_guild(guild_id)
 
     if guild:
-        # Wait for 30 mins before sending the notification
         await asyncio.sleep(30 * 60)
 
-        # Fetch the event again to get the updated details
         event = await guild.fetch_scheduled_event(event.id)
         formatted_event = format_event(event, guild_id)
 
         try:
             channel = get_channel_by_name(guild, GENERAL_CHANNEL)
-            # Send the notification and capture the Message object
             await channel.send(f"🌺 **__Newly Created Event__** 🌺 \n{formatted_event}")
+
+            bot.notified_events[event.id] = time.time()
+            save_notified_events(bot.notified_events)
+
         except ValueError as e:
             logger.error(f"Cannot post newly created event to Discord, Error: {e}")
-            return
-
     else:
         logger.info(f"Guild not found")
 
 
-# Fetch all upcoming events within the next 24 hours this is called by tasks.py
 async def fetch_upcoming_events(guild):
     """
     Fetches all upcoming events within the next 24 hours.
@@ -184,14 +171,12 @@ async def process_new_member(member: discord.Member) -> None:
         member (discord.Member): The new member who joined the server.
     """
     try:
-        # Get the welcome channel
         welcome_channel = get_channel_by_name(member.guild, GENERAL_CHANNEL)
         collab_land_join_channel = get_channel_by_name(
             member.guild, COLLAB_LAND_CHANNEL
         )
         start_here_channel = get_channel_by_name(member.guild, START_HERE_CHANNEL)
 
-        # Send the welcome message
         await welcome_channel.send(
             f" 🌺 Welcome {member.mention}  to {member.guild.name}! We are pleased to have you here 🌺\n"
             "\n"
@@ -227,14 +212,12 @@ async def handle_message(
         except Exception as e:
             logger.error(f"Error updating commands: {e}")
 
-    # Ignore messages from the bot itself
     if message.author == bot.user:
         return
 
     server_name = message.guild.name
     emoji_dict = emoji_dicts[server_name]
 
-    # Check if any emoji in the message matches an emoji in the emoji dictionary
     for emoji_id, user_id in emoji_dict.items():
         if emoji_id in message.content:
             if str(user_id) != str(message.author.id):
@@ -264,10 +247,8 @@ async def handle_reaction(
     user (User): The user who added the reaction
     emoji_dicts (Dict[str, Dict[str, str]]): The dictionary of emoji to user mappings for each server.
     """
-    # Get the server name from the reaction
     server_name = reaction.message.guild.name
 
-    # Get emoji dictionary and contributors for the server
     server_emoji_dict = emoji_dicts.get(server_name)
 
     if not server_emoji_dict:
@@ -303,12 +284,10 @@ async def process_reaction_add(bot, payload):
         bot (commands.Bot): The bot instance.
         payload (discord.RawReactionActionEvent): The reaction payload.
     """
-    # If the reaction is on the rules message, process the reaction
     if payload.message_id == RULES_MESSAGE_ID:
         guild = bot.get_guild(payload.guild_id)
         member = guild.get_member(payload.user_id)
 
-        # If the reaction emoji is "🌺", add the "bloomer" role to the member
         if payload.emoji.name == "🌺":
             role = get(guild.roles, name="bloomer")
             await member.add_roles(role)
@@ -316,7 +295,6 @@ async def process_reaction_add(bot, payload):
             general_channel = get_channel_by_name(guild, "🌺│home")
             await general_channel.send(response)
         else:
-            # If the reaction emoji matches any in DISCORD_ROLE_TRIGGERS, add the corresponding role to the member
             for role_info in DISCORD_ROLE_TRIGGERS:
                 if payload.emoji.id == role_info.get("emoji_id"):
                     general_channel = get_channel_by_name(guild, "🌺│home")

@@ -20,6 +20,8 @@ from helpers.helpers import (
     fetch_XP_quorum,
     modify_space_settings,
     create_snapshot_proposal,
+    load_notified_events,
+    save_notified_events,
 )
 from consts.constants import (
     GENERAL_CHANNEL,
@@ -29,53 +31,81 @@ from consts.constants import (
     PROPOSAL_CONCLUSION_EMOJIS,
 )
 import config.config as cfg
+from discord.ext import tasks
 
 
-@tasks.loop(minutes=60)
+@tasks.loop(minutes=50)
 async def check_events(bot: commands.Bot) -> None:
-    if not bot.is_ready():
-        return
+    try:
+        if not bot.is_ready():
+            return
 
-    for guild in bot.guilds:
-        try:
-            channel = get_channel_by_name(guild, GENERAL_CHANNEL)
-        except ValueError as e:
-            logger.error(f" Cannot check events for guild {guild}, Error: {e}")
-            continue
+        current_time = time.time()
+        one_hour_ago = current_time - 3600
+        logger.info(f"Checking for upcoming events")
 
-        upcoming_events = await fetch_upcoming_events(guild)
+        for guild in bot.guilds:
+            try:
+                channel = get_channel_by_name(guild, GENERAL_CHANNEL)
+            except ValueError as e:
+                logger.error(f" Cannot check events for guild {guild}, Error: {e}")
+                continue
 
-        if not upcoming_events:
-            logger.info(f"No upcoming events in the next 24 hours for guild {guild}.")
-            continue
+            upcoming_events = await fetch_upcoming_events(guild)
 
-        new_events = [
-            event for event in upcoming_events if event.id not in bot.posted_events
-        ]
-
-        if new_events:
-            for event in new_events:
-                users = get_guild_scheduled_event_users(guild.id, event.id)
-
-                guild_id = event.guild.id
-                user_mentions = [f"<@{user['user_id']}>" for user in users]
-                user_list_string = ", ".join(user_mentions)
-
-                formatted_string = (
-                    f"📆 **Upcoming Events in the Next 24 Hours** 📆 \n"
-                    f"\n"
-                    f":link: **Event Link https://discord.com/events/{guild_id}/{event.id} :link:**\n"
-                    f"\n"
-                    f"{user_list_string}\n"
+            if not upcoming_events:
+                logger.info(
+                    f"No upcoming events in the next 24 hours for guild {guild}."
                 )
+                continue
 
-                await channel.send(formatted_string)
-                bot.posted_events.append(event.id)
-                save_posted_events(bot.posted_events)
-        else:
-            logger.info(
-                f"No new upcoming events in the next 24 hours for guild {guild}."
-            )
+            notified_events = load_notified_events()
+
+            new_events = [
+                event for event in upcoming_events if event.id not in bot.posted_events
+            ]
+
+            if new_events:
+                for event in new_events:
+                    last_notified = notified_events.get(str(event.id), 0)
+
+                    if last_notified > one_hour_ago:
+                        logger.info(
+                            f"Skipping event {event.id} as it was recently notified (last notified: {last_notified})"
+                        )
+                        continue
+
+                    users = get_guild_scheduled_event_users(guild.id, event.id)
+
+                    guild_id = event.guild.id
+                    user_mentions = [f"<@{user['user_id']}>" for user in users]
+                    user_list_string = ", ".join(user_mentions)
+
+                    formatted_string = (
+                        f"📆 **Upcoming Events in the Next 24 Hours** 📆 \n"
+                        f"\n"
+                        f":link: **Event Link https://discord.com/events/{guild_id}/{event.id} :link:**\n"
+                        f"\n"
+                        f"{user_list_string}\n"
+                    )
+
+                    logger.info(f"Posting event {event.id} to channel {channel.id}")
+                    await channel.send(formatted_string)
+                    bot.posted_events.append(event.id)
+                    save_posted_events(bot.posted_events)
+
+                    notified_events[event.id] = current_time
+                    save_notified_events(notified_events)
+                    logger.info(
+                        f"Updated notified time for event {event.id} to {current_time}"
+                    )
+
+            else:
+                logger.info(
+                    f"No new upcoming events in the next 24 hours for guild {guild}."
+                )
+    except Exception as e:
+        logger.error(f"Error in check_events loop: {e}")
 
 
 @tasks.loop(minutes=5)
@@ -95,7 +125,7 @@ async def check_concluded_proposals_task(bot: commands.Bot):
 
     logger.info("Checking to see if proposals have ended")
     try:
-        keys_to_remove = []  # Initialize list to store keys for removal
+        keys_to_remove = []
 
         for proposal_id, proposal_data in bot.ongoing_votes.items():
             if time.time() < proposal_data["end_time"]:
@@ -141,7 +171,6 @@ async def check_concluded_proposals_task(bot: commands.Bot):
             result_message = f"Vote for **{proposal_data['title']}** has concluded:\n\n"
 
             if passed:
-                # Fetch the quorum value
                 quorum_value = fetch_XP_quorum()
 
                 logger.info(f"Quorum value to be set: {quorum_value}")
@@ -223,7 +252,6 @@ async def check_concluded_proposals_task(bot: commands.Bot):
         logger.info("Removing concluded proposals from ongoing votes.")
         update_ongoing_votes_file(bot.ongoing_votes, cfg.ONGOING_VOTES_FILE_PATH)
 
-        # Log the current state of ongoing_votes to ensure it was updated
         logger.info(f"Current ongoing_votes: {bot.ongoing_votes}")
 
     except Exception as e:

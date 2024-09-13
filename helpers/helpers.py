@@ -26,6 +26,7 @@ from typing import Optional, Dict, Any, List, Tuple
 from logger.logger import logger
 from web3 import Web3
 from urllib.parse import urljoin
+from config import config as cfg
 
 env = os.environ.copy()
 
@@ -376,7 +377,37 @@ def update_ongoing_votes_file(data, file_path):
         json.dump(data, json_file, indent=4)
 
 
-# NOTE: Should this be part of the configuration (config/config.py)?
+def load_notified_events():
+    """
+    Load the notified events from the JSON file.
+
+    Returns:
+    Dict: The dictionary of notified events.
+    """
+    logger.info("Loading notified events")
+    if os.path.exists(cfg.NOTIFIED_EVENTS_FILE_PATH):
+        if os.path.getsize(cfg.NOTIFIED_EVENTS_FILE_PATH) == 0:
+            return {}
+
+        try:
+            with open(cfg.NOTIFIED_EVENTS_FILE_PATH, "r") as f:
+                return json.load(f)
+        except json.JSONDecodeError:
+            logger.error(f"Invalid JSON format in {cfg.NOTIFIED_EVENTS_FILE_PATH}")
+            return {}
+    return {}
+
+
+def save_notified_events(notified_events):
+    """
+    Save the notified events to the JSON file.
+
+    Parameters:
+    notified_events (Dict): The dictionary of notified events."""
+    with open(cfg.NOTIFIED_EVENTS_FILE_PATH, "w") as file:
+        json.dump(notified_events, file, indent=4)
+
+
 def load_contributors_and_emoji_dicts() -> (
     Tuple[Dict[str, List[Dict[str, str]]], Dict[str, Dict[str, str]]]
 ):

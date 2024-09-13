@@ -12,6 +12,7 @@ from helpers.helpers import (
     load_posted_events,
     load_contributors_and_emoji_dicts,
     load_ongoing_votes,
+    load_notified_events,
 )
 from cogs.help import HelpCommandCog
 from cogs.contributors import ContributorCommandsCog
@@ -37,6 +38,7 @@ class Bot:
         # Load the contributors, emoji dicts, and posted events
         self.bot.ongoing_votes = load_ongoing_votes()
         self.bot.posted_events = load_posted_events()
+        self.bot.notified_events = load_notified_events()
         self.contributors, self.emoji_dicts = load_contributors_and_emoji_dicts()
 
         # Load the cogs
