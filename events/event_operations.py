@@ -118,6 +118,11 @@ async def notify_new_event(
     """
     Notify the General channel about the newly created event after a short delay.
     Fetches and formats the event before posting it.
+
+    Parameters:
+    bot (commands.Bot): The bot instance.
+    event (ScheduledEvent): The event to be notified.
+    guild_id (int): The ID of the guild in which the event was created.
     """
     guild = bot.get_guild(guild_id)
 
