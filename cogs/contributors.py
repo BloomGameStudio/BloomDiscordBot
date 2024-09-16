@@ -27,7 +27,6 @@ class ContributorCommandsCog(commands.Cog):
         Parameters:
         interaction (Interaction): The interaction of the command invocation.
         """
-        # Defer the response
         await interaction.response.defer()
 
         server_name = interaction.guild.name
@@ -38,10 +37,12 @@ class ContributorCommandsCog(commands.Cog):
             )
             return
 
+        header_message = "# :fire: List of Contributors :fire: \n"
+        await interaction.followup.send(header_message)
+
         emoji_list = [emoji for emoji in emoji_dict.keys()]
-        emoji_text = "\n".join(emoji_list)
-        message = f" :fire: **List of Contributors** :fire: \n" f"{emoji_text}"
-        await interaction.followup.send(message)
+        emoji_text = " ".join(emoji_list)
+        await interaction.followup.send(emoji_text)
 
     @app_commands.command(name="remove_contributor")
     async def remove_contributor(
