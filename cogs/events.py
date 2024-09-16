@@ -6,9 +6,10 @@ It contains the following commands:
 """
 
 import discord
+import time
 from discord.ext import commands
 from discord import app_commands
-from helpers.helpers import get_guild_member_check_role
+from helpers.helpers import get_guild_member_check_role, save_notified_events
 from logger.logger import logger
 from discord import ScheduledEvent
 from events.event_operations import (
@@ -44,6 +45,8 @@ class EventsCog(commands.Cog):
         event (ScheduledEvent): The event that was created.
         """
         logger.info(f"New scheduled event created: {event.name}")
+        self.bot.notified_events[event.id] = time.time()
+        save_notified_events(self.bot.notified_events)
         await notify_new_event(self.bot, event, event.guild_id)
 
     @commands.Cog.listener()

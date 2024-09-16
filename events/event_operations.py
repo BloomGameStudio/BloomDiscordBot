@@ -136,9 +136,6 @@ async def notify_new_event(
             channel = get_channel_by_name(guild, GENERAL_CHANNEL)
             await channel.send(f"🌺 **__Newly Created Event__** 🌺 \n{formatted_event}")
 
-            bot.notified_events[event.id] = time.time()
-            save_notified_events(bot.notified_events)
-
         except ValueError as e:
             logger.error(f"Cannot post newly created event to Discord, Error: {e}")
     else:
