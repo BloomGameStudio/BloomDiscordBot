@@ -8,7 +8,6 @@ import json
 import requests
 import asyncio
 import os
-import time
 import discord
 from consts.constants import (
     GENERAL_CHANNEL,
@@ -18,7 +17,7 @@ from consts.constants import (
     START_HERE_CHANNEL,
 )
 from config.config import POSTED_EVENTS_FILE_PATH
-from helpers.helpers import get_channel_by_name, send_dm_once, save_notified_events
+from helpers.helpers import get_channel_by_name, send_dm_once
 from datetime import datetime, timezone
 from typing import List, Optional, Any, Dict
 from discord import ScheduledEvent, Reaction, User

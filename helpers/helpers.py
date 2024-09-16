@@ -403,7 +403,8 @@ def save_notified_events(notified_events):
     Save the notified events to the JSON file.
 
     Parameters:
-    notified_events (Dict): The dictionary of notified events."""
+    notified_events (Dict): The dictionary of notified events.
+    """
     with open(cfg.NOTIFIED_EVENTS_FILE_PATH, "w") as file:
         json.dump(notified_events, file, indent=4)
 
