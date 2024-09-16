@@ -27,21 +27,24 @@ class ContributorCommandsCog(commands.Cog):
         Parameters:
         interaction (Interaction): The interaction of the command invocation.
         """
-        # Defer the response
-        await interaction.response.defer()
+        await interaction.response.defer(ephemeral=True)
 
         server_name = interaction.guild.name
         emoji_dict = self.emoji_dicts.get(server_name)
         if emoji_dict is None:
             await interaction.followup.send(
-                f"No emoji dictionary found for server: {server_name}"
+                f"No emoji dictionary found for server: {server_name}", ephemeral=True
             )
             return
 
+        # Send the header message as the first ephemeral message
+        header_message = "# :fire: List of Contributors :fire: \n"
+        await interaction.edit_original_response(content=header_message)
+
+        # Send the emojis in a second ephemeral follow-up message
         emoji_list = [emoji for emoji in emoji_dict.keys()]
-        emoji_text = "\n".join(emoji_list)
-        message = f" :fire: **List of Contributors** :fire: \n" f"{emoji_text}"
-        await interaction.followup.send(message)
+        emoji_text = " ".join(emoji_list)
+        await interaction.followup.send(emoji_text, ephemeral=True)
 
     @app_commands.command(name="remove_contributor")
     async def remove_contributor(
