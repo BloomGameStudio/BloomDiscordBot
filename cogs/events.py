@@ -116,19 +116,14 @@ class EventsCog(commands.Cog):
 
         guild = interaction.guild
 
-        # Get the list of events
         event_list = guild.scheduled_events
 
-        # Extract event information
         event_urls = [
-            f"https://discord.com/events/{guild.id}/{event.id}"
-            for event in event_list  # Get the event URL
+            f"https://discord.com/events/{guild.id}/{event.id}" for event in event_list
         ]
 
-        # Format the information
         formatted_events = [
-            f":link: **Event Link <{url}>** :link:"  # Wrap the URL in <> to prevent Discord from generating an embed
-            for url in event_urls
+            f":link: **Event Link <{url}>** :link:" for url in event_urls
         ]
         formatted_string = "\n\n".join(formatted_events)
         await interaction.response.send_message(
@@ -154,10 +149,8 @@ class EventsCog(commands.Cog):
 
         guild = interaction.guild
 
-        # Defer the interaction response
         await interaction.response.defer()
 
-        # Check if the member has the required role
         permitted = await get_guild_member_check_role(interaction)
 
         if not permitted:
@@ -166,12 +159,10 @@ class EventsCog(commands.Cog):
             )
             return
 
-        # Fetch the list of events
         events = await guild.fetch_scheduled_events()
         event = next((e for e in events if e.name == event_name), None)
 
         if event:
-            # Delete the event
             await event.delete()
             await interaction.followup.send(f"Event '{event_name}' has been deleted 🗑️")
         else:

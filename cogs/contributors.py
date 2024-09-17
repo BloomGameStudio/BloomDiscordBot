@@ -37,11 +37,9 @@ class ContributorCommandsCog(commands.Cog):
             )
             return
 
-        # Send the header message as the first ephemeral message
         header_message = "# :fire: List of Contributors :fire: \n"
         await interaction.edit_original_response(content=header_message)
 
-        # Send the emojis in a second ephemeral follow-up message
         emoji_list = [emoji for emoji in emoji_dict.keys()]
         emoji_text = " ".join(emoji_list)
         await interaction.followup.send(emoji_text, ephemeral=True)
@@ -57,7 +55,6 @@ class ContributorCommandsCog(commands.Cog):
         interaction (Interaction): The interaction of the command invocation.
         user_mention (str): The mention of the user to remove.
         """
-        # Defer the response
         await interaction.response.defer()
         permitted = await get_guild_member_check_role(interaction)
         if not permitted:
@@ -90,12 +87,8 @@ class ContributorCommandsCog(commands.Cog):
                     if emoji_id_to_remove:
                         del emoji_dict[emoji_id_to_remove]
                     server_contributors.remove(contributor)
-                    self.contributors[
-                        interaction.guild.name
-                    ] = server_contributors  # Update the contributors with the updated server_contributors
-                    self.emoji_dicts[
-                        interaction.guild.name
-                    ] = emoji_dict  # Update the emoji_dicts with the updated emoji_dict
+                    self.contributors[interaction.guild.name] = server_contributors
+                    self.emoji_dicts[interaction.guild.name] = emoji_dict
                     update_json_file(
                         interaction.guild.name,
                         {
@@ -156,15 +149,12 @@ class ContributorCommandsCog(commands.Cog):
                 )
                 return
 
-            # Get the user's username
             user = await interaction.guild.fetch_member(int(uid))
             note = user.name if user else "User not found"
 
             new_contributor = {"uid": uid, "note": note}
             server_contributors.append(new_contributor)
-            emoji_dict[
-                emoji_id
-            ] = uid  # Use the UID directly as the value in emoji_id_mapping
+            emoji_dict[emoji_id] = uid
 
             update_json_file(
                 interaction.guild.name,
