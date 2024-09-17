@@ -3,6 +3,12 @@ The EventCommandsCog class is a cog that contains for listing and deleting event
 It contains the following commands:
 - list_events: Lists the events associated with this guild.
 - delete_event: Deletes an event from the guild.
+- on_ready: Handles the on_ready event. This event is triggered when the bot has successfully connected.
+- on_scheduled_event_create: Handles the on_scheduled_event_create event. This event is triggered when a new scheduled event is created.
+- on_message: Event triggered when a message is sent in a server the bot is in.
+- on_reaction_add: Event triggered when a reaction is added to a message in a sever the bot is in.
+- on_raw_reaction_add: Event triggered when a raw reaction is added to a message in a server the bot is in.
+- on_member_join: Event triggered when a new member joins a server the bot is in.
 """
 
 import discord
@@ -12,13 +18,7 @@ from discord import app_commands
 from utils.utils import Utils
 from logger.logger import logger
 from discord import ScheduledEvent
-from events.event_operations import (
-    notify_new_event,
-    process_new_member,
-    handle_message,
-    handle_reaction,
-    process_reaction_add,
-)
+from events.event_operations import EventOperations
 from consts.constants import RULES_MESSAGE_ID
 
 
@@ -47,7 +47,7 @@ class EventsCog(commands.Cog):
         logger.info(f"New scheduled event created: {event.name}")
         self.bot.notified_events[event.id] = time.time()
         Utils.save_notified_events(self.bot.notified_events)
-        await notify_new_event(self.bot, event, event.guild_id)
+        await EventOperations.notify_new_event(self.bot, event, event.guild_id)
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
@@ -61,7 +61,7 @@ class EventsCog(commands.Cog):
         Returns:
         None
         """
-        await handle_message(self.bot, message, self.emoji_dicts)
+        await EventOperations.handle_message(self.bot, message, self.emoji_dicts)
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction: discord.Reaction, user: discord.User):
@@ -75,7 +75,9 @@ class EventsCog(commands.Cog):
 
         Returns:
         """
-        await handle_reaction(self.bot, reaction, user, self.emoji_dicts)
+        await EventOperations.handle_reaction(
+            self.bot, reaction, user, self.emoji_dicts
+        )
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
@@ -89,7 +91,7 @@ class EventsCog(commands.Cog):
         None
         """
         if payload.message_id == RULES_MESSAGE_ID:
-            await process_reaction_add(self.bot, payload)
+            await EventOperations.process_reaction_add(self.bot, payload)
 
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
@@ -103,7 +105,7 @@ class EventsCog(commands.Cog):
         None
         """
         logger.info(f"New member: {member.name} has joined: {member.guild.name}")
-        await process_new_member(member)
+        await EventOperations.process_new_member(member)
 
     @app_commands.command(name="list_events")
     async def list_events(self, interaction: discord.Interaction):

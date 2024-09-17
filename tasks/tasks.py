@@ -1,6 +1,8 @@
 """
-tasks module contains the check_events task that is responsible for checking for upcoming events every 60 minutes, and the concluded_proposals_task that is responsible for checking for any proposals that have ended every 5 minutes.
-If there are any new events, they are posted to Discord. Interested users are identified and event details are formatted in a message and sent to the general channel.
+tasks/tasks.py contains functions to check for upcoming events and concluded proposals.
+
+The check_events function checks for upcoming events every 50 minutes and posts them to the relevant Discord channel.
+The check_concluded_proposals_task function checks for concluded proposals every 5 minutes and processes them accordingly.
 """
 
 import time
@@ -8,11 +10,7 @@ import discord
 import random
 from logger.logger import logger
 from discord.ext import tasks, commands
-from events.event_operations import (
-    get_guild_scheduled_event_users,
-    save_posted_events,
-    fetch_upcoming_events,
-)
+from events.event_operations import EventOperations
 from utils.utils import Utils
 from consts.constants import (
     GENERAL_CHANNEL,
@@ -45,7 +43,7 @@ class TaskManager:
                     logger.error(f"Cannot check events for guild {guild}, Error: {e}")
                     continue
 
-                upcoming_events = await fetch_upcoming_events(guild)
+                upcoming_events = await EventOperations.fetch_upcoming_events(guild)
 
                 if not upcoming_events:
                     logger.info(
@@ -71,7 +69,9 @@ class TaskManager:
                             )
                             continue
 
-                        users = get_guild_scheduled_event_users(guild.id, event.id)
+                        users = EventOperations.get_guild_scheduled_event_users(
+                            guild.id, event.id
+                        )
 
                         guild_id = event.guild.id
                         user_mentions = [f"<@{user['user_id']}>" for user in users]
@@ -88,7 +88,7 @@ class TaskManager:
                         logger.info(f"Posting event {event.id} to channel {channel.id}")
                         await channel.send(formatted_string)
                         bot.posted_events.append(event.id)
-                        save_posted_events(bot.posted_events)
+                        EventOperations.save_posted_events(bot.posted_events)
 
                         notified_events[event.id] = current_time
                         Utils.save_notified_events(notified_events)

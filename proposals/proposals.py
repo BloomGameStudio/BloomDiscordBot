@@ -1,5 +1,6 @@
 """
-Proposals module handles the logic associated with proposals. These functions are invoked when the gov commands
+proposals/proposals.py
+The ProposalManager class handles the logic associated with proposals. These functions are invoked when the gov commands
 in cogs/gov.py are invoked and the relevant buttons or selects are clicked.
 
 The module contains the following functions:

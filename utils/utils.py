@@ -1,9 +1,13 @@
 """
-shared/helpers.py is responsible for setting up helper functions for the bot.
-helper functions may be functions that contain functionality that is used by multiple
-modules.
+utils/utils.py contains utility functions that are used across multiple modules in the bot.
 
-The functions in this module are:
+
+The module contains the following functions:
+- modify_space_settings: Modify the settings of the Snapshot space.
+- create_snapshot_proposal: Create a Snapshot proposal.
+- fetch_XP_total_supply: Fetch the total supply of XP tokens.
+- fetch_XP_quorum: Fetch the quorum value for Snapshot proposals.
+- fetch_first_open_proposal_url: Fetch the URL of the first open proposal on Snapshot.
 - get_channel_by_name: Soft match a channel name from consts/constants.py to a channel in the guild.
 - get_forum_channel_by_name: Retrieve a ForumChannel in a guild based on its name, with support for a fallback channel name.
 - get_guild_member_check_role: Check if the guild member who invoked the command has the 'core' role.
