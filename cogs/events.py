@@ -9,7 +9,7 @@ import discord
 import time
 from discord.ext import commands
 from discord import app_commands
-from helpers.helpers import get_guild_member_check_role, save_notified_events
+from utils.utils import Utils
 from logger.logger import logger
 from discord import ScheduledEvent
 from events.event_operations import (
@@ -46,7 +46,7 @@ class EventsCog(commands.Cog):
         """
         logger.info(f"New scheduled event created: {event.name}")
         self.bot.notified_events[event.id] = time.time()
-        save_notified_events(self.bot.notified_events)
+        Utils.save_notified_events(self.bot.notified_events)
         await notify_new_event(self.bot, event, event.guild_id)
 
     @commands.Cog.listener()
@@ -151,7 +151,7 @@ class EventsCog(commands.Cog):
 
         await interaction.response.defer()
 
-        permitted = await get_guild_member_check_role(interaction)
+        permitted = await Utils.get_guild_member_check_role(interaction)
 
         if not permitted:
             await interaction.response.send_message(

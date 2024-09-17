@@ -17,7 +17,7 @@ from consts.constants import (
     START_HERE_CHANNEL,
 )
 from config.config import POSTED_EVENTS_FILE_PATH
-from helpers.helpers import get_channel_by_name, send_dm_once
+from utils.utils import Utils
 from datetime import datetime, timezone
 from typing import List, Optional, Any, Dict
 from discord import ScheduledEvent, Reaction, User
@@ -132,7 +132,7 @@ async def notify_new_event(
         formatted_event = format_event(event, guild_id)
 
         try:
-            channel = get_channel_by_name(guild, GENERAL_CHANNEL)
+            channel = Utils.get_channel_by_name(guild, GENERAL_CHANNEL)
             await channel.send(f"🌺 **__Newly Created Event__** 🌺 \n{formatted_event}")
 
         except ValueError as e:
@@ -168,15 +168,15 @@ async def process_new_member(member: discord.Member) -> None:
     """
     Sends a welcome message to a new member in the welcome channel.
 
-    Args:
+    Parameters:
         member (discord.Member): The new member who joined the server.
     """
     try:
-        welcome_channel = get_channel_by_name(member.guild, GENERAL_CHANNEL)
-        collab_land_join_channel = get_channel_by_name(
+        welcome_channel = Utils.get_channel_by_name(member.guild, GENERAL_CHANNEL)
+        collab_land_join_channel = Utils.get_channel_by_name(
             member.guild, COLLAB_LAND_CHANNEL
         )
-        start_here_channel = get_channel_by_name(member.guild, START_HERE_CHANNEL)
+        start_here_channel = Utils.get_channel_by_name(member.guild, START_HERE_CHANNEL)
 
         await welcome_channel.send(
             f" 🌺 Welcome {member.mention}  to {member.guild.name}! We are pleased to have you here 🌺\n"
@@ -227,7 +227,7 @@ async def handle_message(
                     message_link = message.jump_url
                     user = await bot.fetch_user(int(user_id))
                     if user:
-                        await send_dm_once(bot, user, message_link)
+                        await Utils.send_dm_once(bot, user, message_link)
                 except discord.errors.NotFound:
                     logger.warning(f"User not found: {user_id}")
 
@@ -272,7 +272,7 @@ async def handle_reaction(
             try:
                 contributor_user = await bot.fetch_user(int(contributor_uid))
                 if contributor_user:
-                    await send_dm_once(bot, contributor_user, message_link)
+                    await Utils.send_dm_once(bot, contributor_user, message_link)
             except discord.errors.NotFound:
                 logger.warning(f"User not found: {contributor_uid}")
 
@@ -281,9 +281,12 @@ async def process_reaction_add(bot, payload):
     """
     Processes a reaction add event. Allocates roles to members based on their reaction.
 
-    Args:
+    Parameters:
         bot (commands.Bot): The bot instance.
         payload (discord.RawReactionActionEvent): The reaction payload.
+
+    Returns:
+        None
     """
     if payload.message_id == RULES_MESSAGE_ID:
         guild = bot.get_guild(payload.guild_id)
@@ -293,12 +296,12 @@ async def process_reaction_add(bot, payload):
             role = get(guild.roles, name="bloomer")
             await member.add_roles(role)
             response = f"{member.display_name} has selected 🌺!\n\n**Their commitment is official and they are now a Bloomer!**"
-            general_channel = get_channel_by_name(guild, "🌺│home")
+            general_channel = Utils.get_channel_by_name(guild, "🌺│home")
             await general_channel.send(response)
         else:
             for role_info in DISCORD_ROLE_TRIGGERS:
                 if payload.emoji.id == role_info.get("emoji_id"):
-                    general_channel = get_channel_by_name(guild, "🌺│home")
+                    general_channel = Utils.get_channel_by_name(guild, "🌺│home")
                     role = get(guild.roles, name=role_info.get("role"))
                     response = f"{member.display_name} has joined the **{role_info.get('name')}** pod!"
                     await general_channel.send(response)

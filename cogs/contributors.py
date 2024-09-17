@@ -9,7 +9,7 @@ It contains the following commands:
 import discord
 from discord.ext import commands
 from discord import app_commands
-from helpers.helpers import get_guild_member_check_role, update_json_file
+from utils.utils import Utils
 from typing import Dict, Optional
 
 
@@ -56,7 +56,7 @@ class ContributorCommandsCog(commands.Cog):
         user_mention (str): The mention of the user to remove.
         """
         await interaction.response.defer()
-        permitted = await get_guild_member_check_role(interaction)
+        permitted = await Utils.get_guild_member_check_role(interaction)
         if not permitted:
             return
         if user_mention:
@@ -89,7 +89,7 @@ class ContributorCommandsCog(commands.Cog):
                     server_contributors.remove(contributor)
                     self.contributors[interaction.guild.name] = server_contributors
                     self.emoji_dicts[interaction.guild.name] = emoji_dict
-                    update_json_file(
+                    Utils.update_json_file(
                         interaction.guild.name,
                         {
                             "contributors": server_contributors,
@@ -122,7 +122,7 @@ class ContributorCommandsCog(commands.Cog):
 
         await interaction.response.defer()
 
-        permitted = await get_guild_member_check_role(interaction)
+        permitted = await Utils.get_guild_member_check_role(interaction)
         if not permitted:
             return
         uid = user_mention.strip("<@!>")
@@ -156,7 +156,7 @@ class ContributorCommandsCog(commands.Cog):
             server_contributors.append(new_contributor)
             emoji_dict[emoji_id] = uid
 
-            update_json_file(
+            Utils.update_json_file(
                 interaction.guild.name,
                 {"contributors": server_contributors, "emoji_dictionary": emoji_dict},
             )

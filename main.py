@@ -7,14 +7,8 @@ import discord
 import os
 import asyncio
 from discord.ext import commands
-from tasks.tasks import check_events, check_concluded_proposals_task
-from helpers.helpers import (
-    load_posted_events,
-    load_contributors_and_emoji_dicts,
-    load_ongoing_votes,
-    load_notified_events,
-)
-from cogs.help import HelpCommandCog
+from tasks.tasks import TaskManager
+from utils.utils import Utils
 from cogs.contributors import ContributorCommandsCog
 from cogs.events import EventsCog
 from cogs.help import HelpCommandCog
@@ -23,8 +17,8 @@ from cogs.gov import GovCommandsCog
 
 class Bot:
     async def setup_background_tasks(self):
-        check_events.start(self.bot)
-        check_concluded_proposals_task.start(self.bot)
+        TaskManager.check_events.start(self.bot)
+        TaskManager.check_concluded_proposals_task.start(self.bot)
 
     async def main(self):
         intents = discord.Intents.default()
@@ -33,10 +27,10 @@ class Bot:
         intents.members = True
         self.bot = commands.Bot(command_prefix="", intents=intents)
 
-        self.bot.ongoing_votes = load_ongoing_votes()
-        self.bot.posted_events = load_posted_events()
-        self.bot.notified_events = load_notified_events()
-        self.contributors, self.emoji_dicts = load_contributors_and_emoji_dicts()
+        self.bot.ongoing_votes = Utils.load_ongoing_votes()
+        self.bot.posted_events = Utils.load_posted_events()
+        self.bot.notified_events = Utils.load_notified_events()
+        self.contributors, self.emoji_dicts = Utils.load_contributors_and_emoji_dicts()
 
         await self.bot.add_cog(HelpCommandCog(self.bot))
         await self.bot.add_cog(
