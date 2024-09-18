@@ -215,24 +215,6 @@ The following commands can be used to delete, and list events.
 
 ```
 
-**delete_event:**
-
-```
-/delete_event
-```
-
-**Example**
-
-```
-/delete_event Event_Example
-```
-
-**Response**
-
-```
-Event with ID Event_Example has been deleted.
-```
-
 # Emotes:
 
 When a mapped contributors Emoji is used in Blooms Discord server (as a message, or reaction), the contributor will be DM'd advising they have been mentioned in a chat. A link to the message they have been mentioned in will be included.
