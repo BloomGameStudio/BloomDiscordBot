@@ -32,6 +32,8 @@ class TaskManager:
             if not bot.is_ready():
                 return
 
+            event_operations = EventOperations(bot)
+
             current_time = time.time()
             one_hour_ago = current_time - 3600
             logger.info(f"Checking for upcoming events")
@@ -40,10 +42,10 @@ class TaskManager:
                 try:
                     channel = Utils.get_channel_by_name(guild, GENERAL_CHANNEL)
                 except ValueError as e:
-                    logger.error(f"Cannot check events for guild {guild}, Error: {e}")
+                    logger.error(f" Cannot check events for guild {guild}, Error: {e}")
                     continue
 
-                upcoming_events = await EventOperations.fetch_upcoming_events(guild)
+                upcoming_events = await event_operations.fetch_upcoming_events(guild)
 
                 if not upcoming_events:
                     logger.info(
@@ -69,7 +71,7 @@ class TaskManager:
                             )
                             continue
 
-                        users = EventOperations.get_guild_scheduled_event_users(
+                        users = event_operations.get_guild_scheduled_event_users(
                             guild.id, event.id
                         )
 
@@ -88,7 +90,7 @@ class TaskManager:
                         logger.info(f"Posting event {event.id} to channel {channel.id}")
                         await channel.send(formatted_string)
                         bot.posted_events.append(event.id)
-                        EventOperations.save_posted_events(bot.posted_events)
+                        event_operations.save_posted_events(bot.posted_events)
 
                         notified_events[event.id] = current_time
                         Utils.save_notified_events(notified_events)
