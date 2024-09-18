@@ -106,11 +106,6 @@ Display the list of contributors
 ```
 Display the list of events and their associated event ID
 ```
-**/remove_event**
-```
-Remove an event from the list of events
-Example: /remove_event my_event
-
 ```
 **/vote_draft**
 ```
