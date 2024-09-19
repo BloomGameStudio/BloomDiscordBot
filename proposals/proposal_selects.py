@@ -1,3 +1,7 @@
+"""
+proposal_selects is a discord.ui.select that contains the select menus for the publish_draft, delete_draft, and edit_draft commands. It is used in the vote_draft command in the GovCommandsCog class.
+"""
+
 import discord
 from proposals.proposals import handle_publishdraft
 from .proposal_modal import FirstProposalModal
@@ -15,8 +19,12 @@ class PublishDraftSelect(discord.ui.Select):
 
     async def callback(self, interaction: discord.Interaction):
         selected_proposal = next(
-            (proposal for proposal in self.proposals if proposal["title"] == self.values[0]),
-            None
+            (
+                proposal
+                for proposal in self.proposals
+                if proposal["title"] == self.values[0]
+            ),
+            None,
         )
         if not selected_proposal:
             await interaction.response.send_message(
@@ -70,8 +78,12 @@ class EditProposalSelect(discord.ui.Select):
 
     async def callback(self, interaction: discord.Interaction):
         selected_proposal = next(
-            (proposal for proposal in self.proposals if proposal["title"] == self.values[0]),
-            None
+            (
+                proposal
+                for proposal in self.proposals
+                if proposal["title"] == self.values[0]
+            ),
+            None,
         )
         if not selected_proposal:
             await interaction.response.send_message(
@@ -79,7 +91,7 @@ class EditProposalSelect(discord.ui.Select):
             )
             return
 
-        if not hasattr(self.bot, 'proposal_data'):
+        if not hasattr(self.bot, "proposal_data"):
             self.bot.proposal_data = {}
 
         self.bot.proposal_data[interaction.user.id] = selected_proposal.copy()
@@ -100,8 +112,12 @@ class PreviewProposalSelect(discord.ui.Select):
 
     async def callback(self, interaction: discord.Interaction):
         selected_proposal = next(
-            (proposal for proposal in self.proposals if proposal["title"] == self.values[0]),
-            None
+            (
+                proposal
+                for proposal in self.proposals
+                if proposal["title"] == self.values[0]
+            ),
+            None,
         )
 
         if not selected_proposal:

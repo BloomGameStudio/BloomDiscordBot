@@ -1,3 +1,7 @@
+"""
+proposal_modal is a discord.ui.Modal that is used to create or edit a proposal. It is used in the ProposalButtonsView class.
+"""
+
 import discord
 from discord import ui
 from proposals.proposals import proposals
@@ -9,31 +13,33 @@ class FirstProposalModal(ui.Modal):
         self.bot = bot
         self.channel = channel
         self.proposal = proposal
-        self.proposal_type = proposal_type or (proposal.get("type") if proposal else None)
+        self.proposal_type = proposal_type or (
+            proposal.get("type") if proposal else None
+        )
 
         self.name = ui.TextInput(
             label="Proposal Title",
             style=discord.TextStyle.short,
             required=True,
-            max_length=100
+            max_length=100,
         )
         self.authors = ui.TextInput(
             label="Proposal Authors",
             style=discord.TextStyle.paragraph,
             required=True,
-            max_length=500
+            max_length=500,
         )
         self.abstract = ui.TextInput(
             label="Proposal Abstract",
             style=discord.TextStyle.paragraph,
             required=True,
-            max_length=2000
+            max_length=2000,
         )
         self.definitions = ui.TextInput(
             label="Proposal Definitions",
             style=discord.TextStyle.paragraph,
             required=True,
-            max_length=2000
+            max_length=2000,
         )
 
         self.add_item(self.name)
@@ -57,7 +63,7 @@ class FirstProposalModal(ui.Modal):
             "type": self.proposal_type,
         }
 
-        if not hasattr(self.bot, 'proposal_data'):
+        if not hasattr(self.bot, "proposal_data"):
             self.bot.proposal_data = {}
 
         self.bot.proposal_data[interaction.user.id] = proposal_data
@@ -66,7 +72,7 @@ class FirstProposalModal(ui.Modal):
         await interaction.response.send_message(
             "Please click the button below to proceed to the next step.",
             view=view,
-            ephemeral=True
+            ephemeral=True,
         )
 
 
@@ -76,14 +82,15 @@ class ProceedToSecondModalView(discord.ui.View):
         self.bot = bot
 
     @discord.ui.button(label="Proceed to Step 2", style=discord.ButtonStyle.primary)
-    async def proceed_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def proceed_button(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
         # Retrieve the stored data
         user_id = interaction.user.id
         proposal_data = self.bot.proposal_data.get(user_id)
         if proposal_data is None:
             await interaction.response.send_message(
-                "No proposal data found. Please start over.",
-                ephemeral=True
+                "No proposal data found. Please start over.", ephemeral=True
             )
             return
 
@@ -101,19 +108,19 @@ class SecondProposalModal(ui.Modal):
             label="Proposal Background",
             style=discord.TextStyle.paragraph,
             required=True,
-            max_length=2000
+            max_length=2000,
         )
         self.implementation = ui.TextInput(
             label="Implementation Protocol",
             style=discord.TextStyle.paragraph,
             required=False,
-            max_length=2000
+            max_length=2000,
         )
         self.voting_choices = ui.TextInput(
             label="Voting Choices",
             style=discord.TextStyle.paragraph,
             required=False,
-            max_length=2000
+            max_length=2000,
         )
 
         self.add_item(self.background)
@@ -138,7 +145,9 @@ class SecondProposalModal(ui.Modal):
         self.proposal_data["implementation"] = self.implementation.value
         self.proposal_data["voting_choices"] = self.voting_choices.value
 
-        full_title = self.generate_full_title(self.proposal_data["type"], self.proposal_data["title"])
+        full_title = self.generate_full_title(
+            self.proposal_data["type"], self.proposal_data["title"]
+        )
         if len(full_title) > 100:
             await interaction.response.send_message(
                 "The total length of the proposal title including prefix exceeds 100 characters. Please shorten your title.",
@@ -146,7 +155,9 @@ class SecondProposalModal(ui.Modal):
             )
             return
 
-        if any(proposal["title"] == self.proposal_data["title"] for proposal in proposals):
+        if any(
+            proposal["title"] == self.proposal_data["title"] for proposal in proposals
+        ):
             await interaction.response.send_message(
                 "A proposal with this name already exists.",
                 ephemeral=True,
@@ -156,7 +167,7 @@ class SecondProposalModal(ui.Modal):
         proposals.append(self.proposal_data)
 
         user_id = interaction.user.id
-        if hasattr(self.bot, 'proposal_data'):
+        if hasattr(self.bot, "proposal_data"):
             self.bot.proposal_data.pop(user_id, None)
 
         e = discord.Embed()

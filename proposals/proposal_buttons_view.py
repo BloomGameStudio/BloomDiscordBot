@@ -1,3 +1,8 @@
+"""
+ProposalButtonsView is a discord.ui.View that contains buttons for creating, editing, and deleting proposals. It is used in the vote_draft command in the GovCommandsCog class.
+"""
+
+
 import discord
 from .proposal_modal import FirstProposalModal
 from .proposal_selects import (
@@ -68,7 +73,9 @@ class CreateGeneralProposalButton(discord.ui.Button):
         self.bot = bot
 
     async def callback(self, interaction: discord.Interaction):
-        modal = FirstProposalModal(self.bot, interaction.channel, proposal_type="governance")
+        modal = FirstProposalModal(
+            self.bot, interaction.channel, proposal_type="governance"
+        )
         await interaction.response.send_modal(modal)
 
 
@@ -79,5 +86,7 @@ class CreateBudgetProposalButton(discord.ui.Button):
         self.bot = bot
 
     async def callback(self, interaction: discord.Interaction):
-        modal = FirstProposalModal(self.bot, interaction.channel, proposal_type="budget")
+        modal = FirstProposalModal(
+            self.bot, interaction.channel, proposal_type="budget"
+        )
         await interaction.response.send_modal(modal)
