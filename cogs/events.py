@@ -1,8 +1,7 @@
 """
-The EventCommandsCog class is a cog that contains for listing and deleting events.
+The EventCommandsCog class is a cog that contains for listing events associated with a guild.
 It contains the following commands:
 - list_events: Lists the events associated with this guild.
-- delete_event: Deletes an event from the guild.
 """
 
 import discord
