@@ -1,15 +1,14 @@
 """
-The EventCommandsCog class is a cog that contains for listing and deleting events.
+The EventCommandsCog class is a cog that contains for listing events associated with a guild.
 It contains the following commands:
 - list_events: Lists the events associated with this guild.
-- delete_event: Deletes an event from the guild.
 """
 
 import discord
 import time
 from discord.ext import commands
 from discord import app_commands
-from helpers.helpers import get_guild_member_check_role, save_notified_events
+from helpers.helpers import save_notified_events
 from logger.logger import logger
 from discord import ScheduledEvent
 from events.event_operations import (
@@ -134,45 +133,3 @@ class EventsCog(commands.Cog):
         await interaction.response.send_message(
             f"🗓️ **All Events**🗓️ \n\n{formatted_string}"
         )
-
-    @app_commands.command(name="delete_event")
-    async def delete_event(
-        self, interaction: discord.Interaction, event_name: str = None
-    ):
-        """
-        Deletes an event from the guild.
-
-        Parameters:
-        interaction (Interaction): The interaction of the command invocation.
-        event_name (str): The name of the event to be deleted.
-        """
-        if event_name is None:
-            await interaction.response.send_message(
-                "Please enter an event name with this command. Example: `/delete_event My Event`"
-            )
-            return
-
-        guild = interaction.guild
-
-        # Defer the interaction response
-        await interaction.response.defer()
-
-        # Check if the member has the required role
-        permitted = await get_guild_member_check_role(interaction)
-
-        if not permitted:
-            await interaction.response.send_message(
-                "You do not have permission to use this command."
-            )
-            return
-
-        # Fetch the list of events
-        events = await guild.fetch_scheduled_events()
-        event = next((e for e in events if e.name == event_name), None)
-
-        if event:
-            # Delete the event
-            await event.delete()
-            await interaction.followup.send(f"Event '{event_name}' has been deleted 🗑️")
-        else:
-            await interaction.followup.send(f"No event found with name '{event_name}'.")
