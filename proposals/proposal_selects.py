@@ -3,9 +3,8 @@ proposal_selects is a discord.ui.select that contains the select menus for the p
 """
 
 import discord
-from proposals.proposals import handle_publishdraft
+from proposals.proposals import ProposalManager
 from .proposal_modal import ProposalModal
-from config import config as cfg
 
 
 class PublishDraftSelect(discord.ui.Select):
@@ -27,7 +26,7 @@ class PublishDraftSelect(discord.ui.Select):
             await interaction.response.send_message("Proposal not found.")
             return
 
-        await handle_publishdraft(
+        await ProposalManager.handle_publish_draft(
             interaction, selected_proposal["title"], self.proposals, self.bot
         )
 

@@ -4,7 +4,7 @@ proposal_modal is a discord.ui.Modal that is used to create or edit a proposal. 
 
 import discord
 from discord import ui
-from proposals.proposals import proposals
+from proposals.proposals import ProposalManager
 
 
 class ProposalModal(ui.Modal, title="Create/Edit Proposal"):
@@ -48,6 +48,16 @@ class ProposalModal(ui.Modal, title="Create/Edit Proposal"):
             self.additional.default = proposal["additional"]
 
     def generate_full_title(self, proposal_type, draft_title):
+        """
+        Generate the full title of the proposal with the prefix based on the proposal type.
+
+        Parameters:
+        proposal_type (str): The type of proposal.
+        draft_title (str): The title of the proposal.
+
+        Returns:
+        str: The full title of the proposal
+        """
         if proposal_type == "governance":
             prefix = f"Bloom General Proposal: "
         elif proposal_type == "budget":
@@ -58,6 +68,12 @@ class ProposalModal(ui.Modal, title="Create/Edit Proposal"):
         return prefix + draft_title
 
     async def on_submit(self, interaction: discord.Interaction) -> None:
+        """
+        Submit the proposal data to the ProposalManager.
+
+        Parameters:
+        interaction (discord.Interaction): The interaction of the command invocation.
+        """
         member_id: int = interaction.user.id
 
         full_title = self.generate_full_title(self.proposal_type, self.name.value)
@@ -69,7 +85,8 @@ class ProposalModal(ui.Modal, title="Create/Edit Proposal"):
             return
 
         if self.proposal is None and any(
-            proposal["title"] == self.name.value for proposal in proposals
+            proposal["title"] == self.name.value
+            for proposal in ProposalManager.proposals
         ):
             await interaction.response.send_message(
                 "A proposal with this name already exists.",
@@ -87,7 +104,7 @@ class ProposalModal(ui.Modal, title="Create/Edit Proposal"):
         }
 
         if self.proposal is None:
-            proposals.append(proposal_data)
+            ProposalManager.proposals.append(proposal_data)
         else:
             self.proposal.update(proposal_data)
 
