@@ -1,12 +1,3 @@
-"""
-The GovCommandsCog class is a cog that contains the commands for the governance commands.
-It contains the following commands:
-- vote_draft: Draft, edit, or delete a vote proposal.
-- publish_draft: Publish an existing draft proposal.
-
-"""
-
-
 import discord
 from discord.ext import commands
 from discord import app_commands
@@ -28,9 +19,9 @@ class GovCommandsCog(commands.Cog):
         interaction (discord.Interaction): The interaction of the command invocation.
         """
         try:
-            view = ProposalButtonsView(proposals)
+            view = ProposalButtonsView(proposals, self.bot)
             await interaction.response.send_message(
-                "Click create to create a new proposal, edit, or delete to modify an existing proposal.",
+                "Click create to create a new proposal, or edit or delete to modify an existing proposal.",
                 view=view,
                 ephemeral=True,
             )
@@ -49,7 +40,7 @@ class GovCommandsCog(commands.Cog):
             view = discord.ui.View()
             view.add_item(PublishDraftSelect(proposals, self.bot))
             await interaction.response.send_message(
-                "Select a proposal.", view=view, ephemeral=True
+                "Select a proposal to publish.", view=view, ephemeral=True
             )
         except Exception as e:
             await interaction.response.send_message(
