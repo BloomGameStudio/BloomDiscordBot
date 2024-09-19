@@ -1,7 +1,7 @@
 """ 
 The ContributorCommandsCog class is a cog for handling the contributor commands.
 It contains the following commands:
-- list_contributors: Lists the contributors associated with this guild.
+- list_contributors: Lists the contributors associated with this guild. 
 - remove_contributor: Removes a contributor from the list of contributors.
 - add_contributor: Add a contributor to the list of contributors if the user invoking the command has the authorization to do so.
 """

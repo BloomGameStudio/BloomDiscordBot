@@ -1,11 +1,10 @@
 """
-proposals/proposals.py
 The ProposalManager class handles the logic associated with proposals. These functions are invoked when the gov commands
 in cogs/gov.py are invoked and the relevant buttons or selects are clicked.
 
 The module contains the following functions:
 - handle_votedraft: Handles the vote draft command.
-- handle_publishdraft: Handles the publish draft command.
+- handle_publish_draft: Handles the publish draft command.
 - prepare_draft: Prepare the draft by setting the type, channel ID, and title based on the draft type.
 - publish_draft: Publish the draft by creating a thread with the prepared content and starting a vote timer.
 - react_to_vote: React to the published draft with the vote emojis.
@@ -31,7 +30,7 @@ class ProposalManager:
     proposals: List[Dict[str, Any]] = []
 
     @staticmethod
-    async def handle_publishdraft(
+    async def handle_publish_draft(
         interaction: discord.Interaction,
         draft_name: str,
         proposals: List[Dict[str, str]],

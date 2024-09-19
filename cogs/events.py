@@ -1,14 +1,12 @@
 """
 The EventCommandsCog class is a cog that contains for listing and deleting events.
 It contains the following commands:
-- list_events: Lists the events associated with this guild.
-- delete_event: Deletes an event from the guild.
-- on_ready: Handles the on_ready event. This event is triggered when the bot has successfully connected.
-- on_scheduled_event_create: Handles the on_scheduled_event_create event. This event is triggered when a new scheduled event is created.
-- on_message: Event triggered when a message is sent in a server the bot is in.
-- on_reaction_add: Event triggered when a reaction is added to a message in a sever the bot is in.
-- on_raw_reaction_add: Event triggered when a raw reaction is added to a message in a server the bot is in.
-- on_member_join: Event triggered when a new member joins a server the bot is in.
+- list_events: Lists the events associated with this guild when the "list_events" command is invoked.
+- on_scheduled_event_create: Handles the "on_scheduled_event_create" event. This event is triggered when a new scheduled event is created.
+- on_message: Event triggered when a message is sent in a server the bot is in. This happens in the "on_message" event.
+- on_reaction_add: Event triggered when a reaction is added to a message in a sever the bot is in. This happens in the "on_reaction_add" event.
+- on_raw_reaction_add: Event triggered when a raw reaction is added to a message in a server the bot is in. This happens in the "on_raw_reaction_add" event.
+- on_member_join: Event triggered when a new member joins a server the bot is in. This happens in the "on_member_join" event.
 """
 
 import discord
@@ -33,7 +31,7 @@ class EventsCog(commands.Cog):
         """
         Handles the on_ready event. This event is triggered when the bot has successfully connected.
         """
-        print(f"Logged in as {self.bot.user.name} ({self.bot.user.id})")
+        logger.info(f"Logged in as {self.bot.user.name} ({self.bot.user.id})")
 
     @commands.Cog.listener()
     async def on_scheduled_event_create(self, event: discord.ScheduledEvent):

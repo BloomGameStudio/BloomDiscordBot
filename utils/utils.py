@@ -1,6 +1,5 @@
 """
-utils/utils.py contains utility functions that are used across multiple modules in the bot.
-
+utils contains utility functions that are used across multiple modules in the bot.
 
 The module contains the following functions:
 - modify_space_settings: Modify the settings of the Snapshot space.

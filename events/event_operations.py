@@ -1,8 +1,6 @@
 """
-events/event_operations.py module contains the EventOperations class
-this class is responsible for handling event operations such as saving posted events, formatting events, getting guild scheduled event users,
-notifying new events, fetching upcoming events, processing new members, handling messages, handling reactions, and processing reaction adds.
-
+The "EventOperations" class is responsible for handling event operations.
+Refer to the classes functions for more information on what they do.
 """
 
 import json

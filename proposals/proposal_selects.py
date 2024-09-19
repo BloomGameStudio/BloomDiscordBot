@@ -26,7 +26,7 @@ class PublishDraftSelect(discord.ui.Select):
             await interaction.response.send_message("Proposal not found.")
             return
 
-        await ProposalManager.handle_publishdraft(
+        await ProposalManager.handle_publish_draft(
             interaction, selected_proposal["title"], self.proposals, self.bot
         )
 
