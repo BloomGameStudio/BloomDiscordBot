@@ -187,11 +187,9 @@ When a bloomer creates an event within Blooms Discord server, there will initial
 
 There is a scheduled task that will identify events starting within the next 24 hours. If any are detected those who have expressed interest are informed of the events details in a Discord message.
 
-Events can be deleted through a command, detailed below.
-
 # Commands:
 
-The following commands can be used to delete, and list events.
+The following command can be used to list events.
 
 **List Events:**
 
@@ -211,26 +209,6 @@ The following commands can be used to delete, and list events.
 🗓️ All Events🗓️ 
 
 :link: Event Link https://discord.com/events/1194162649282392125/1207564942220468244 :link:
-**Delete Events:**
-
-```
-
-**delete_event:**
-
-```
-/delete_event
-```
-
-**Example**
-
-```
-/delete_event Event_Example
-```
-
-**Response**
-
-```
-Event with ID Event_Example has been deleted.
 ```
 
 # Emotes:

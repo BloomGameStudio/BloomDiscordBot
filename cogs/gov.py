@@ -10,7 +10,7 @@ from discord.ext import commands
 from discord import app_commands
 from proposals.proposal_buttons_view import ProposalButtonsView
 from proposals.proposal_selects import PublishDraftSelect
-from proposals.proposals import proposals
+from proposals.proposals import ProposalManager
 
 
 class GovCommandsCog(commands.Cog):
@@ -26,7 +26,7 @@ class GovCommandsCog(commands.Cog):
         interaction (discord.Interaction): The interaction of the command invocation.
         """
         try:
-            view = ProposalButtonsView(proposals, self.bot)
+            view = ProposalButtonsView(ProposalManager.proposals)
             await interaction.response.send_message(
                 "Click create to create a new proposal, or edit or delete to modify an existing proposal.",
                 view=view,
@@ -45,7 +45,7 @@ class GovCommandsCog(commands.Cog):
         """
         try:
             view = discord.ui.View()
-            view.add_item(PublishDraftSelect(proposals, self.bot))
+            view.add_item(PublishDraftSelect(ProposalManager.proposals, self.bot))
             await interaction.response.send_message(
                 "Select a proposal to publish.", view=view, ephemeral=True
             )

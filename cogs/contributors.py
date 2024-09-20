@@ -1,7 +1,7 @@
 """ 
 The ContributorCommandsCog class is a cog for handling the contributor commands.
 It contains the following commands:
-- list_contributors: Lists the contributors associated with this guild.
+- list_contributors: Lists the contributors associated with this guild. 
 - remove_contributor: Removes a contributor from the list of contributors.
 - add_contributor: Add a contributor to the list of contributors if the user invoking the command has the authorization to do so.
 """
@@ -9,7 +9,7 @@ It contains the following commands:
 import discord
 from discord.ext import commands
 from discord import app_commands
-from helpers.helpers import get_guild_member_check_role, update_json_file
+from utils.utils import Utils
 from typing import Dict, Optional
 
 
@@ -37,11 +37,9 @@ class ContributorCommandsCog(commands.Cog):
             )
             return
 
-        # Send the header message as the first ephemeral message
         header_message = "# :fire: List of Contributors :fire: \n"
         await interaction.edit_original_response(content=header_message)
 
-        # Send the emojis in a second ephemeral follow-up message
         emoji_list = [emoji for emoji in emoji_dict.keys()]
         emoji_text = " ".join(emoji_list)
         await interaction.followup.send(emoji_text, ephemeral=True)
@@ -57,9 +55,8 @@ class ContributorCommandsCog(commands.Cog):
         interaction (Interaction): The interaction of the command invocation.
         user_mention (str): The mention of the user to remove.
         """
-        # Defer the response
         await interaction.response.defer()
-        permitted = await get_guild_member_check_role(interaction)
+        permitted = await Utils.get_guild_member_check_role(interaction)
         if not permitted:
             return
         if user_mention:
@@ -90,13 +87,9 @@ class ContributorCommandsCog(commands.Cog):
                     if emoji_id_to_remove:
                         del emoji_dict[emoji_id_to_remove]
                     server_contributors.remove(contributor)
-                    self.contributors[
-                        interaction.guild.name
-                    ] = server_contributors  # Update the contributors with the updated server_contributors
-                    self.emoji_dicts[
-                        interaction.guild.name
-                    ] = emoji_dict  # Update the emoji_dicts with the updated emoji_dict
-                    update_json_file(
+                    self.contributors[interaction.guild.name] = server_contributors
+                    self.emoji_dicts[interaction.guild.name] = emoji_dict
+                    Utils.update_json_file(
                         interaction.guild.name,
                         {
                             "contributors": server_contributors,
@@ -129,7 +122,7 @@ class ContributorCommandsCog(commands.Cog):
 
         await interaction.response.defer()
 
-        permitted = await get_guild_member_check_role(interaction)
+        permitted = await Utils.get_guild_member_check_role(interaction)
         if not permitted:
             return
         uid = user_mention.strip("<@!>")
@@ -156,17 +149,14 @@ class ContributorCommandsCog(commands.Cog):
                 )
                 return
 
-            # Get the user's username
             user = await interaction.guild.fetch_member(int(uid))
             note = user.name if user else "User not found"
 
             new_contributor = {"uid": uid, "note": note}
             server_contributors.append(new_contributor)
-            emoji_dict[
-                emoji_id
-            ] = uid  # Use the UID directly as the value in emoji_id_mapping
+            emoji_dict[emoji_id] = uid
 
-            update_json_file(
+            Utils.update_json_file(
                 interaction.guild.name,
                 {"contributors": server_contributors, "emoji_dictionary": emoji_dict},
             )

@@ -48,15 +48,12 @@ YES_VOTE = "👍"
 NO_VOTE = "👎"
 ABSTAIN_VOTE = "❌"
 
-# fallback consts
 FALLBACK_GENERAL_CHANNEL = "🐘│announcements"
 FALLBACK_GOVERNANCE_TALK_CHANNEL = "🌺│home"
 
-# There are no other forum channels within the server to use as a fallback
 FALLBACK_GOVERNANCE_BUDGET_CHANNEL = "improvement-props"
 FALLBACK_GOVERNANCE_CHANNEL = "budgetary-props"
 
-# Map the fallback consts to the preferred consts
 CONSTANT_FALLBACK_MAPPING = {
     GENERAL_CHANNEL: FALLBACK_GENERAL_CHANNEL,
     GOVERNANCE_CHANNEL: FALLBACK_GOVERNANCE_CHANNEL,
@@ -106,11 +103,6 @@ Display the list of contributors
 ```
 Display the list of events and their associated event ID
 ```
-**/remove_event**
-```
-Remove an event from the list of events
-Example: /remove_event my_event
-
 ```
 **/vote_draft**
 ```

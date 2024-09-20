@@ -4,7 +4,7 @@ proposal_modal is a discord.ui.Modal that is used to create or edit a proposal. 
 
 import discord
 from discord import ui
-from proposals.proposals import proposals
+from proposals.proposals import ProposalManager
 
 
 class FirstProposalModal(ui.Modal):
@@ -132,6 +132,16 @@ class SecondProposalModal(ui.Modal):
         self.voting_choices.default = self.proposal_data.get("voting_choices", "")
 
     def generate_full_title(self, proposal_type, draft_title):
+        """
+        Generate the full title of the proposal with the prefix based on the proposal type.
+
+        Parameters:
+        proposal_type (str): The type of proposal.
+        draft_title (str): The title of the proposal.
+
+        Returns:
+        str: The full title of the proposal
+        """
         if proposal_type == "governance":
             prefix = f"Bloom General Proposal: "
         elif proposal_type == "budget":
@@ -140,10 +150,14 @@ class SecondProposalModal(ui.Modal):
             prefix = ""
         return prefix + draft_title
 
-    async def on_submit(self, interaction: discord.Interaction):
-        self.proposal_data["background"] = self.background.value
-        self.proposal_data["implementation"] = self.implementation.value
-        self.proposal_data["voting_choices"] = self.voting_choices.value
+    async def on_submit(self, interaction: discord.Interaction) -> None:
+        """
+        Submit the proposal data to the ProposalManager.
+
+        Parameters:
+        interaction (discord.Interaction): The interaction of the command invocation.
+        """
+        member_id: int = interaction.user.id
 
         full_title = self.generate_full_title(
             self.proposal_data["type"], self.proposal_data["title"]
@@ -155,8 +169,9 @@ class SecondProposalModal(ui.Modal):
             )
             return
 
-        if any(
-            proposal["title"] == self.proposal_data["title"] for proposal in proposals
+        if self.proposal is None and any(
+            proposal["title"] == self.name.value
+            for proposal in ProposalManager.proposals
         ):
             await interaction.response.send_message(
                 "A proposal with this name already exists.",
@@ -166,9 +181,10 @@ class SecondProposalModal(ui.Modal):
 
         proposals.append(self.proposal_data)
 
-        user_id = interaction.user.id
-        if hasattr(self.bot, "proposal_data"):
-            self.bot.proposal_data.pop(user_id, None)
+        if self.proposal is None:
+            ProposalManager.proposals.append(proposal_data)
+        else:
+            self.proposal.update(proposal_data)
 
         e = discord.Embed()
         e.title = f"Thank you, your proposal has been created."
