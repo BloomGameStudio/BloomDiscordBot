@@ -85,7 +85,6 @@ class ProceedToSecondModalView(discord.ui.View):
     async def proceed_button(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
-        # Retrieve the stored data
         user_id = interaction.user.id
         proposal_data = self.bot.proposal_data.get(user_id)
         if proposal_data is None:
@@ -131,67 +130,29 @@ class SecondProposalModal(ui.Modal):
         self.implementation.default = self.proposal_data.get("implementation", "")
         self.voting_choices.default = self.proposal_data.get("voting_choices", "")
 
-    def generate_full_title(self, proposal_type, draft_title):
-        """
-        Generate the full title of the proposal with the prefix based on the proposal type.
-
-        Parameters:
-        proposal_type (str): The type of proposal.
-        draft_title (str): The title of the proposal.
-
-        Returns:
-        str: The full title of the proposal
-        """
-        if proposal_type == "governance":
-            prefix = f"Bloom General Proposal: "
-        elif proposal_type == "budget":
-            prefix = f"Bloom Budget Proposal: "
-        else:
-            prefix = ""
-        return prefix + draft_title
-
     async def on_submit(self, interaction: discord.Interaction) -> None:
-        """
-        Submit the proposal data to the ProposalManager.
-
-        Parameters:
-        interaction (discord.Interaction): The interaction of the command invocation.
-        """
-        member_id: int = interaction.user.id
-
-        full_title = self.generate_full_title(
-            self.proposal_data["type"], self.proposal_data["title"]
-        )
-        if len(full_title) > 100:
-            await interaction.response.send_message(
-                "The total length of the proposal title including prefix exceeds 100 characters. Please shorten your title.",
-                ephemeral=True,
+        try:
+            self.proposal_data.update(
+                {
+                    "background": self.background.value,
+                    "implementation": self.implementation.value,
+                    "voting_choices": self.voting_choices.value,
+                }
             )
-            return
 
-        if self.proposal is None and any(
-            proposal["title"] == self.name.value
-            for proposal in ProposalManager.proposals
-        ):
-            await interaction.response.send_message(
-                "A proposal with this name already exists.",
-                ephemeral=True,
+            ProposalManager.proposals.append(self.proposal_data)
+
+            e = discord.Embed()
+            e.title = f"Thank you, proposal has been created."
+            e.description = f"{self.proposal_data['title']}"
+            e.set_author(
+                name="Proposal Creation",
+                icon_url=interaction.user.display_avatar.url,
             )
-            return
+            e.color = discord.Color.green()
 
-        proposals.append(self.proposal_data)
-
-        if self.proposal is None:
-            ProposalManager.proposals.append(proposal_data)
-        else:
-            self.proposal.update(proposal_data)
-
-        e = discord.Embed()
-        e.title = f"Thank you, your proposal has been created."
-        e.description = f"{self.proposal_data['title']}"
-        e.set_author(
-            name="Proposal Creation",
-            icon_url=interaction.user.display_avatar.url,
-        )
-        e.color = discord.Color.green()
-        await interaction.response.send_message(embed=e, ephemeral=True)
+            await interaction.response.send_message(embed=e, ephemeral=True)
+        except Exception as e:
+            await interaction.response.send_message(
+                f"Something went wrong. Error: {str(e)}", ephemeral=True
+            )

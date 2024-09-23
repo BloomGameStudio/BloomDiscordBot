@@ -20,20 +20,22 @@ class GovCommandsCog(commands.Cog):
     @app_commands.command(name="vote_draft")
     async def vote_draft(self, interaction: discord.Interaction) -> None:
         """
-        Draft, edit, or delete a vote proposal
+        Draft, edit, or delete a vote proposal.
 
         Parameters:
         interaction (discord.Interaction): The interaction of the command invocation.
         """
         try:
-            view = ProposalButtonsView(ProposalManager.proposals)
+            view = ProposalButtonsView(ProposalManager.proposals, self.bot)
             await interaction.response.send_message(
                 "Click create to create a new proposal, or edit or delete to modify an existing proposal.",
                 view=view,
                 ephemeral=True,
             )
         except Exception as e:
-            await interaction.response.send_message("Couldn't access proposal data.")
+            await interaction.response.send_message(
+                f"Couldn't access proposal data: {str(e)}", ephemeral=True
+            )
 
     @app_commands.command(name="publish_draft")
     async def publish_draft(self, interaction: discord.Interaction) -> None:

@@ -137,13 +137,27 @@ class ProposalManager:
                 logger.error(f"Error: Forum Channel {channel_name} not found.")
                 return False
 
-            thread = await forum_channel.create_thread(
-                name=title, content=f"{draft['abstract']}"
+            # Compose the full content with all fields from the proposal
+            content = (
+                f"**Proposal Title:** {draft['title']}\n\n"
+                f"**Authors:** {draft['authors']}\n\n"
+                f"**Abstract:**\n{draft['abstract']}\n\n"
+                f"**Definitions:**\n{draft['definitions']}\n\n"
+                f"**Background:**\n{draft['background']}\n\n"
             )
-            await thread.message.reply(f"\n{draft['background']}")
-            if "additional" in draft and draft["additional"].strip():
-                await thread.message.reply(f"\n{draft['additional']}")
 
+            if "implementation" in draft and draft["implementation"].strip():
+                content += (
+                    f"**Implementation Protocol:**\n{draft['implementation']}\n\n"
+                )
+
+            if "voting_choices" in draft and draft["voting_choices"].strip():
+                content += f"**Voting Choices:**\n{draft['voting_choices']}\n\n"
+
+            # Create the thread and send the full content
+            thread = await forum_channel.create_thread(name=title, content=content)
+
+            # Adding reactions for voting
             vote_message = await thread.message.reply(
                 f"**{constants.YES_VOTE} Adopt**\n\n**{constants.NO_VOTE} Reassess**\n\n**{constants.ABSTAIN_VOTE} Abstain**\n\nVote will conclude in 48h from now."
             )

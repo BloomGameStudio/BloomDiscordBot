@@ -4,7 +4,7 @@ proposal_selects is a discord.ui.select that contains the select menus for the p
 
 import discord
 from proposals.proposals import ProposalManager
-from .proposal_modal import ProposalModal
+from .proposal_modal import FirstProposalModal
 
 
 class PublishDraftSelect(discord.ui.Select):
