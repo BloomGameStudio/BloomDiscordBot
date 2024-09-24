@@ -137,39 +137,65 @@ class ProposalManager:
                 logger.error(f"Error: Forum Channel {channel_name} not found.")
                 return False
 
-            # Compose the full content with all fields from the proposal
-            content = (
-                f"**Proposal Title:** {draft['title']}\n\n"
-                f"**Authors:** {draft['authors']}\n\n"
-                f"**Abstract:**\n{draft['abstract']}\n\n"
-                f"**Definitions:**\n{draft['definitions']}\n\n"
-                f"**Background:**\n{draft['background']}\n\n"
+            proposal_fields = [
+                ("Authors", draft.get("authors", "")),
+                ("Abstract", draft.get("abstract", "")),
+                ("\nDefinitions", draft.get("definitions", "")),
+                ("\nBackground", draft.get("background", "")),
+                ("\nImplementation Protocol", draft.get("implementation", "")),
+            ]
+
+            def split_field(header: str, content: str) -> List[str]:
+                messages = []
+                header_text = f"**{header}**\n"
+                max_chunk_size = 2000 - len(header_text)
+
+                content = content.strip()
+
+                content_chunks = [
+                    content[i : i + max_chunk_size]
+                    for i in range(0, len(content), max_chunk_size)
+                ]
+
+                for i, chunk in enumerate(content_chunks):
+                    if i == 0:
+                        messages.append(header_text + chunk)
+                    else:
+                        continued_header = f"**{header}(continued)**\n"
+                        messages.append(continued_header + chunk)
+                return messages
+
+            messages = []
+            for header, content in proposal_fields:
+                if content and content.strip():
+                    field_messages = split_field(header, content)
+                    messages.extend(field_messages)
+
+            thread_creation = await forum_channel.create_thread(
+                name=title, content=messages[0]
             )
 
-            if "implementation" in draft and draft["implementation"].strip():
-                content += (
-                    f"**Implementation Protocol:**\n{draft['implementation']}\n\n"
-                )
+            thread = thread_creation.thread
 
-            if "voting_choices" in draft and draft["voting_choices"].strip():
-                content += f"**Voting Choices:**\n{draft['voting_choices']}\n\n"
+            for message in messages[1:]:
+                await thread.send(message)
 
-            # Create the thread and send the full content
-            thread = await forum_channel.create_thread(name=title, content=content)
-
-            # Adding reactions for voting
-            vote_message = await thread.message.reply(
-                f"**{constants.YES_VOTE} Adopt**\n\n**{constants.NO_VOTE} Reassess**\n\n**{constants.ABSTAIN_VOTE} Abstain**\n\nVote will conclude in 48h from now."
+            vote_message = await thread.send(
+                "**Voting Options**\n\n"
+                f"**{constants.YES_VOTE} Adopt**\n\n"
+                f"**{constants.NO_VOTE} Reassess**\n\n"
+                f"**{constants.ABSTAIN_VOTE} Abstain**\n\n"
+                f"Discord phase of vote will conclude in 48h from now."
             )
 
-            proposal_id = str(thread.message.id)
+            proposal_id = str(thread.id)
             proposal_data = {
                 "draft": draft,
                 "end_time": time.time() + cfg.DISCORD_VOTE_ENDTIME,
                 "yes_count": 0,
                 "title": title,
                 "channel_id": str(forum_channel.id),
-                "thread_id": str(thread.thread.id),
+                "thread_id": str(thread.id),
                 "message_id": str(vote_message.id),
             }
 
@@ -182,12 +208,12 @@ class ProposalManager:
             )
 
             await ProposalManager.react_to_vote(
-                vote_message.id, bot, guild_id, channel_name, thread.thread.id
+                vote_message.id, bot, guild_id, channel_name, thread.id
             )
             return True
 
         except Exception as e:
-            logger.error(f"Error publishing draft: {str(e)}")
+            logger.error(f"Error publishing draft: {e}", exc_info=True)
             return False
 
     @staticmethod
