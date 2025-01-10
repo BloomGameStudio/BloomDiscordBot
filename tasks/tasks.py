@@ -166,18 +166,87 @@ class TaskManager:
         except Exception as e:
             logger.error(f"An error occurred while checking ongoing proposals: {e}")
 
-    @tasks.loop(minutes=5)
-    async def check_events(bot: commands.Bot):
-        """Check for scheduled events every 5 minutes"""
-        if not bot.is_ready():
-            return
-            
-        logger.info("Checking scheduled events")
+    @tasks.loop(minutes=50)
+    async def check_events(bot: commands.Bot) -> None:
+        """
+        Task to check for upcoming events every 50 minutes and post them to the relevant Discord channel.
+        """
         try:
-            pass
-        except Exception as e:
-            logger.error(f"Error checking events: {e}")
+            if not bot.is_ready():
+                return
 
+            event_operations = EventOperations(bot)
+
+            current_time = time.time()
+            one_hour_ago = current_time - 3600
+            logger.info(f"Checking for upcoming events")
+
+            for guild in bot.guilds:
+                try:
+                    channel = Utils.get_channel_by_name(guild, GENERAL_CHANNEL)
+                except ValueError as e:
+                    logger.error(f" Cannot check events for guild {guild}, Error: {e}")
+                    continue
+
+                upcoming_events = await event_operations.fetch_upcoming_events(guild)
+
+                if not upcoming_events:
+                    logger.info(
+                        f"No upcoming events in the next 24 hours for guild {guild}."
+                    )
+                    continue
+
+                notified_events = Utils.load_notified_events()
+
+                new_events = [
+                    event
+                    for event in upcoming_events
+                    if event.id not in bot.posted_events
+                ]
+
+                if new_events:
+                    for event in new_events:
+                        last_notified = notified_events.get(str(event.id), 0)
+
+                        if last_notified > one_hour_ago:
+                            logger.info(
+                                f"Skipping event {event.id} as it was recently notified (last notified: {last_notified})"
+                            )
+                            continue
+
+                        users = event_operations.get_guild_scheduled_event_users(
+                            guild.id, event.id
+                        )
+
+                        guild_id = event.guild.id
+                        user_mentions = [f"<@{user['user_id']}>" for user in users]
+                        user_list_string = ", ".join(user_mentions)
+
+                        formatted_string = (
+                            f"📆 **Upcoming Events in the Next 24 Hours** 📆 \n"
+                            f"\n"
+                            f":link: **Event Link https://discord.com/events/{guild_id}/{event.id} :link:**\n"
+                            f"\n"
+                            f"{user_list_string}\n"
+                        )
+
+                        logger.info(f"Posting event {event.id} to channel {channel.id}")
+                        await channel.send(formatted_string)
+                        bot.posted_events.append(event.id)
+                        event_operations.save_posted_events(bot.posted_events)
+
+                        notified_events[event.id] = current_time
+                        Utils.save_notified_events(notified_events)
+                        logger.info(
+                            f"Updated notified time for event {event.id} to {current_time}"
+                        )
+                else:
+                    logger.info(
+                        f"No new upcoming events in the next 24 hours for guild {guild}."
+                    )
+        except Exception as e:
+            logger.error(f"Error in check_events loop: {e}")
+            
     @staticmethod
     def start_tasks(bot: commands.Bot):
         """Start all background tasks"""

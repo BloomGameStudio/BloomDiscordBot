@@ -2,9 +2,7 @@ from typing import Dict, Any, List
 import discord
 from discord.ext import commands
 import re
-import logging
-
-logger = logging.getLogger(__name__)
+from logger.logger import logger
 
 class ProposalSection:
     """Represents a section of a proposal with its content"""
