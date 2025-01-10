@@ -98,78 +98,47 @@ You can type ```/help``` to get details about what commands can be used, along w
 
 **Creating proposals:**
 
-Proposals can be drafted by utilizing various commands. 
-Upon completing a draft, it will automatically be posted so that you can view / make changes to it prior to publishing it.
+Creating a proposal requires careful consideration. Once you have launched a proposal it cannot be modified for transparency reasons. 
 
-When you decide to publish the draft, you can request the bot to do this.
+Start drafting your proposal in the #drafting-props channel and select the appropriate tag (budget, or governance). Depending on your tag selected the bot will handle the proposal prefix. Just create a name for your proposal.
 
-If you wish to change the emojis used when drafting & reaching soft consensus prior to publishing to snapshot this can be done in consts/constants.py. Simply replace YES_VOTE / NO_VOTE or ABSTAIN_VOTE with the desired emoji id. For example: 
+Please consider and use the following stuctures for the proposals body, for uniformity and structural reasons when making a proposal draft:
 
-```
-YES_VOTE = "<:gunta:1199583728129802322>"
-```
+**Governance (improvement-props):**
 
-# Commands
+- Authors
 
-The following commands can be used to create, edit, and publish drafts.
-All commands use discords slash commands (/)
+- Abstract
 
-**Vote Draft:**
+- Definitions (If applicable)
 
-/vote_draft
+- Background
 
-**Example:**
+- Details (if applicable)
 
-```/vote_draft``` 
+- Implementation Protocol (if applicable)
 
-Upon typing the command, the bot will present you with four buttons: "Create", "Edit", "Preview", and "Delete".
+- Voting Options
 
-"Create" will create a new proposal.
-"Edit" will allow you to select an an existing proposal to edit.
-"Preview" will allow you to preview an existing proposal before it is published.
-"Delete" will allow you delete and existing proposal that has not been published.
+**Budget (budgetary-props)**
 
-You can use this command repeatedly to perform different actions if necessary.
+- Authors
 
-**Publish Draft:**
+- Abstract
 
-In order to publish a draft you need to use the command /publish_draft. 
+- Type
 
-Select the draft you wish to publish from the dropdown.
+- Definitions (if applicable)
 
-This will automatically publish the draft you want to the appropriate Discord channel (Gov-Budget or Governance) depending on if it is a general proposal or a budget.
+- Background
 
-If / when a published draft reaches qurom, the draft is approved and subsequently posted to Snapshot. NOTE: env vars ``ETH_ADDRESS`` and ``ETH_PRIVATE_KEY``
-need to be set.
+- Details (specifics of imbursement, etc)
 
-A Snapshot space is required to be configured and is outside the scope of this documentation. Please refer to https://docs.snapshot.org/ to configure a Snapshot space.
+- Voting Options
 
-**Example:**
-
-```/publish_draft```
-
-**Posted Response:**
-
-```
-Topic/Vote 1: new title
-
-Abstract
-new draft abstract
-
-Background
-new draft background
-
- 👍 Yes
- 👎 Reasses
- ❌ Abstain
-
-
-Vote will conclude in 48h from now.
-```
+Upon creating your draft, seek revision from fellow members of Bloom. Once you are happy with your draft and ready for it to be published to Snapshot, use the ```/create_proposal <thread link>``` to begin the Discord voting phase.
 
 If qurom is reached:
-
-**Response:**
 
 ```
 Vote for 'Bloom Budget Proposal (BBP) #12: Test' has concluded:
@@ -180,6 +149,8 @@ Yes: 1
 Reassess: 0
 Abstain: 0
 ```
+
+Upon passing the Discord phase, the vote will then be published to Snapshot. A 72 hours voting phase begins. At this point the bot has successfully passed off the handling of the proposal to Snapshot and no longer tracks it.
 
 # Events:
 
