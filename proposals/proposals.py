@@ -110,39 +110,54 @@ class ProposalManager:
         return id_type, channel_name, title
 
     @staticmethod
+    async def get_forum_channel(draft_type: str, bot: commands.Bot, guild_id: int) -> discord.ForumChannel:
+        """Get the appropriate forum channel based on draft type"""
+        guild = bot.get_guild(guild_id)
+        if not guild:
+            logger.error(f"Guild not found: {guild_id}")
+            return None
+
+        channel_name = (
+            constants.GOVERNANCE_BUDGET_CHANNEL 
+            if draft_type.lower() == "budget" 
+            else constants.GOVERNANCE_CHANNEL
+        )
+        
+        channel = discord.utils.get(guild.channels, name=channel_name)
+        if not isinstance(channel, discord.ForumChannel):
+            logger.error(f"Channel not found or not a forum channel: {channel_name}")
+            return None
+        
+        return channel
+
+    @staticmethod
     async def publish_draft(
         draft: Dict[str, Any], bot: commands.Bot, guild_id: int, guild: discord.Guild
     ) -> bool:
-        """
-        Publish the draft by creating a thread with the prepared content and starting a vote timer.
-        Returns a boolean indicating whether the publication was successful.
-
-        Parameters:
-        draft (Dict[str, Any]): The draft to publish.
-        bot (commands.Bot): The bot instance.
-        guild_id (int): The ID of the guild.
-        guild (discord.Guild): The guild instance.
-
-        Returns:
-        bool: A boolean indicating whether the publication was successful.
-        """
+        """Publish the draft by creating a thread with the prepared content and starting a vote timer."""
         try:
-            id_type, channel_name, title = await ProposalManager.prepare_draft(
-                guild, draft
-            )
-            forum_channel = discord.utils.get(
-                bot.get_guild(guild_id).channels, name=channel_name
+            forum_channel = await ProposalManager.get_forum_channel(
+                draft["type"], bot, guild_id
             )
             if not forum_channel:
-                logger.error(f"Error: Forum Channel {channel_name} not found.")
                 return False
 
+            proposal_type = "General" if draft["type"] == "governance" else "Budget"
+            thread_title = draft["title"]
+            formatted_title = f"Bloom {proposal_type} Proposal: {thread_title}"
+
+            sections = draft.get("sections", {})
+            
+            authors = sections.get("Authors", "No authors specified")
             thread = await forum_channel.create_thread(
-                name=title, content=f"{draft['abstract']}"
+                name=formatted_title,
+                content=f"**Authors**\n{authors}"
             )
-            await thread.message.reply(f"\n{draft['background']}")
-            if "additional" in draft and draft["additional"].strip():
-                await thread.message.reply(f"\n{draft['additional']}")
+            
+            section_order = ["Abstract", "Definitions", "Background", "Implementation Protocol"]
+            for section in section_order:
+                if sections.get(section):
+                    await thread.message.reply(f"**{section}**\n{sections[section]}")
 
             vote_message = await thread.message.reply(
                 f"**{constants.YES_VOTE} Adopt**\n\n**{constants.NO_VOTE} Reassess**\n\n**{constants.ABSTAIN_VOTE} Abstain**\n\nVote will conclude in 48h from now."
@@ -153,7 +168,7 @@ class ProposalManager:
                 "draft": draft,
                 "end_time": time.time() + cfg.DISCORD_VOTE_ENDTIME,
                 "yes_count": 0,
-                "title": title,
+                "title": formatted_title,
                 "channel_id": str(forum_channel.id),
                 "thread_id": str(thread.thread.id),
                 "message_id": str(vote_message.id),
@@ -168,7 +183,7 @@ class ProposalManager:
             )
 
             await ProposalManager.react_to_vote(
-                vote_message.id, bot, guild_id, channel_name, thread.thread.id
+                vote_message.id, bot, guild_id, forum_channel.name, thread.thread.id
             )
             return True
 

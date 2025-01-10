@@ -63,100 +63,76 @@ class Utils:
             raise
 
     @staticmethod
-    def create_snapshot_proposal(proposal_data, title):
-        """
-        Create a Snapshot proposal.
-
-        Parameters:
-        proposal_data (Dict[str, Any]): The data of the proposal.
-        title (str): The title of the proposal.
-
-        Raises:
-        subprocess.CalledProcessError: If the subprocess call to create the proposal fails.
-        """
-        proposal_command = [
-            "node",
-            "./snapshot/wrapper.js",
-            title,
-            proposal_data["draft"]["abstract"],
-            proposal_data["draft"]["background"],
-            proposal_data["draft"]["additional"],
-            "Adopt",
-            "Reassess",
-            "Abstain",
-        ]
-
-        env["SNAPSHOT_HUB"] = cfg.SNAPSHOT_HUB
-        env["SNAPSHOT_SPACE"] = cfg.SNAPSHOT_SPACE
-        env["NETWORK"] = cfg.NETWORK_ID
-        env["PRIMARY_RPC_URL"] = cfg.PRIMARY_RPC_URL
-        env["SECONDARY_RPC_URL"] = cfg.SECONDARY_RPC_URL
-
+    def create_snapshot_proposal(proposal_data: Dict[str, Any], title: str) -> None:
+        """Create a Snapshot proposal with structured sections"""
         try:
+            draft = proposal_data.get("draft", {})
+            sections = draft.get("sections", {})
+            
+            # Order sections
+            section_order = ["Authors", "Definitions", "Abstract", "Background", "Implementation Protocol"]
+            
+            messages = []
+            for section in section_order:
+                if sections.get(section):
+                    messages.append(f"**{section}**\n{sections[section]}")
+            
+            formatted_sections = {
+                "messages": messages
+            }
+
+            proposal_command = [
+                "node",
+                "./snapshot/wrapper.js",
+                title,
+                json.dumps(formatted_sections),
+                "Adopt",
+                "Reassess",
+                "Abstain"
+            ]
+
+            env = os.environ.copy()
+            env.update({
+                "SNAPSHOT_HUB": cfg.SNAPSHOT_HUB,
+                "SNAPSHOT_SPACE": cfg.SNAPSHOT_SPACE,
+                "NETWORK": cfg.NETWORK_ID,
+                "PRIMARY_RPC_URL": cfg.PRIMARY_RPC_URL,
+                "SECONDARY_RPC_URL": cfg.SECONDARY_RPC_URL
+            })
+
             subprocess.run(proposal_command, check=True, env=env)
             logger.info("Snapshot proposal created successfully.")
         except subprocess.CalledProcessError as e:
             logger.error(f"Error creating snapshot proposal: {e}")
             raise
+        except Exception as e:
+            logger.error(f"Unexpected error creating snapshot proposal: {e}")
+            raise
 
     @staticmethod
-    def fetch_XP_total_supply() -> int:
-        """
-        Fetch the total supply of XP tokens.
+    def fetch_XP_total_supply() -> float:
+        """Fetch total XP supply with fallback and better error handling"""
+        try:
+            logger.info(f"Attempting to connect to PRIMARY_RPC: {cfg.PRIMARY_RPC_URL}")
+            w3 = Web3(Web3.HTTPProvider(cfg.PRIMARY_RPC_URL, request_kwargs={'timeout': 10}))
+            if not w3.is_connected():
+                logger.error("Failed to connect to PRIMARY_RPC")
+                logger.info(f"Attempting to connect to SECONDARY_RPC: {cfg.SECONDARY_RPC_URL}")
+                w3 = Web3(Web3.HTTPProvider(cfg.SECONDARY_RPC_URL, request_kwargs={'timeout': 10}))
+                if not w3.is_connected():
+                    logger.error("Failed to connect to SECONDARY_RPC")
+                    return 0
 
-        Returns:
-        int: The total supply of XP tokens.
+            contract = w3.eth.contract(
+                address=Web3.to_checksum_address(cfg.XP_CONTRACT_ADDRESS),
+                abi=cfg.XP_CONTRACT_ABI
+            )
+            total_supply = contract.functions.totalSupply().call()
+            return float(total_supply) / (10 ** 18)
 
-        Raises:
-        Exception: If the total supply of XP tokens cannot be fetched.
-        """
-        primary_rpc = cfg.PRIMARY_RPC_URL
-        secondary_rpc = cfg.SECONDARY_RPC_URL
-
-        if not primary_rpc or not secondary_rpc:
-            logger.error("RPC URLs not set in environment variables.")
-            return None
-
-        web3 = Web3(Web3.HTTPProvider(primary_rpc))
-
-        if not web3.is_connected():
-            logger.error("Failed to connect to PRIMARY_RPC, trying SECONDARY_RPC")
-            web3 = Web3(Web3.HTTPProvider(secondary_rpc))
-            if not web3.is_connected():
-                logger.error("Failed to connect to SECONDARY_RPC, shutting down")
-                exit(1)
-
-        token_abi = [
-            {
-                "constant": True,
-                "inputs": [],
-                "name": "totalSupply",
-                "outputs": [{"name": "", "type": "uint256"}],
-                "type": "function",
-            }
-        ]
-
-        total_supply_sum = 0
-
-        for address in cfg.SETTINGS_TOKEN_ADDRESSES:
-            try:
-                checksum_address = Web3.to_checksum_address(address)
-                token_contract = web3.eth.contract(
-                    address=checksum_address, abi=token_abi
-                )
-                total_supply = token_contract.functions.totalSupply().call()
-                if total_supply is not None:
-                    logger.info(
-                        f"The total supply of the token at address {address} is {total_supply}."
-                    )
-                    total_supply_sum += total_supply
-            except Exception as e:
-                logger.error(
-                    f"Error fetching total supply for address {address}: {str(e)}"
-                )
-
-        logger.info(f"The total supply of all tokens is {total_supply_sum}.")
-        return total_supply_sum
+        except Exception as e:
+            logger.error(f"Error fetching XP total supply: {e}")
+            return 0
 
     @staticmethod
     def fetch_XP_quorum(percentage: int = 25) -> int:
