@@ -102,6 +102,9 @@ class ThreadParser:
                 if not content:
                     continue
                     
+                #NOTE: We stop scraping at this point, and do not include it
+                #In the future we may wish to allow submissions to customize voting options
+                #As well as proposal types (multi-choice, ranked, etc etc)
                 if "voting options" in content.lower():
                     found_voting_options = True
                     break
@@ -124,7 +127,7 @@ class ThreadParser:
                             "\n"
                             "❌ Abstain\n"
                             "```")
-                            
+
             draft_type = "budget"
             if thread.applied_tags:
                 tag_name = thread.applied_tags[0].name.lower()

@@ -22,7 +22,7 @@ import config.config as cfg
 
 
 class TaskManager:
-    @tasks.loop(minutes=1)
+    @tasks.loop(minutes=5)
     async def check_concluded_proposals_task(bot: commands.Bot):
         """Check for concluded proposals every 5 minutes"""
         if not bot.is_ready():
