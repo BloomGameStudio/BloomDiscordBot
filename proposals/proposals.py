@@ -60,7 +60,9 @@ class ProposalManager:
         return id_type, channel_name, title
 
     @staticmethod
-    async def get_forum_channel(draft_type: str, bot: commands.Bot, guild_id: int) -> discord.ForumChannel:
+    async def get_forum_channel(
+        draft_type: str, bot: commands.Bot, guild_id: int
+    ) -> discord.ForumChannel:
         """Get the appropriate forum channel based on draft type"""
         guild = bot.get_guild(guild_id)
         if not guild:
@@ -68,16 +70,16 @@ class ProposalManager:
             return None
 
         channel_name = (
-            constants.GOVERNANCE_BUDGET_CHANNEL 
-            if draft_type.lower() == "budget" 
+            constants.GOVERNANCE_BUDGET_CHANNEL
+            if draft_type.lower() == "budget"
             else constants.GOVERNANCE_CHANNEL
         )
-        
+
         channel = discord.utils.get(guild.channels, name=channel_name)
         if not isinstance(channel, discord.ForumChannel):
             logger.error(f"Channel not found or not a forum channel: {channel_name}")
             return None
-        
+
         return channel
 
     @staticmethod
@@ -98,15 +100,17 @@ class ProposalManager:
             formatted_title = f"Bloom {proposal_type} Proposal: {thread_title}"
 
             content = draft.get("sections", {}).get("content", "No content")
-            
+
             # Split content into sentences
-            sentences = re.split(r'([.!?]\s+)', content)
+            sentences = re.split(r"([.!?]\s+)", content)
             # Recombine sentences with their punctuation
-            sentences = [''.join(i) for i in zip(sentences[0::2], sentences[1::2] + [''])]
-            
+            sentences = [
+                "".join(i) for i in zip(sentences[0::2], sentences[1::2] + [""])
+            ]
+
             current_message = ""
             messages = []
-            
+
             for sentence in sentences:
                 # If adding this sentence would exceed Discord's limit
                 if len(current_message) + len(sentence) > 1900:
@@ -114,16 +118,15 @@ class ProposalManager:
                     current_message = sentence
                 else:
                     current_message += sentence
-            
+
             if current_message:
                 messages.append(current_message.strip())
-            
+
             # Create thread with first message
             created_thread = await forum_channel.create_thread(
-                name=formatted_title,
-                content=messages[0]
+                name=formatted_title, content=messages[0]
             )
-            
+
             # Post remaining messages as replies
             for message in messages[1:]:
                 await created_thread.message.reply(message)
@@ -154,7 +157,11 @@ class ProposalManager:
             )
 
             await ProposalManager.react_to_vote(
-                vote_message.id, bot, guild_id, forum_channel.name, created_thread.thread.id
+                vote_message.id,
+                bot,
+                guild_id,
+                forum_channel.name,
+                created_thread.thread.id,
             )
             return True
 

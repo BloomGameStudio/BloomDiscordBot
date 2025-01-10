@@ -27,14 +27,14 @@ class TaskManager:
         """Check for concluded proposals every 5 minutes"""
         if not bot.is_ready():
             return
-        
+
         logger.info("Checking to see if proposals have ended")
         try:
             keys_to_remove = []
             for proposal_id, proposal_data in bot.ongoing_votes.items():
                 if time.time() < proposal_data["end_time"]:
                     continue
-                    
+
                 channel = bot.get_channel(int(proposal_data["channel_id"]))
                 if channel:
                     thread = channel.get_thread(int(proposal_data["thread_id"]))
@@ -246,7 +246,7 @@ class TaskManager:
                     )
         except Exception as e:
             logger.error(f"Error in check_events loop: {e}")
-            
+
     @staticmethod
     def start_tasks(bot: commands.Bot):
         """Start all background tasks"""

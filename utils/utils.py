@@ -68,10 +68,10 @@ class Utils:
         try:
             draft = proposal_data.get("draft", {})
             sections = draft.get("sections", {})
-            
+
             # Get the raw content and split into messages
             content = sections.get("content", "")
-            
+
             # Format the content for Snapshot
             formatted_sections = {
                 "messages": [content]  # Pass the entire content as a single message
@@ -84,17 +84,19 @@ class Utils:
                 json.dumps(formatted_sections),
                 "Adopt",
                 "Reassess",
-                "Abstain"
+                "Abstain",
             ]
 
             env = os.environ.copy()
-            env.update({
-                "SNAPSHOT_HUB": cfg.SNAPSHOT_HUB,
-                "SNAPSHOT_SPACE": cfg.SNAPSHOT_SPACE,
-                "NETWORK": cfg.NETWORK_ID,
-                "PRIMARY_RPC_URL": cfg.PRIMARY_RPC_URL,
-                "SECONDARY_RPC_URL": cfg.SECONDARY_RPC_URL
-            })
+            env.update(
+                {
+                    "SNAPSHOT_HUB": cfg.SNAPSHOT_HUB,
+                    "SNAPSHOT_SPACE": cfg.SNAPSHOT_SPACE,
+                    "NETWORK": cfg.NETWORK_ID,
+                    "PRIMARY_RPC_URL": cfg.PRIMARY_RPC_URL,
+                    "SECONDARY_RPC_URL": cfg.SECONDARY_RPC_URL,
+                }
+            )
 
             subprocess.run(proposal_command, check=True, env=env)
             logger.info("Snapshot proposal created successfully.")
@@ -110,21 +112,29 @@ class Utils:
         """Fetch total XP supply with fallback and better error handling"""
         try:
             logger.info(f"Attempting to connect to PRIMARY_RPC: {cfg.PRIMARY_RPC_URL}")
-            w3 = Web3(Web3.HTTPProvider(cfg.PRIMARY_RPC_URL, request_kwargs={'timeout': 10}))
+            w3 = Web3(
+                Web3.HTTPProvider(cfg.PRIMARY_RPC_URL, request_kwargs={"timeout": 10})
+            )
             if not w3.is_connected():
                 logger.error("Failed to connect to PRIMARY_RPC")
-                logger.info(f"Attempting to connect to SECONDARY_RPC: {cfg.SECONDARY_RPC_URL}")
-                w3 = Web3(Web3.HTTPProvider(cfg.SECONDARY_RPC_URL, request_kwargs={'timeout': 10}))
+                logger.info(
+                    f"Attempting to connect to SECONDARY_RPC: {cfg.SECONDARY_RPC_URL}"
+                )
+                w3 = Web3(
+                    Web3.HTTPProvider(
+                        cfg.SECONDARY_RPC_URL, request_kwargs={"timeout": 10}
+                    )
+                )
                 if not w3.is_connected():
                     logger.error("Failed to connect to SECONDARY_RPC")
                     return 0
 
             contract = w3.eth.contract(
                 address=Web3.to_checksum_address(cfg.XP_CONTRACT_ADDRESS),
-                abi=cfg.XP_CONTRACT_ABI
+                abi=cfg.XP_CONTRACT_ABI,
             )
             total_supply = contract.functions.totalSupply().call()
-            return float(total_supply) / (10 ** 18)
+            return float(total_supply) / (10**18)
 
         except Exception as e:
             logger.error(f"Error fetching XP total supply: {e}")
