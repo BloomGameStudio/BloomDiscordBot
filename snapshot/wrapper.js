@@ -26,8 +26,9 @@ if (!choices.length) {
 try {
   const sections = JSON.parse(sectionsJson);
   
-  // Simply join all messages with double newlines
-  const formattedBody = sections.messages.join('\n\n');
+  // Use messages array if available, otherwise use content
+  const messages = sections.messages || [sections.content];
+  const formattedBody = messages.join('\n\n');
 
   createProposal(
     title,

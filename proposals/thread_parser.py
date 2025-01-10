@@ -77,11 +77,24 @@ class ThreadParser:
             thread_id = ThreadParser.extract_thread_id(thread_input)
             thread = await ThreadParser.fetch_thread(bot, thread_id)
             
-            sections = {}
-            total_length = 0
+            # Check for multiple proposal type tags
+            governance_tag = False
+            budget_tag = False
             
-            content_buffer = []
-            thread_owner = None
+            if thread.applied_tags:
+                for tag in thread.applied_tags:
+                    tag_name = tag.name.lower()
+                    if "governance" in tag_name or "improvement" in tag_name:
+                        governance_tag = True
+                    if "budget" in tag_name:
+                        budget_tag = True
+            
+            if governance_tag and budget_tag:
+                return None, "A proposal cannot be both governance and budget type. Please apply only one tag."
+            
+            messages = []
+            total_length = 0
+            found_voting_options = False
             
             async for msg in thread.history(oldest_first=True):
                 content = msg.content.strip()
@@ -89,55 +102,29 @@ class ThreadParser:
                 if not content:
                     continue
                     
-                if not thread_owner:
-                    thread_owner = msg.author
-                
-                #Break at voting options
-                #NOTE: We default to Adopt / Reassess / Abstain, there is no need to include it.
-                #However, in the future we may wish to use dynamic voting options and styles of votes.
                 if "voting options" in content.lower():
+                    found_voting_options = True
                     break
                 
-                if msg.author == thread_owner:
-                    content_buffer.append(content)
-                    total_length += len(content)
-                    
-                    if total_length > 10000:
-                        raise ValueError("Proposal content exceeds Snapshot's 10,000 character limit")
-            
-            full_content = '\n'.join(content_buffer)
-            
-            section_order = [
-                "authors",
-                "abstract",
-                "definitions",
-                "background",
-                "Details",
-                "implementation protocol"
-            ]
-            
-            sections_found = {}
-            for section in section_order:
-                pos = full_content.lower().find(section)
-                if pos != -1:
-                    sections_found[pos] = section
-            
-            positions = sorted(sections_found.keys())
-            
-            for i, pos in enumerate(positions):
-                section = sections_found[pos]
-                next_pos = positions[i + 1] if i + 1 < len(positions) else len(full_content)
-                content = full_content[pos:next_pos].strip()
+                messages.append(content)
+                total_length += len(content)
                 
-                header_end = content.lower().find('\n')
-                if header_end != -1:
-                    content = content[header_end:].strip()
-                    content = content.rstrip('*').rstrip('#').strip()
-                
-                sections[section.title()] = content
-            
-            title = thread.name
-            
+                if total_length > 10000:
+                    return None, "Your proposal content exceeds Snapshot's 10,000 character limit. Please shorten your proposal and try again."
+
+            if not found_voting_options:
+                return None, ("Your proposal must include a 'Voting Options' section. Please add this section and try again. "
+                            "Refer to the channels Post Guidelines for proposal structure guidance.\n"
+                            "For ease of use, you can copy the below before resubmitting your proposal:\n"
+                            "```\n"
+                            "**Voting Options:**\n"
+                            "👍 Adopt\n"
+                            "\n"
+                            "👎 Reassess\n"
+                            "\n"
+                            "❌ Abstain\n"
+                            "```")
+                            
             draft_type = "budget"
             if thread.applied_tags:
                 tag_name = thread.applied_tags[0].name.lower()
@@ -145,11 +132,14 @@ class ThreadParser:
                     draft_type = "governance"
             
             return {
-                "title": title,
+                "title": thread.name,
                 "type": draft_type,
-                "sections": sections
-            }
-            
+                "sections": {
+                    "content": "\n\n".join(messages),  # For Discord display
+                    "messages": messages  # For Snapshot
+                }
+            }, None
+
         except Exception as e:
             logger.error(f"Error parsing thread: {e}")
-            return None
+            return None, str(e)

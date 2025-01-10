@@ -69,16 +69,12 @@ class Utils:
             draft = proposal_data.get("draft", {})
             sections = draft.get("sections", {})
             
-            # Order sections
-            section_order = ["Authors", "Definitions", "Abstract", "Background", "Implementation Protocol"]
+            # Get the raw content and split into messages
+            content = sections.get("content", "")
             
-            messages = []
-            for section in section_order:
-                if sections.get(section):
-                    messages.append(f"**{section}**\n{sections[section]}")
-            
+            # Format the content for Snapshot
             formatted_sections = {
-                "messages": messages
+                "messages": [content]  # Pass the entire content as a single message
             }
 
             proposal_command = [

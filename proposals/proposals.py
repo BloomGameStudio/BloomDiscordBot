@@ -23,6 +23,7 @@ from discord.ext import commands
 from consts.types import GOVERNANCE_ID_TYPE, BUDGET_ID_TYPE
 from typing import Any, Dict, List, Tuple
 from utils.utils import Utils
+import re
 
 
 class ProposalManager:
@@ -84,6 +85,7 @@ class ProposalManager:
         draft: Dict[str, Any], bot: commands.Bot, guild_id: int, guild: discord.Guild
     ) -> bool:
         """Publish the draft by creating a thread with the prepared content and starting a vote timer."""
+        created_thread = None
         try:
             forum_channel = await ProposalManager.get_forum_channel(
                 draft["type"], bot, guild_id
@@ -95,31 +97,51 @@ class ProposalManager:
             thread_title = draft["title"]
             formatted_title = f"Bloom {proposal_type} Proposal: {thread_title}"
 
-            sections = draft.get("sections", {})
+            content = draft.get("sections", {}).get("content", "No content")
             
-            authors = sections.get("Authors", "No authors specified")
-            thread = await forum_channel.create_thread(
+            # Split content into sentences
+            sentences = re.split(r'([.!?]\s+)', content)
+            # Recombine sentences with their punctuation
+            sentences = [''.join(i) for i in zip(sentences[0::2], sentences[1::2] + [''])]
+            
+            current_message = ""
+            messages = []
+            
+            for sentence in sentences:
+                # If adding this sentence would exceed Discord's limit
+                if len(current_message) + len(sentence) > 1900:
+                    messages.append(current_message.strip())
+                    current_message = sentence
+                else:
+                    current_message += sentence
+            
+            if current_message:
+                messages.append(current_message.strip())
+            
+            # Create thread with first message
+            created_thread = await forum_channel.create_thread(
                 name=formatted_title,
-                content=f"**Authors**\n{authors}"
+                content=messages[0]
             )
             
-            section_order = ["Abstract", "Definitions", "Background", "Implementation Protocol"]
-            for section in section_order:
-                if sections.get(section):
-                    await thread.message.reply(f"**{section}**\n{sections[section]}")
+            # Post remaining messages as replies
+            for message in messages[1:]:
+                await created_thread.message.reply(message)
 
-            vote_message = await thread.message.reply(
+            # Add voting options
+            vote_message = await created_thread.message.reply(
                 f"**{constants.YES_VOTE} Adopt**\n\n**{constants.NO_VOTE} Reassess**\n\n**{constants.ABSTAIN_VOTE} Abstain**\n\nVote will conclude in 48h from now."
             )
 
-            proposal_id = str(thread.message.id)
+            # Rest of the function (proposal data storage, etc)
+            proposal_id = str(created_thread.message.id)
             proposal_data = {
                 "draft": draft,
                 "end_time": time.time() + cfg.DISCORD_VOTE_ENDTIME,
                 "yes_count": 0,
                 "title": formatted_title,
                 "channel_id": str(forum_channel.id),
-                "thread_id": str(thread.thread.id),
+                "thread_id": str(created_thread.thread.id),
                 "message_id": str(vote_message.id),
             }
 
@@ -132,12 +154,17 @@ class ProposalManager:
             )
 
             await ProposalManager.react_to_vote(
-                vote_message.id, bot, guild_id, forum_channel.name, thread.thread.id
+                vote_message.id, bot, guild_id, forum_channel.name, created_thread.thread.id
             )
             return True
 
         except Exception as e:
-            logger.error(f"Error publishing draft: {str(e)}")
+            logger.error(f"Error publishing draft: {e}")
+            if created_thread:
+                try:
+                    await created_thread.delete()
+                except Exception as delete_error:
+                    logger.error(f"Error cleaning up failed thread: {delete_error}")
             return False
 
     @staticmethod

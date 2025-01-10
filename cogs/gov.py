@@ -29,17 +29,17 @@ class GovCommandsCog(commands.Cog):
     ) -> None:
         """Create a proposal from a thread and start voting"""
         try:
-            await interaction.response.defer()
+            await interaction.response.defer(ephemeral=True)
             
             # Parse the thread content
-            try:
-                thread_data = await ThreadParser.parse_thread(self.bot, thread_id)
-            except ValueError as e:
-                await interaction.followup.send(f"Error: {str(e)}")
+            thread_data, error = await ThreadParser.parse_thread(self.bot, thread_id)
+            
+            if error:
+                await interaction.followup.send(f"Error: {error}", ephemeral=True)
                 return
             
             if not thread_data:
-                await interaction.followup.send("Failed to parse thread content")
+                await interaction.followup.send("Failed to parse thread content", ephemeral=True)
                 return
 
             # Create draft format for ProposalManager with separate messages
@@ -58,13 +58,14 @@ class GovCommandsCog(commands.Cog):
             )
 
             if success:
-                await interaction.followup.send("Proposal created successfully!")
+                # Only this message should be public
+                await interaction.followup.send("Proposal created successfully!", ephemeral=False)
             else:
-                await interaction.followup.send("Failed to create proposal")
+                await interaction.followup.send("Failed to create proposal", ephemeral=True)
 
         except Exception as e:
             logger.error(f"Error creating proposal: {e}")
-            await interaction.followup.send("An error occurred while creating the proposal")
+            await interaction.followup.send("An error occurred while creating the proposal", ephemeral=True)
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(GovCommandsCog(bot))

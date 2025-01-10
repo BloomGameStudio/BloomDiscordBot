@@ -118,7 +118,8 @@ Please consider and use the following stuctures for the proposals body, for unif
 
 - Implementation Protocol (if applicable)
 
-- Voting Options
+- Voting Options (required)
+Anything can be posted here, just include the words 'voting options' for now. The bot will use default settings (Adopt, Reassess, Abstain) which will be dynamcially adjustable in the future
 
 **Budget (budgetary-props)**
 
@@ -134,7 +135,8 @@ Please consider and use the following stuctures for the proposals body, for unif
 
 - Details (specifics of imbursement, etc)
 
-- Voting Options
+- Voting Options (required)
+Anything can be posted here, just include the words 'voting options' for now. The bot will use default settings (Adopt, Reassess, Abstain) which will be dynamcially adjustable in the future
 
 Upon creating your draft, seek revision from fellow members of Bloom. Once you are happy with your draft and ready for it to be published to Snapshot, use the ```/create_proposal <thread link>``` to begin the Discord voting phase.
 
