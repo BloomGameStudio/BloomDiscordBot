@@ -29,57 +29,6 @@ class ProposalManager:
     proposals: List[Dict[str, Any]] = []
 
     @staticmethod
-    async def handle_publish_draft(
-        interaction: discord.Interaction,
-        draft_name: str,
-        proposals: List[Dict[str, str]],
-        bot: commands.Bot,
-    ) -> None:
-        """
-        Handle the publish draft command by publishing the draft if it exists in the proposals list.
-
-        Parameters:
-        interaction (discord.Interaction): The interaction of the command invocation.
-        draft_name (str): The name of the draft to publish.
-        proposals (List[Dict[str, str]]): The list of proposals.
-        bot (commands.Bot): The bot instance.
-        """
-        if not interaction.response.is_done():
-            await interaction.response.defer()
-
-        draft_to_publish = next(
-            (
-                item
-                for item in proposals
-                if item.get("title", "").strip() == draft_name.strip()
-            ),
-            None,
-        )
-
-        if draft_to_publish:
-            published_successfully = await ProposalManager.publish_draft(
-                draft_to_publish, bot, interaction.guild.id, interaction.guild
-            )
-            if published_successfully:
-                proposals.remove(draft_to_publish)
-                embed = discord.Embed(
-                    title=f"Published Draft: {draft_to_publish['title']}",
-                    description=f"The draft '{draft_to_publish['title']}' has been published.",
-                    color=discord.Color.green(),
-                )
-                embed.set_author(
-                    name="Draft Publishing",
-                    icon_url=interaction.user.display_avatar.url,
-                )
-                await interaction.followup.send(embed=embed)
-            else:
-                await interaction.followup.send(
-                    f"Failed to publish draft: {draft_name}"
-                )
-        else:
-            await interaction.followup.send(f"Draft not found: {draft_name}")
-
-    @staticmethod
     async def prepare_draft(
         guild: discord.Guild, draft: Dict[str, Any]
     ) -> Tuple[str, str, str]:

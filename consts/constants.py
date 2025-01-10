@@ -103,13 +103,8 @@ Display the list of contributors
 ```
 Display the list of events and their associated event ID
 ```
+**/create_proposal <thread_link>**
 ```
-**/vote_draft**
-```
-Draft a vote proposal
-```
-**/publish_draft**
-```
-Publish a draft that has been worked on.
+Submit a drafted proposal to begin the Discord voting phase.
 ```
 """

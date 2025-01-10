@@ -1,4 +1,4 @@
-from typing import Dict, Any, List
+from typing import Dict, Any
 import discord
 from discord.ext import commands
 import re
