@@ -1,1 +1,1 @@
-worker: pipenv run python main.py
+worker: pipenv install --deploy && pipenv run python main.py
