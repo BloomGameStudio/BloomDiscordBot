@@ -48,7 +48,6 @@ class Utils:
         env["SNAPSHOT_HUB"] = cfg.SNAPSHOT_HUB
         env["SNAPSHOT_SPACE"] = cfg.SNAPSHOT_SPACE
         env["NETWORK_ID"] = cfg.NETWORK_ID
-        env["NETWORK"] = cfg.NETWORK_ID
         env["SETTINGS_NAME"] = cfg.SETTINGS_NAME
         env["SETTINGS_ABOUT"] = cfg.SETTINGS_ABOUT
         env["SETTINGS_SYMBOL"] = cfg.SETTINGS_SYMBOL
@@ -180,7 +179,6 @@ class Utils:
             logger.error("Failed to fetch total supply.")
             return None
 
-        # Calculate percentage directly since total_supply is already in ether
         quorum = int((total_supply * percentage) // 100)
         logger.info(f"{percentage}% of the total supply is {quorum}.")
         return quorum
