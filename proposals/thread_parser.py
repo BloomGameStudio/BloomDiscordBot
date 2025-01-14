@@ -29,7 +29,11 @@ class ThreadParser:
         """Extract thread ID from either a URL or direct ID"""
         try:
             if "discord.com" in thread_input:
-                thread_id = int(thread_input.split("/")[-1])
+                # Handle URLs with '/threads/' format
+                if "/threads/" in thread_input:
+                    thread_id = int(thread_input.split("/threads/")[1])
+                else:
+                    thread_id = int(thread_input.split("/")[-1])
             else:
                 thread_id = int(thread_input.strip())
             return thread_id
