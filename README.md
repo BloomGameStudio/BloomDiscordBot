@@ -100,11 +100,11 @@ You can type ```/help``` to get details about what commands can be used, along w
 
 Creating a proposal requires careful consideration. Once you have launched a proposal it cannot be modified for transparency reasons. 
 
-Start drafting your proposal in the #drafting-props channel and select the appropriate tag (budget, or governance). Depending on your tag selected the bot will handle the proposal prefix. Just create a name for your proposal.
+Draft your proposal in the Discord Channel [#drafting-props](https://discord.com/channels/1152979839737925705/1234677429516111944). select the appropriate tag [("budget" or "governance")]". The bot will handle the proposal prefix based on the selected tag.
 
-Please consider and use the following stuctures for the proposals body, for uniformity and structural reasons when making a proposal draft:
+When making a draft, please use the following format for the proposal's body to ensure consistency across proposals.
 
-**Governance (improvement-props):**
+**Improvement (general governance, non-budgetary proposals)**
 
 - Authors
 
@@ -118,16 +118,16 @@ Please consider and use the following stuctures for the proposals body, for unif
 
 - Implementation Protocol (if applicable)
 
-- Voting Options (required)
-Anything can be posted here, just include the words 'voting options' for now. The bot will use default settings (Adopt, Reassess, Abstain) which will be dynamcially adjustable in the future
+- Voting Options 
+The bot can only use: "Adopt, Reassess, Abstain". These options are to be dynamcially set in the future. 
 
-**Budget (budgetary-props)**
+**Budget (budgetary proposals)**
 
 - Authors
 
 - Abstract
 
-- Type
+- Type (if applicable)
 
 - Definitions (if applicable)
 
@@ -135,8 +135,8 @@ Anything can be posted here, just include the words 'voting options' for now. Th
 
 - Details (specifics of imbursement, etc)
 
-- Voting Options (required)
-Anything can be posted here, just include the words 'voting options' for now. The bot will use default settings (Adopt, Reassess, Abstain) which will be dynamcially adjustable in the future
+- Voting Options 
+The bot can only use: "Adopt, Reassess, Abstain". These options are to be dynamcially set in the future. 
 
 Upon creating your draft, seek revision from fellow members of Bloom. Once you are happy with your draft and ready for it to be published to Snapshot, use the ```/create_proposal <thread link>``` to begin the Discord voting phase.
 
@@ -152,7 +152,7 @@ Reassess: 0
 Abstain: 0
 ```
 
-Upon passing the Discord phase, the vote will then be published to Snapshot. A 72 hours voting phase begins. At this point the bot has successfully passed off the handling of the proposal to Snapshot and no longer tracks it.
+Upon passing the Discord phase, the vote will then be published to Snapshot. A 72 hour voting phase begins. At this point, the bot has successfully passed off the handling of the proposal to Snapshot and no longer tracks it.
 
 # Events:
 
