@@ -4,11 +4,14 @@ from discord.ext import commands
 import re
 from logger.logger import logger
 
+
 class ProposalSection:
     """Represents a section of a proposal with its content"""
+
     def __init__(self, name: str, content: str = ""):
         self.name = name
         self.content = content
+
 
 class ThreadParser:
     KNOWN_SECTIONS = [
@@ -18,15 +21,15 @@ class ThreadParser:
         "Background",
         "Details",
         "Implementation Protocol",
-        "Voting Options"
+        "Voting Options",
     ]
 
     @staticmethod
     def extract_thread_id(thread_input: str) -> int:
         """Extract thread ID from either a URL or direct ID"""
         try:
-            if 'discord.com' in thread_input:
-                thread_id = int(thread_input.split('/')[-1])
+            if "discord.com" in thread_input:
+                thread_id = int(thread_input.split("/")[-1])
             else:
                 thread_id = int(thread_input.strip())
             return thread_id
@@ -38,12 +41,12 @@ class ThreadParser:
         """Fetch thread with error handling and logging"""
         try:
             thread = await bot.fetch_channel(thread_id)
-            
+
             if not isinstance(thread, discord.Thread):
                 raise ValueError("Channel is not a thread")
-                
+
             return thread
-            
+
         except discord.NotFound:
             logger.error(f"Thread {thread_id} not found")
             raise ValueError(f"Thread {thread_id} not found")
@@ -63,7 +66,7 @@ class ThreadParser:
                 f"{section}:?\\s*$",  # Plain text with optional colon
                 f"#\\s*{section}:?\\s*$",  # Markdown heading
                 f"\\*\\*{section}\\*\\*:?\\s*$",  # Bold text
-                f"^.*?{section}:?\\s*$"  # More flexible match for Discord's rendering
+                f"^.*?{section}:?\\s*$",  # More flexible match for Discord's rendering
             ]
             for pattern in patterns:
                 if re.search(pattern, content, re.MULTILINE | re.IGNORECASE):
@@ -76,11 +79,11 @@ class ThreadParser:
         try:
             thread_id = ThreadParser.extract_thread_id(thread_input)
             thread = await ThreadParser.fetch_thread(bot, thread_id)
-            
+
             # Check for multiple proposal type tags
             governance_tag = False
             budget_tag = False
-            
+
             if thread.applied_tags:
                 for tag in thread.applied_tags:
                     tag_name = tag.name.lower()
@@ -88,23 +91,26 @@ class ThreadParser:
                         governance_tag = True
                     if "budget" in tag_name:
                         budget_tag = True
-            
+
             if governance_tag and budget_tag:
-                return None, "A proposal cannot be both governance and budget type. Please apply only one tag."
-            
+                return (
+                    None,
+                    "A proposal cannot be both governance and budget type. Please apply only one tag.",
+                )
+
             messages = []
             total_length = 0
             required_content = {
                 "authors": False,
                 "abstract": False,
-                "background": False
+                "background": False,
             }
-            
+
             initial_author = None
-            
+
             async for msg in thread.history(oldest_first=True):
                 content = msg.content.strip()
-                
+
                 if not content:
                     continue
 
@@ -116,7 +122,7 @@ class ThreadParser:
                     break
 
                 content_lower = content.lower()
-                
+
                 # Check for required content within the message
                 if "authors" in content_lower:
                     required_content["authors"] = True
@@ -124,32 +130,36 @@ class ThreadParser:
                     required_content["abstract"] = True
                 if "background" in content_lower:
                     required_content["background"] = True
-                
+
                 messages.append(content)
                 total_length += len(content)
-                
+
                 if total_length > 10000:
-                    return None, "Your proposal content exceeds Snapshot's 10,000 character limit. Please shorten your proposal and try again."
+                    return (
+                        None,
+                        "Your proposal content exceeds Snapshot's 10,000 character limit. Please shorten your proposal and try again.",
+                    )
 
                 # Return early if voting options are found
                 if "voting options" in content_lower or "vote options" in content_lower:
                     return {
                         "title": thread.name,
-                        "type": "budget" if "budget" in thread.applied_tags[0].name.lower() else "governance",
+                        "type": "budget"
+                        if "budget" in thread.applied_tags[0].name.lower()
+                        else "governance",
                         "sections": {
                             "content": "\n\n".join(messages),
-                            "messages": messages
-                        }
+                            "messages": messages,
+                        },
                     }, None
 
             # Return the proposal data if no voting options were found
             return {
                 "title": thread.name,
-                "type": "budget" if "budget" in thread.applied_tags[0].name.lower() else "governance",
-                "sections": {
-                    "content": "\n\n".join(messages),
-                    "messages": messages
-                }
+                "type": "budget"
+                if "budget" in thread.applied_tags[0].name.lower()
+                else "governance",
+                "sections": {"content": "\n\n".join(messages), "messages": messages},
             }, None
 
         except Exception as e:
