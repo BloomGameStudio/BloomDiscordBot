@@ -47,7 +47,7 @@ class Utils:
         command = ["node", "./snapshot/modify_space.js", str(quorum_value)]
         env["SNAPSHOT_HUB"] = cfg.SNAPSHOT_HUB
         env["SNAPSHOT_SPACE"] = cfg.SNAPSHOT_SPACE
-        env["NETWORK"] = cfg.NETWORK_ID
+        env["NETWORK_ID"] = cfg.NETWORK_ID
         env["SETTINGS_NAME"] = cfg.SETTINGS_NAME
         env["SETTINGS_ABOUT"] = cfg.SETTINGS_ABOUT
         env["SETTINGS_SYMBOL"] = cfg.SETTINGS_SYMBOL
@@ -129,11 +129,34 @@ class Utils:
                     logger.error("Failed to connect to SECONDARY_RPC")
                     return 0
 
-            contract = w3.eth.contract(
-                address=Web3.to_checksum_address(cfg.XP_CONTRACT_ADDRESS),
-                abi=cfg.XP_CONTRACT_ABI,
-            )
-            total_supply = contract.functions.totalSupply().call()
+            total_supply = 0
+            # Basic ERC20 totalSupply ABI
+            abi = [
+                {
+                    "constant": True,
+                    "inputs": [],
+                    "name": "totalSupply",
+                    "outputs": [{"name": "", "type": "uint256"}],
+                    "payable": False,
+                    "stateMutability": "view",
+                    "type": "function",
+                }
+            ]
+
+            for address in cfg.SETTINGS_TOKEN_ADDRESSES:
+                try:
+                    contract = w3.eth.contract(
+                        address=Web3.to_checksum_address(address.strip()), abi=abi
+                    )
+                    supply = contract.functions.totalSupply().call()
+                    total_supply += supply
+                    logger.info(
+                        f"Successfully fetched supply for token {address}: {supply}"
+                    )
+                except Exception as e:
+                    logger.error(f"Error fetching supply for token {address}: {e}")
+                    continue
+
             return float(total_supply) / (10**18)
 
         except Exception as e:
@@ -151,14 +174,12 @@ class Utils:
         Returns:
         int: The quorum value for Snapshot proposals.
         """
-        total_supply_sum = Utils.fetch_XP_total_supply()
-        if total_supply_sum is None:
+        total_supply = Utils.fetch_XP_total_supply()
+        if total_supply is None:
             logger.error("Failed to fetch total supply.")
             return None
 
-        web3 = Web3()
-        total_supply_in_ether = web3.from_wei(total_supply_sum, "ether")
-        quorum = (total_supply_in_ether * percentage) // 100
+        quorum = int((total_supply * percentage) // 100)
         logger.info(f"{percentage}% of the total supply is {quorum}.")
         return quorum
 
