@@ -20,10 +20,8 @@ from consts.constants import RULES_MESSAGE_ID
 
 
 class EventsCog(commands.Cog):
-    def __init__(self, bot, contributors, emoji_dicts):
+    def __init__(self, bot):
         self.bot = bot
-        self.contributors = contributors
-        self.emoji_dicts = emoji_dicts
         self.event_operations = EventOperations(self.bot)
 
     @commands.Cog.listener()
@@ -43,8 +41,7 @@ class EventsCog(commands.Cog):
         event (ScheduledEvent): The event that was created.
         """
         logger.info(f"New scheduled event created: {event.name}")
-        self.bot.notified_events[event.id] = time.time()
-        Utils.save_notified_events(self.bot.notified_events)
+        Utils.save_event(event.id, event.guild_id, None, time.time())
         await self.event_operations.notify_new_event(event, event.guild_id)
 
     @commands.Cog.listener()
@@ -59,7 +56,7 @@ class EventsCog(commands.Cog):
         Returns:
         None
         """
-        await self.event_operations.handle_message(message, self.emoji_dicts)
+        await self.event_operations.handle_message(message)
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction: discord.Reaction, user: discord.User):
@@ -73,7 +70,8 @@ class EventsCog(commands.Cog):
 
         Returns:
         """
-        await self.event_operations.handle_reaction(reaction, user, self.emoji_dicts)
+        # Handle contributor reactions
+        await self.event_operations.handle_reaction(reaction, user)
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):

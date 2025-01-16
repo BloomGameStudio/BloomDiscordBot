@@ -19,19 +19,19 @@ from consts.constants import (
     PROPOSAL_CONCLUSION_EMOJIS,
 )
 import config.config as cfg
+from datetime import datetime
 
 
 class TaskManager:
     @tasks.loop(minutes=5)
     async def check_concluded_proposals_task(bot: commands.Bot):
         """Check for concluded proposals every 5 minutes"""
-        if not bot.is_ready():
-            return
-
-        logger.info("Checking to see if proposals have ended")
         try:
+            # Get ongoing votes from database
+            ongoing_votes = Utils.get_ongoing_votes()
+            
             keys_to_remove = []
-            for proposal_id, proposal_data in bot.ongoing_votes.items():
+            for proposal_id, proposal_data in ongoing_votes.items():
                 if time.time() < proposal_data["end_time"]:
                     continue
 
@@ -66,6 +66,9 @@ class TaskManager:
                     emoji = str(reaction.emoji)
                     if emoji in counts:
                         proposal_data[counts[emoji]] = reaction.count - 1
+                
+                # Update vote counts in database
+                Utils.save_ongoing_vote(proposal_id, proposal_data)
 
                 passed = (
                     proposal_data["yes_count"] > proposal_data["no_count"]
@@ -152,17 +155,16 @@ class TaskManager:
                     )
 
                 keys_to_remove.append(proposal_id)
+                # Remove from database inside the loop
+                logger.info(f"Removing concluded proposal {proposal_id} from ongoing votes.")
+                Utils.remove_ongoing_vote(proposal_id)
 
+            # Remove from bot's memory
             for key in keys_to_remove:
                 bot.ongoing_votes.pop(key)
-
-            logger.info("Removing concluded proposals from ongoing votes.")
-            Utils.update_ongoing_votes_file(
-                bot.ongoing_votes, cfg.ONGOING_VOTES_FILE_PATH
-            )
-
-            logger.info(f"Current ongoing_votes: {bot.ongoing_votes}")
-
+            
+            logger.info(f"Current ongoing_votes: {Utils.get_ongoing_votes()}")
+            
         except Exception as e:
             logger.error(f"An error occurred while checking ongoing proposals: {e}")
 
@@ -196,7 +198,7 @@ class TaskManager:
                     )
                     continue
 
-                notified_events = Utils.load_notified_events()
+                notified_events = Utils.get_notified_events()
 
                 new_events = [
                     event
@@ -252,3 +254,32 @@ class TaskManager:
         """Start all background tasks"""
         TaskManager.check_concluded_proposals_task.start(bot)
         TaskManager.check_events.start(bot)
+
+    async def check_vote_results(self, proposal_data: dict, message: discord.Message) -> bool:
+        """Check if a vote has passed based on reactions"""
+        reactions = message.reactions
+        yes_count = 0
+        no_count = 0
+        abstain_count = 0
+        
+        for reaction in reactions:
+            if str(reaction.emoji) == constants.YES_VOTE:
+                yes_count = reaction.count - 1  # Subtract 1 to exclude bot's reaction
+            elif str(reaction.emoji) == constants.NO_VOTE:
+                no_count = reaction.count - 1
+            elif str(reaction.emoji) == constants.ABSTAIN_VOTE:
+                abstain_count = reaction.count - 1
+        
+        result_message = f"Vote Results for {proposal_data['title']}:"
+        result_message += f"\nAdopt: {yes_count}\nReassess: {no_count}\nAbstain: {abstain_count}"
+        
+        logger.info(
+            f"Vote results for {proposal_data['title']}: "
+            f"Yes vote count: {yes_count} No vote count: {no_count} Abstain vote count: {abstain_count}"
+        )
+        
+        # Vote passes if yes > no and meets threshold
+        passed = yes_count > no_count and yes_count >= cfg.YES_COUNT_THRESHOLD
+        
+        await message.reply(result_message + f"\n\nProposal {'Passed' if passed else 'Failed'}")
+        return passed

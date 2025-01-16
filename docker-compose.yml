@@ -6,12 +6,26 @@ services:
       dockerfile: Dockerfile
     image: ghcr.io/bloomgamestudio/bloomdiscordbot:main
     restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql://bloom:bloom@db:5432/bloombot
+    depends_on:
+      - db
     volumes:
-      - bloomdiscordbotvolume:/app/data
       - configvolume:/app/config
     env_file:
       - .env
 
+  db:
+    image: postgres:14
+    environment:
+      - POSTGRES_USER=bloom
+      - POSTGRES_PASSWORD=bloom
+      - POSTGRES_DB=bloombot
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
 volumes:
-  bloomdiscordbotvolume: {}
   configvolume: {}
+  postgres_data: {}

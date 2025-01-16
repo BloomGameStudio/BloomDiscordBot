@@ -3,7 +3,6 @@ The "EventOperations" class is responsible for handling event operations.
 Refer to the classes functions for more information on what they do.
 """
 
-import json
 import requests
 import asyncio
 import os
@@ -15,10 +14,9 @@ from consts.constants import (
     COLLAB_LAND_CHANNEL,
     START_HERE_CHANNEL,
 )
-from config.config import POSTED_EVENTS_FILE_PATH
 from utils.utils import Utils
 from datetime import datetime, timezone
-from typing import List, Optional, Any, Dict
+from typing import List, Optional, Any
 from discord import ScheduledEvent, Reaction, User
 from discord.utils import get
 from discord.ext import commands
@@ -28,20 +26,6 @@ from logger.logger import logger
 class EventOperations:
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-
-    def save_posted_events(self, posted_events: List[int]) -> None:
-        """
-        Save the posted event IDs to the JSON file.
-
-        Parameters:
-        posted_events (List[int]): The list of event IDs that have already been posted to Discord.
-        """
-        try:
-            logger.info(f"Saving events to: {POSTED_EVENTS_FILE_PATH}")
-            with open(POSTED_EVENTS_FILE_PATH, "w") as file:
-                json.dump(posted_events, file)
-        except Exception as e:
-            logger.error(f"Error saving posted events: {e}")
 
     def format_event(self, event: ScheduledEvent, guild_id: int) -> str:
         """
@@ -176,16 +160,13 @@ class EventOperations:
         except ValueError as e:
             logger.error(f"Error sending welcome message: {str(e)}")
 
-    async def handle_message(
-        self, message: discord.Message, emoji_dicts: Dict[str, Dict[str, str]]
-    ) -> None:
+    async def handle_message(self, message: discord.Message) -> None:
         """
         Handles a new message in the server.
         If a contributor's emoji is found, a DM is sent to them.
 
         Parameters:
         message (Message): The new message.
-        emoji_dicts (Dict[str, Dict[str, str]]): The dictionary of emoji to user mappings for each server.
         """
         if message.content.lower().startswith(".update_commands"):
             try:
@@ -198,23 +179,19 @@ class EventOperations:
         if message.author == self.bot.user:
             return
 
-        server_name = message.guild.name
-        emoji_dict = emoji_dicts[server_name]
-
-        for emoji_id, user_id in emoji_dict.items():
-            if emoji_id in message.content and str(user_id) != str(message.author.id):
+        contributors = Utils.get_contributors_from_db(message.guild.id)
+        for contributor in contributors:
+            if contributor.emoji in message.content and str(contributor.user_id) != str(message.author.id):
                 try:
-                    logger.info(f"Messaging the user, {user_id}")
+                    logger.info(f"Messaging the user, {contributor.user_id}")
                     message_link = message.jump_url
-                    user = await self.bot.fetch_user(int(user_id))
+                    user = await self.bot.fetch_user(int(contributor.user_id))
                     if user:
                         await Utils.send_dm_once(self.bot, user, message_link)
                 except discord.errors.NotFound:
-                    logger.warning(f"User not found: {user_id}")
+                    logger.warning(f"User not found: {contributor.user_id}")
 
-    async def handle_reaction(
-        self, reaction: Reaction, user: User, emoji_dicts: Dict[str, Dict[str, str]]
-    ) -> None:
+    async def handle_reaction(self, reaction: Reaction, user: User) -> None:
         """
         Handles a new reaction in the server.
         If a contributor's emoji is found, a DM is sent to them.
@@ -222,66 +199,41 @@ class EventOperations:
         Parameters:
         reaction (Reaction): The new reaction.
         user (User): The user who added the reaction.
-        emoji_dicts (Dict[str, Dict[str, str]]): The dictionary of emoji to user mappings for each server.
         """
-        server_name = reaction.message.guild.name
-        server_emoji_dict = emoji_dicts.get(server_name)
-
-        if not server_emoji_dict:
-            logger.warning(f"No emoji dictionary found for the server: {server_name}")
-            return
-
-        contributor_emoji = next(
-            (
-                emoji_id
-                for emoji_id, contributor_uid in server_emoji_dict.items()
-                if str(reaction.emoji) == emoji_id
-            ),
-            None,
+        contributors = Utils.get_contributors_from_db(reaction.message.guild.id)
+        
+        contributor = next(
+            (c for c in contributors if str(reaction.emoji) == c.emoji),
+            None
         )
 
-        if contributor_emoji:
-            contributor_uid = server_emoji_dict.get(contributor_emoji)
-            if contributor_uid and str(contributor_uid) != str(user.id):
-                message_link = reaction.message.jump_url
-                try:
-                    contributor_user = await self.bot.fetch_user(int(contributor_uid))
-                    if contributor_user:
-                        await Utils.send_dm_once(
-                            self.bot, contributor_user, message_link
-                        )
-                except discord.errors.NotFound:
-                    logger.warning(f"User not found: {contributor_uid}")
+        if contributor and str(contributor.user_id) != str(user.id):
+            message_link = reaction.message.jump_url
+            try:
+                contributor_user = await self.bot.fetch_user(int(contributor.user_id))
+                if contributor_user:
+                    await Utils.send_dm_once(self.bot, contributor_user, message_link)
+            except discord.errors.NotFound:
+                logger.warning(f"User not found: {contributor.user_id}")
 
     async def process_reaction_add(self, payload) -> None:
         """
-        Processes a reaction add event. Allocates roles to members based on their reaction.
+        Process a reaction add event.
+        If the reaction is added to the rules message, assign the corresponding role.
 
         Parameters:
-        payload (discord.RawReactionActionEvent): The reaction payload.
-
-        Returns:
-        None
+        payload: The payload for the reaction add event.
         """
         if payload.message_id == RULES_MESSAGE_ID:
             guild = self.bot.get_guild(payload.guild_id)
-            member = guild.get_member(payload.user_id)
-
-            if payload.emoji.name == "🌺":
-                role = get(guild.roles, name="bloomer")
-                await member.add_roles(role)
-                response = f"{member.display_name} has selected 🌺!\n\n**Their commitment is official and they are now a Bloomer!**"
-                general_channel = Utils.get_channel_by_name(guild, "🌺│home")
-                await general_channel.send(response)
-            else:
-                for role_info in DISCORD_ROLE_TRIGGERS:
-                    if payload.emoji.id == role_info.get("emoji_id"):
-                        general_channel = Utils.get_channel_by_name(guild, "🌺│home")
-                        role = get(guild.roles, name=role_info.get("role"))
-                        response = f"{member.display_name} has joined the **{role_info.get('name')}** pod!"
-                        await general_channel.send(response)
-
-                        if role is None:
-                            logger.info(f"Role {role_info.get('role')} not found")
-                            return
-                        await member.add_roles(role)
+            if guild:
+                member = guild.get_member(payload.user_id)
+                if member:
+                    role_name = DISCORD_ROLE_TRIGGERS.get(str(payload.emoji))
+                    if role_name:
+                        role = get(guild.roles, name=role_name)
+                        if role:
+                            await member.add_roles(role)
+                            logger.info(
+                                f"Added role {role_name} to member {member.name}"
+                            )

@@ -5,12 +5,19 @@ name = "pypi"
 
 [packages]
 "discord.py" = "*"
-"pytz" = "*"
-"requests" = "*"
-"configparser" = "*"
-"Web3" = "*"
+pytz = "*"
+requests = "*"
+configparser = "*"
+web3 = "*"
+sqlalchemy = "*"
+psycopg2-binary = "*"
+alembic = "*"
 
 [dev-packages]
+pytest = "*"
+pytest-asyncio = "*"
+pytest-cov = "*"
+pytest-mock = "*"
 
 [requires]
 python_version = "3.11"
