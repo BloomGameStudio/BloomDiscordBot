@@ -14,4 +14,4 @@ try:
     subprocess.run(["alembic", "upgrade", "head"], check=True)
 except subprocess.CalledProcessError as e:
     print(f"Error running migration: {e}")
-    exit(1) 
+    exit(1)

@@ -3,6 +3,7 @@ from typing import Generator, List, Dict, Any, Optional
 from datetime import datetime
 from .models import SessionLocal, Config, Contributor, Event, OngoingVote, Base, engine
 
+
 @contextmanager
 def get_db() -> Generator:
     """Get database session"""
@@ -11,6 +12,7 @@ def get_db() -> Generator:
         yield db
     finally:
         db.close()
+
 
 class DatabaseService:
     def __init__(self, session=None):
@@ -41,7 +43,7 @@ class DatabaseService:
                 "title": vote.title,
                 "channel_id": vote.channel_id,
                 "thread_id": vote.thread_id,
-                "message_id": vote.message_id
+                "message_id": vote.message_id,
             }
             for vote in votes
         }
@@ -61,7 +63,7 @@ class DatabaseService:
             "title": vote.title,
             "channel_id": vote.channel_id,
             "thread_id": vote.thread_id,
-            "message_id": vote.message_id
+            "message_id": vote.message_id,
         }
 
     def save_ongoing_vote(self, vote_data: Dict[str, Any]) -> None:
@@ -74,7 +76,7 @@ class DatabaseService:
             title=vote_data["title"],
             channel_id=vote_data["channel_id"],
             thread_id=vote_data["thread_id"],
-            message_id=vote_data["message_id"]
+            message_id=vote_data["message_id"],
         )
         session.add(vote)
         session.commit()
@@ -84,9 +86,7 @@ class DatabaseService:
     def get_posted_events(self) -> List[int]:
         """Get all posted event IDs"""
         session = self._get_session()
-        events = session.query(Event.event_id).filter(
-            Event.posted_at.isnot(None)
-        ).all()
+        events = session.query(Event.event_id).filter(Event.posted_at.isnot(None)).all()
         if self._session is None:
             session.close()
         return [event.event_id for event in events]
@@ -95,9 +95,7 @@ class DatabaseService:
         """Save a posted event"""
         session = self._get_session()
         event = Event(
-            event_id=event_id,
-            guild_id=guild_id,
-            posted_at=datetime.now().timestamp()
+            event_id=event_id, guild_id=guild_id, posted_at=datetime.now().timestamp()
         )
         session.add(event)
         session.commit()
@@ -107,15 +105,10 @@ class DatabaseService:
     def get_notified_events(self) -> Dict[int, float]:
         """Get all notified events"""
         session = self._get_session()
-        events = session.query(Event).filter(
-            Event.notified_at.isnot(None)
-        ).all()
+        events = session.query(Event).filter(Event.notified_at.isnot(None)).all()
         if self._session is None:
             session.close()
-        return {
-            event.event_id: event.notified_at
-            for event in events
-        }
+        return {event.event_id: event.notified_at for event in events}
 
     def save_notified_event(self, event_id: int, guild_id: int, notified_at: float):
         """Save a notified event"""
@@ -124,11 +117,7 @@ class DatabaseService:
         if event:
             event.notified_at = notified_at
         else:
-            event = Event(
-                event_id=event_id,
-                guild_id=guild_id,
-                notified_at=notified_at
-            )
+            event = Event(event_id=event_id, guild_id=guild_id, notified_at=notified_at)
             session.add(event)
         session.commit()
         if self._session is None:
@@ -138,25 +127,16 @@ class DatabaseService:
         """Get contributors and emoji dictionaries"""
         session = self._get_session()
         contributors = session.query(Contributor).all()
-        
-        result = {
-            "Bloom Studio": [],
-            "Bloom Collective": []
-        }
-        emoji_dicts = {
-            "Bloom Studio": {},
-            "Bloom Collective": {}
-        }
-        
+
+        result = {"Bloom Studio": [], "Bloom Collective": []}
+        emoji_dicts = {"Bloom Studio": {}, "Bloom Collective": {}}
+
         for c in contributors:
-            result[c.server_name].append({
-                "uid": c.uid,
-                "note": c.note
-            })
+            result[c.server_name].append({"uid": c.uid, "note": c.note})
             if c.emoji_id:
                 emoji_dicts[c.server_name][c.emoji_id] = c.uid
-        
+
         if self._session is None:
             session.close()
-        
+
         return result, emoji_dicts

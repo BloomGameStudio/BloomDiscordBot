@@ -29,7 +29,7 @@ class TaskManager:
         try:
             # Get ongoing votes from database
             ongoing_votes = Utils.get_ongoing_votes()
-            
+
             keys_to_remove = []
             for proposal_id, proposal_data in ongoing_votes.items():
                 if time.time() < proposal_data["end_time"]:
@@ -66,7 +66,7 @@ class TaskManager:
                     emoji = str(reaction.emoji)
                     if emoji in counts:
                         proposal_data[counts[emoji]] = reaction.count - 1
-                
+
                 # Update vote counts in database
                 Utils.save_ongoing_vote(proposal_id, proposal_data)
 
@@ -160,20 +160,22 @@ class TaskManager:
                 Utils.save_concluded_vote(
                     proposal_data=proposal_data,
                     passed=passed,
-                    snapshot_url=proposal_url if passed else None
+                    snapshot_url=proposal_url if passed else None,
                 )
 
                 keys_to_remove.append(proposal_id)
                 # Remove from database inside the loop
-                logger.info(f"Removing concluded proposal {proposal_id} from ongoing votes.")
+                logger.info(
+                    f"Removing concluded proposal {proposal_id} from ongoing votes."
+                )
                 Utils.remove_ongoing_vote(proposal_id)
 
             # Remove from bot's memory
             for key in keys_to_remove:
                 bot.ongoing_votes.pop(key)
-            
+
             logger.info(f"Current ongoing_votes: {Utils.get_ongoing_votes()}")
-            
+
         except Exception as e:
             logger.error(f"An error occurred while checking ongoing proposals: {e}")
 
@@ -187,7 +189,7 @@ class TaskManager:
                 return
 
             # Initialize posted_events if not exists
-            if not hasattr(bot, 'posted_events'):
+            if not hasattr(bot, "posted_events"):
                 bot.posted_events = []
                 posted_events = Utils.get_posted_events()
                 if posted_events:
@@ -242,12 +244,10 @@ class TaskManager:
                         user_list_string = ", ".join(user_mentions)
 
                         formatted_event = event_operations.format_event(event, guild_id)
-                        
+
                         # Save the event as posted
                         Utils.save_event(
-                            event_id=event.id,
-                            guild_id=guild_id,
-                            posted_at=current_time
+                            event_id=event.id, guild_id=guild_id, posted_at=current_time
                         )
                         bot.posted_events.append(event.id)
 
@@ -264,7 +264,7 @@ class TaskManager:
                         Utils.save_event(
                             event_id=event.id,
                             guild_id=guild_id,
-                            notified_at=current_time
+                            notified_at=current_time,
                         )
                 else:
                     logger.info(
@@ -279,13 +279,15 @@ class TaskManager:
         TaskManager.check_concluded_proposals_task.start(bot)
         TaskManager.check_events.start(bot)
 
-    async def check_vote_results(self, proposal_data: dict, message: discord.Message) -> bool:
+    async def check_vote_results(
+        self, proposal_data: dict, message: discord.Message
+    ) -> bool:
         """Check if a vote has passed based on reactions"""
         reactions = message.reactions
         yes_count = 0
         no_count = 0
         abstain_count = 0
-        
+
         for reaction in reactions:
             if str(reaction.emoji) == constants.YES_VOTE:
                 yes_count = reaction.count - 1  # Subtract 1 to exclude bot's reaction
@@ -293,17 +295,21 @@ class TaskManager:
                 no_count = reaction.count - 1
             elif str(reaction.emoji) == constants.ABSTAIN_VOTE:
                 abstain_count = reaction.count - 1
-        
+
         result_message = f"Vote Results for {proposal_data['title']}:"
-        result_message += f"\nAdopt: {yes_count}\nReassess: {no_count}\nAbstain: {abstain_count}"
-        
+        result_message += (
+            f"\nAdopt: {yes_count}\nReassess: {no_count}\nAbstain: {abstain_count}"
+        )
+
         logger.info(
             f"Vote results for {proposal_data['title']}: "
             f"Yes vote count: {yes_count} No vote count: {no_count} Abstain vote count: {abstain_count}"
         )
-        
+
         # Vote passes if yes > no and meets threshold
         passed = yes_count > no_count and yes_count >= cfg.YES_COUNT_THRESHOLD
-        
-        await message.reply(result_message + f"\n\nProposal {'Passed' if passed else 'Failed'}")
+
+        await message.reply(
+            result_message + f"\n\nProposal {'Passed' if passed else 'Failed'}"
+        )
         return passed

@@ -181,7 +181,9 @@ class EventOperations:
 
         contributors = Utils.get_contributors_from_db(message.guild.id)
         for contributor in contributors:
-            if contributor.emoji_id in message.content and str(contributor.uid) != str(message.author.id):
+            if contributor.emoji_id in message.content and str(contributor.uid) != str(
+                message.author.id
+            ):
                 try:
                     logger.info(f"Messaging the user, {contributor.uid}")
                     message_link = message.jump_url
@@ -201,10 +203,9 @@ class EventOperations:
         user (User): The user who added the reaction.
         """
         contributors = Utils.get_contributors_from_db(reaction.message.guild.id)
-        
+
         contributor = next(
-            (c for c in contributors if str(reaction.emoji) == c.emoji_id),
-            None
+            (c for c in contributors if str(reaction.emoji) == c.emoji_id), None
         )
 
         if contributor and str(contributor.uid) != str(user.id):

@@ -15,12 +15,14 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from database.models import Base, SessionLocal
 
+
 @pytest.fixture(scope="function")
 def test_engine():
     """Create a fresh database engine for each test."""
     engine = create_engine("sqlite:///:memory:")
     Base.metadata.create_all(engine)
     return engine
+
 
 @pytest.fixture(scope="function")
 def test_session(test_engine):
@@ -33,10 +35,12 @@ def test_session(test_engine):
         session.close()
         Base.metadata.drop_all(test_engine)
 
+
 @pytest.fixture(scope="function")
 def test_db(test_session):
     """Provide the database session to tests."""
     return test_session
+
 
 @pytest.fixture(autouse=True)
 def setup_test_env():
@@ -45,13 +49,14 @@ def setup_test_env():
     engine = create_engine("sqlite:///:memory:")
     TestingSessionLocal = sessionmaker(bind=engine)
     Base.metadata.create_all(engine)
-    
+
     # Replace the global SessionLocal with our test version
     import database.service
+
     database.service.SessionLocal = TestingSessionLocal
     database.service.get_db = lambda: TestingSessionLocal()
-    
+
     yield
-    
+
     # Cleanup
-    Base.metadata.drop_all(engine) 
+    Base.metadata.drop_all(engine)

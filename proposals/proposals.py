@@ -151,7 +151,7 @@ class ProposalManager:
             if not hasattr(bot, "ongoing_votes"):
                 bot.ongoing_votes = {}
             bot.ongoing_votes[proposal_id] = proposal_data
-            
+
             # Save to database
             db_service = DatabaseService()
             proposal_data["proposal_id"] = proposal_id
@@ -207,7 +207,9 @@ class ProposalManager:
         await message.add_reaction(constants.NO_VOTE)
         await message.add_reaction(constants.ABSTAIN_VOTE)
 
-    def create_ongoing_vote_data(self, message_id: str, channel_id: str, thread_id: str) -> dict:
+    def create_ongoing_vote_data(
+        self, message_id: str, channel_id: str, thread_id: str
+    ) -> dict:
         """Create ongoing vote data for storage"""
         return {
             "draft": self.draft,
@@ -215,5 +217,5 @@ class ProposalManager:
             "title": self.title,
             "channel_id": channel_id,
             "thread_id": thread_id,
-            "message_id": message_id
+            "message_id": message_id,
         }

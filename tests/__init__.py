@@ -1,1 +1,1 @@
-"""Test package for BloomDiscordBot.""" 
+"""Test package for BloomDiscordBot."""
