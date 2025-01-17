@@ -154,6 +154,15 @@ class TaskManager:
                         f"Unable to find the general channel in guild: {guild.name}"
                     )
 
+                # Save concluded vote before removing it
+                logger.info(f"Saving concluded proposal {proposal_id} to database")
+                proposal_data["proposal_id"] = proposal_id
+                Utils.save_concluded_vote(
+                    proposal_data=proposal_data,
+                    passed=passed,
+                    snapshot_url=proposal_url if passed else None
+                )
+
                 keys_to_remove.append(proposal_id)
                 # Remove from database inside the loop
                 logger.info(f"Removing concluded proposal {proposal_id} from ongoing votes.")
@@ -168,14 +177,22 @@ class TaskManager:
         except Exception as e:
             logger.error(f"An error occurred while checking ongoing proposals: {e}")
 
-    @tasks.loop(minutes=50)
+    @tasks.loop(minutes=2)
     async def check_events(bot: commands.Bot) -> None:
         """
-        Task to check for upcoming events every 50 minutes and post them to the relevant Discord channel.
+        Task to check for upcoming events every 2 minutes and post them to the relevant Discord channel.
         """
         try:
             if not bot.is_ready():
                 return
+
+            # Initialize posted_events if not exists
+            if not hasattr(bot, 'posted_events'):
+                bot.posted_events = []
+                posted_events = Utils.get_posted_events()
+                if posted_events:
+                    bot.posted_events.extend(posted_events)
+                logger.info(f"Initialized posted_events: {bot.posted_events}")
 
             event_operations = EventOperations(bot)
 
@@ -224,23 +241,30 @@ class TaskManager:
                         user_mentions = [f"<@{user['user_id']}>" for user in users]
                         user_list_string = ", ".join(user_mentions)
 
-                        formatted_string = (
-                            f"📆 **Upcoming Events in the Next 24 Hours** 📆 \n"
-                            f"\n"
-                            f":link: **Event Link https://discord.com/events/{guild_id}/{event.id} :link:**\n"
-                            f"\n"
-                            f"{user_list_string}\n"
+                        formatted_event = event_operations.format_event(event, guild_id)
+                        
+                        # Save the event as posted
+                        Utils.save_event(
+                            event_id=event.id,
+                            guild_id=guild_id,
+                            posted_at=current_time
                         )
-
-                        logger.info(f"Posting event {event.id} to channel {channel.id}")
-                        await channel.send(formatted_string)
                         bot.posted_events.append(event.id)
-                        event_operations.save_posted_events(bot.posted_events)
 
-                        notified_events[event.id] = current_time
-                        Utils.save_notified_events(notified_events)
-                        logger.info(
-                            f"Updated notified time for event {event.id} to {current_time}"
+                        if user_list_string:
+                            await channel.send(
+                                f"🌺 **__Upcoming Event__** 🌺\n{formatted_event}\n\nInterested users: {user_list_string}"
+                            )
+                        else:
+                            await channel.send(
+                                f"🌺 **__Upcoming Event__** 🌺\n{formatted_event}"
+                            )
+
+                        # Update notified timestamp
+                        Utils.save_event(
+                            event_id=event.id,
+                            guild_id=guild_id,
+                            notified_at=current_time
                         )
                 else:
                     logger.info(

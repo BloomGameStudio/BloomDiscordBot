@@ -99,7 +99,7 @@ class EventOperations:
         guild = self.bot.get_guild(guild_id)
 
         if guild:
-            await asyncio.sleep(30 * 60)
+            await asyncio.sleep(1 * 60)
             event = await guild.fetch_scheduled_event(event.id)
             formatted_event = self.format_event(event, guild_id)
 

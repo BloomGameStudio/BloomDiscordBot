@@ -154,7 +154,8 @@ class ProposalManager:
             
             # Save to database
             db_service = DatabaseService()
-            db_service.save_ongoing_vote(proposal_id, proposal_data)
+            proposal_data["proposal_id"] = proposal_id
+            db_service.save_ongoing_vote(proposal_data)
 
             await ProposalManager.react_to_vote(
                 vote_message.id,
@@ -169,7 +170,7 @@ class ProposalManager:
             logger.error(f"Error publishing draft: {e}")
             if created_thread:
                 try:
-                    await created_thread.delete()
+                    await created_thread.thread.delete()
                 except Exception as delete_error:
                     logger.error(f"Error cleaning up failed thread: {delete_error}")
             return False

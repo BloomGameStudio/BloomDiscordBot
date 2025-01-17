@@ -28,7 +28,8 @@ from typing import Dict, Any, List, Tuple, Optional
 from logger.logger import logger
 from web3 import Web3
 from urllib.parse import urljoin
-from database.models import SessionLocal, Contributor, Event, OngoingVote
+from database.models import SessionLocal, Contributor, Event, OngoingVote, ConcludedVote
+import time
 
 env = os.environ.copy()
 
@@ -496,9 +497,11 @@ class Utils:
 
     @staticmethod
     def get_posted_events() -> List[int]:
-        """Get list of posted event IDs"""
+        """Get list of posted event IDs from database"""
         with SessionLocal() as session:
-            events = session.query(Event.event_id).filter(Event.posted_at.isnot(None)).all()
+            events = session.query(Event).filter(
+                Event.posted_at.isnot(None)
+            ).all()
             return [event.event_id for event in events]
 
     @staticmethod
@@ -549,3 +552,54 @@ class Utils:
         with SessionLocal() as session:
             session.query(OngoingVote).filter_by(proposal_id=proposal_id).delete()
             session.commit()
+
+    @staticmethod
+    def save_concluded_vote(proposal_data: dict, passed: bool, snapshot_url: Optional[str] = None) -> None:
+        """Save a concluded vote to the database"""
+        with SessionLocal() as session:
+            vote = ConcludedVote(
+                proposal_id=proposal_data["proposal_id"],
+                draft=proposal_data["draft"],
+                title=proposal_data["title"],
+                channel_id=proposal_data["channel_id"],
+                thread_id=proposal_data["thread_id"],
+                message_id=proposal_data["message_id"],
+                yes_count=proposal_data.get("yes_count", 0),
+                no_count=proposal_data.get("no_count", 0),
+                abstain_count=proposal_data.get("abstain_count", 0),
+                passed=passed,
+                concluded_at=time.time(),
+                snapshot_url=snapshot_url
+            )
+            session.add(vote)
+            session.commit()
+
+    @staticmethod
+    def get_concluded_votes(passed_only: bool = False) -> Dict[str, Any]:
+        """Get all concluded votes from the database
+        
+        Args:
+            passed_only (bool): If True, only return proposals that passed
+            
+        Returns:
+            Dict[str, Any]: Dictionary of concluded votes with their details
+        """
+        with SessionLocal() as session:
+            query = session.query(ConcludedVote)
+            if passed_only:
+                query = query.filter(ConcludedVote.passed == True)
+            
+            votes = query.order_by(ConcludedVote.concluded_at.desc()).all()
+            return {
+                vote.proposal_id: {
+                    'draft': vote.draft,
+                    'title': vote.title,
+                    'yes_count': vote.yes_count,
+                    'no_count': vote.no_count,
+                    'abstain_count': vote.abstain_count,
+                    'passed': vote.passed,
+                    'concluded_at': vote.concluded_at,
+                    'snapshot_url': vote.snapshot_url
+                }
+                for vote in votes
+            }

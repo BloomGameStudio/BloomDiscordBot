@@ -18,6 +18,10 @@ pytest = "*"
 pytest-asyncio = "*"
 pytest-cov = "*"
 pytest-mock = "*"
+pytest-env = "*"
+pytest-alembic = "*"
+sqlalchemy = "*"
+alembic = "*"
 
 [requires]
 python_version = "3.11"
