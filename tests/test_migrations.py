@@ -48,6 +48,7 @@ def test_table_exists(test_db):
     assert "ongoing_votes" in tables
     assert "events" in tables
     assert "contributors" in tables
+    assert "concluded_votes" in tables
 
 def test_columns_exist(test_db):
     """Test that expected columns exist in tables"""
@@ -67,4 +68,29 @@ def test_columns_exist(test_db):
     contributors_columns = {col['name'] for col in inspector.get_columns('contributors')}
     assert 'uid' in contributors_columns
     assert 'note' in contributors_columns
-    assert 'server_name' in contributors_columns 
+    assert 'server_name' in contributors_columns
+    
+    concluded_votes_columns = {col['name'] for col in inspector.get_columns('concluded_votes')}
+    assert 'proposal_id' in concluded_votes_columns
+    assert 'draft' in concluded_votes_columns
+    assert 'title' in concluded_votes_columns
+    assert 'yes_count' in concluded_votes_columns
+    assert 'no_count' in concluded_votes_columns
+    assert 'abstain_count' in concluded_votes_columns
+    assert 'passed' in concluded_votes_columns
+    assert 'concluded_at' in concluded_votes_columns
+    assert 'snapshot_url' in concluded_votes_columns
+
+def test_concluded_votes_constraints(test_db):
+    """Test that concluded_votes table has correct constraints"""
+    engine, _ = test_db
+    inspector = inspect(engine)
+    
+    # Get primary key constraint
+    pk = inspector.get_pk_constraint('concluded_votes')
+    assert 'id' in pk['constrained_columns']
+    
+    # Get unique constraints
+    unique_constraints = inspector.get_unique_constraints('concluded_votes')
+    proposal_id_constraint = next((c for c in unique_constraints if 'proposal_id' in c['column_names']), None)
+    assert proposal_id_constraint is not None 

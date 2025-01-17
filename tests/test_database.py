@@ -3,7 +3,7 @@ import os
 from datetime import datetime
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from database.models import Base, Contributor, Event, OngoingVote
+from database.models import Base, Contributor, Event, OngoingVote, ConcludedVote
 from database.service import DatabaseService
 
 @pytest.fixture(scope="function")
@@ -146,6 +146,60 @@ class TestOngoingVotes:
         updated = test_db.query(OngoingVote).first()
         assert updated.title == "Updated Vote"
 
+class TestConcludedVotes:
+    def test_create_concluded_vote(self, test_db):
+        """Test creating a new concluded vote"""
+        vote = ConcludedVote(
+            proposal_id="test123",
+            draft={"title": "Test Proposal", "content": "Test Content"},
+            title="Test Vote",
+            channel_id="123",
+            thread_id="456",
+            message_id="789",
+            yes_count=5,
+            no_count=2,
+            abstain_count=1,
+            passed=True,
+            concluded_at=datetime.now().timestamp(),
+            snapshot_url="https://snapshot.org/test"
+        )
+        test_db.add(vote)
+        test_db.commit()
+        
+        saved = test_db.query(ConcludedVote).first()
+        assert saved.proposal_id == "test123"
+        assert saved.draft["title"] == "Test Proposal"
+        assert saved.title == "Test Vote"
+        assert saved.yes_count == 5
+        assert saved.passed is True
+        assert saved.snapshot_url == "https://snapshot.org/test"
+    
+    def test_update_concluded_vote(self, test_db):
+        """Test updating a concluded vote"""
+        vote = ConcludedVote(
+            proposal_id="test123",
+            draft={"title": "Test Proposal", "content": "Test Content"},
+            title="Test Vote",
+            channel_id="123",
+            thread_id="456",
+            message_id="789",
+            yes_count=5,
+            no_count=2,
+            abstain_count=1,
+            passed=True,
+            concluded_at=datetime.now().timestamp()
+        )
+        test_db.add(vote)
+        test_db.commit()
+        
+        vote.yes_count = 10
+        vote.passed = False
+        test_db.commit()
+        
+        updated = test_db.query(ConcludedVote).first()
+        assert updated.yes_count == 10
+        assert updated.passed is False
+
 class TestDatabaseService:
     def test_get_ongoing_votes(self, test_db):
         """Test retrieving ongoing votes"""
@@ -193,3 +247,93 @@ class TestDatabaseService:
         db_service = DatabaseService(session=test_db)
         events = db_service.get_notified_events()
         assert 123456789 in events 
+
+    def test_save_concluded_vote(self, test_db):
+        """Test saving a concluded vote"""
+        proposal_data = {
+            "proposal_id": "test123",
+            "draft": {"title": "Test Proposal"},
+            "title": "Test Vote",
+            "channel_id": "123",
+            "thread_id": "456",
+            "message_id": "789"
+        }
+        
+        db_service = DatabaseService(session=test_db)
+        db_service.save_concluded_vote(
+            proposal_data=proposal_data,
+            yes_count=5,
+            no_count=2,
+            abstain_count=1,
+            passed=True,
+            snapshot_url="https://snapshot.org/test"
+        )
+        
+        saved = test_db.query(ConcludedVote).first()
+        assert saved.proposal_id == "test123"
+        assert saved.yes_count == 5
+        assert saved.passed is True
+        assert saved.snapshot_url == "https://snapshot.org/test"
+
+    def test_get_concluded_votes(self, test_db):
+        """Test retrieving concluded votes"""
+        vote = ConcludedVote(
+            proposal_id="test123",
+            draft={"title": "Test Proposal"},
+            title="Test Vote",
+            channel_id="123",
+            thread_id="456",
+            message_id="789",
+            yes_count=5,
+            no_count=2,
+            abstain_count=1,
+            passed=True,
+            concluded_at=datetime.now().timestamp()
+        )
+        test_db.add(vote)
+        test_db.commit()
+        
+        db_service = DatabaseService(session=test_db)
+        votes = db_service.get_concluded_votes()
+        assert "test123" in votes
+        assert votes["test123"]["title"] == "Test Vote"
+        assert votes["test123"]["passed"] is True
+
+    def test_get_concluded_votes_passed_only(self, test_db):
+        """Test retrieving only passed concluded votes"""
+        # Add a passed vote
+        passed_vote = ConcludedVote(
+            proposal_id="passed123",
+            draft={"title": "Passed Proposal"},
+            title="Passed Vote",
+            channel_id="123",
+            thread_id="456",
+            message_id="789",
+            yes_count=5,
+            no_count=2,
+            abstain_count=1,
+            passed=True,
+            concluded_at=datetime.now().timestamp()
+        )
+        # Add a failed vote
+        failed_vote = ConcludedVote(
+            proposal_id="failed123",
+            draft={"title": "Failed Proposal"},
+            title="Failed Vote",
+            channel_id="123",
+            thread_id="456",
+            message_id="789",
+            yes_count=2,
+            no_count=5,
+            abstain_count=1,
+            passed=False,
+            concluded_at=datetime.now().timestamp()
+        )
+        test_db.add(passed_vote)
+        test_db.add(failed_vote)
+        test_db.commit()
+        
+        db_service = DatabaseService(session=test_db)
+        votes = db_service.get_concluded_votes(passed_only=True)
+        assert "passed123" in votes
+        assert "failed123" not in votes 

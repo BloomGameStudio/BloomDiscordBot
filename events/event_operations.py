@@ -181,15 +181,15 @@ class EventOperations:
 
         contributors = Utils.get_contributors_from_db(message.guild.id)
         for contributor in contributors:
-            if contributor.emoji in message.content and str(contributor.user_id) != str(message.author.id):
+            if contributor.emoji_id in message.content and str(contributor.uid) != str(message.author.id):
                 try:
-                    logger.info(f"Messaging the user, {contributor.user_id}")
+                    logger.info(f"Messaging the user, {contributor.uid}")
                     message_link = message.jump_url
-                    user = await self.bot.fetch_user(int(contributor.user_id))
+                    user = await self.bot.fetch_user(int(contributor.uid))
                     if user:
                         await Utils.send_dm_once(self.bot, user, message_link)
                 except discord.errors.NotFound:
-                    logger.warning(f"User not found: {contributor.user_id}")
+                    logger.warning(f"User not found: {contributor.uid}")
 
     async def handle_reaction(self, reaction: Reaction, user: User) -> None:
         """
@@ -203,18 +203,18 @@ class EventOperations:
         contributors = Utils.get_contributors_from_db(reaction.message.guild.id)
         
         contributor = next(
-            (c for c in contributors if str(reaction.emoji) == c.emoji),
+            (c for c in contributors if str(reaction.emoji) == c.emoji_id),
             None
         )
 
-        if contributor and str(contributor.user_id) != str(user.id):
+        if contributor and str(contributor.uid) != str(user.id):
             message_link = reaction.message.jump_url
             try:
-                contributor_user = await self.bot.fetch_user(int(contributor.user_id))
+                contributor_user = await self.bot.fetch_user(int(contributor.uid))
                 if contributor_user:
                     await Utils.send_dm_once(self.bot, contributor_user, message_link)
             except discord.errors.NotFound:
-                logger.warning(f"User not found: {contributor.user_id}")
+                logger.warning(f"User not found: {contributor.uid}")
 
     async def process_reaction_add(self, payload) -> None:
         """
