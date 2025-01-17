@@ -1,7 +1,16 @@
 from contextlib import contextmanager
 from typing import Generator, List, Dict, Any, Optional
 from datetime import datetime
-from .models import SessionLocal, Config, Contributor, Event, OngoingVote, Base, engine
+from .models import (
+    SessionLocal,
+    Config,
+    Contributor,
+    Event,
+    OngoingVote,
+    ConcludedVote,
+    Base,
+    engine
+)
 from logger.logger import logger
 
 
@@ -101,14 +110,14 @@ class DatabaseService:
             if self._session is None:
                 session.close()
 
-    def get_posted_events(self) -> List[str]:
+    def get_posted_events(self) -> List[int]:
         """Get list of posted event IDs"""
         logger.info("Retrieving all posted events")
         session = self._get_session()
         events = session.query(Event).filter(Event.posted_at.isnot(None)).all()
         if self._session is None:
             session.close()
-        event_ids = [str(event.event_id) for event in events]
+        event_ids = [int(event.event_id) for event in events]
         logger.info("Found %d posted events", len(event_ids))
         return event_ids
 
@@ -123,14 +132,14 @@ class DatabaseService:
         if self._session is None:
             session.close()
 
-    def get_notified_events(self) -> Dict[str, float]:
+    def get_notified_events(self) -> Dict[int, float]:
         """Get dictionary of notified event IDs and their notification timestamps"""
         logger.info("Retrieving all notified events")
         session = self._get_session()
         events = session.query(Event).filter(Event.notified_at.isnot(None)).all()
         if self._session is None:
             session.close()
-        event_dict = {str(event.event_id): event.notified_at for event in events}
+        event_dict = {int(event.event_id): event.notified_at for event in events}
         logger.info("Found %d notified events", len(event_dict))
         return event_dict
 
@@ -164,3 +173,63 @@ class DatabaseService:
             session.close()
 
         return result, emoji_dicts
+
+    def save_concluded_vote(self, proposal_data: Dict[str, Any], yes_count: int, no_count: int, 
+                          abstain_count: int, passed: bool, snapshot_url: Optional[str] = None) -> None:
+        """Save a concluded vote to the database"""
+        logger.info("Saving concluded vote with proposal_id: %s", proposal_data.get("proposal_id"))
+        session = self._get_session()
+        try:
+            vote = ConcludedVote(
+                proposal_id=proposal_data["proposal_id"],
+                draft=proposal_data["draft"],
+                title=proposal_data["title"],
+                channel_id=proposal_data["channel_id"],
+                thread_id=proposal_data["thread_id"],
+                message_id=proposal_data["message_id"],
+                yes_count=yes_count,
+                no_count=no_count,
+                abstain_count=abstain_count,
+                passed=passed,
+                concluded_at=datetime.now().timestamp(),
+                snapshot_url=snapshot_url
+            )
+            session.add(vote)
+            session.commit()
+            logger.info("Successfully saved concluded vote")
+        except Exception as e:
+            logger.error("Error saving concluded vote: %s", str(e))
+            session.rollback()
+            raise
+        finally:
+            if self._session is None:
+                session.close()
+
+    def get_concluded_votes(self, passed_only: bool = False) -> Dict[str, Any]:
+        """Get all concluded votes with optional filter for passed votes only"""
+        logger.info("Retrieving concluded votes%s", " (passed only)" if passed_only else "")
+        session = self._get_session()
+        try:
+            query = session.query(ConcludedVote)
+            if passed_only:
+                query = query.filter(ConcludedVote.passed == True)
+            votes = query.order_by(ConcludedVote.concluded_at.desc()).all()
+            
+            result = {
+                vote.proposal_id: {
+                    "draft": vote.draft,
+                    "title": vote.title,
+                    "yes_count": vote.yes_count,
+                    "no_count": vote.no_count,
+                    "abstain_count": vote.abstain_count,
+                    "passed": vote.passed,
+                    "concluded_at": vote.concluded_at,
+                    "snapshot_url": vote.snapshot_url,
+                }
+                for vote in votes
+            }
+            logger.info("Found %d concluded votes", len(result))
+            return result
+        finally:
+            if self._session is None:
+                session.close()
