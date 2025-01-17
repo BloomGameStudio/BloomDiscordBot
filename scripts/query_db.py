@@ -26,6 +26,7 @@ def format_timestamp(ts):
 
 def query_contributors(session, server_id=None):
     """Query and display contributors"""
+    logger.info("Querying contributors%s", f" for server {server_id}" if server_id else "")
     print("\n=== Contributors ===")
     query = session.query(Contributor)
     if server_id:
@@ -33,6 +34,7 @@ def query_contributors(session, server_id=None):
     contributors = query.all()
 
     if contributors:
+        logger.info("Found %d contributors", len(contributors))
         for c in contributors:
             print(f"ID: {c.id}")
             print(f"UID: {c.uid}")
@@ -41,11 +43,13 @@ def query_contributors(session, server_id=None):
             print(f"Emoji: {c.emoji_id}")
             print("-" * 40)
     else:
+        logger.info("No contributors found")
         print("No contributors found")
 
 
 def query_events(session, guild_id=None):
     """Query and display events"""
+    logger.info("Querying events%s", f" for guild {guild_id}" if guild_id else "")
     print("\n=== Events ===")
     query = session.query(Event)
     if guild_id:
@@ -53,6 +57,7 @@ def query_events(session, guild_id=None):
     events = query.all()
 
     if events:
+        logger.info("Found %d events", len(events))
         for e in events:
             print(f"ID: {e.id}")
             print(f"Event ID: {e.event_id}")
@@ -61,15 +66,18 @@ def query_events(session, guild_id=None):
             print(f"Notified at: {format_timestamp(e.notified_at)}")
             print("-" * 40)
     else:
+        logger.info("No events found")
         print("No events found")
 
 
 def query_ongoing_votes(session):
     """Query and display ongoing votes"""
+    logger.info("Querying ongoing votes")
     print("\n=== Ongoing Votes ===")
     ongoing_votes = session.query(OngoingVote).all()
 
     if ongoing_votes:
+        logger.info("Found %d ongoing votes", len(ongoing_votes))
         for v in ongoing_votes:
             print(f"ID: {v.id}")
             print(f"Proposal ID: {v.proposal_id}")
@@ -79,11 +87,13 @@ def query_ongoing_votes(session):
             print(f"Thread ID: {v.thread_id}")
             print("-" * 40)
     else:
+        logger.info("No ongoing votes found")
         print("No ongoing votes found")
 
 
 def query_concluded_votes(session, passed_only=False):
     """Query and display concluded votes"""
+    logger.info("Querying concluded votes%s", " (passed only)" if passed_only else "")
     print("\n=== Concluded Votes ===")
     query = session.query(ConcludedVote)
     if passed_only:
@@ -91,6 +101,7 @@ def query_concluded_votes(session, passed_only=False):
     concluded_votes = query.order_by(ConcludedVote.concluded_at.desc()).all()
 
     if concluded_votes:
+        logger.info("Found %d concluded votes", len(concluded_votes))
         for v in concluded_votes:
             print(f"ID: {v.id}")
             print(f"Proposal ID: {v.proposal_id}")
@@ -103,6 +114,7 @@ def query_concluded_votes(session, passed_only=False):
             print(f"Snapshot URL: {v.snapshot_url}")
             print("-" * 40)
     else:
+        logger.info("No concluded votes found")
         print("No concluded votes found")
 
 
@@ -125,24 +137,28 @@ def main():
     )
 
     args = parser.parse_args()
+    logger.info("Starting database query with args: %s", vars(args))
 
-    with SessionLocal() as session:
-        if args.table == "contributors" or args.table == "all":
-            query_contributors(session, args.server_id)
+    try:
+        with SessionLocal() as session:
+            if args.table == "contributors" or args.table == "all":
+                query_contributors(session, args.server_id)
 
-        if args.table == "events" or args.table == "all":
-            query_events(session, args.guild_id)
+            if args.table == "events" or args.table == "all":
+                query_events(session, args.guild_id)
 
-        if args.table == "ongoing_votes" or args.table == "all":
-            query_ongoing_votes(session)
+            if args.table == "ongoing_votes" or args.table == "all":
+                query_ongoing_votes(session)
 
-        if args.table == "concluded_votes" or args.table == "all":
-            query_concluded_votes(session, args.passed_only)
+            if args.table == "concluded_votes" or args.table == "all":
+                query_concluded_votes(session, args.passed_only)
+
+        logger.info("Database query completed successfully")
+    except Exception as e:
+        logger.error("Error querying database: %s", str(e))
+        print(f"Error querying database: {e}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
-    try:
-        main()
-    except Exception as e:
-        print(f"Error querying database: {e}")
-        sys.exit(1)
+    main()
