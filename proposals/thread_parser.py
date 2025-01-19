@@ -111,6 +111,7 @@ class ThreadParser:
             }
 
             initial_author = None
+            proposal_type = "budget" if thread.applied_tags and "budget" in thread.applied_tags[0].name.lower() else "governance"
 
             async for msg in thread.history(oldest_first=True):
                 content = msg.content.strip()
@@ -148,9 +149,7 @@ class ThreadParser:
                 if "voting options" in content_lower or "vote options" in content_lower:
                     return {
                         "title": thread.name,
-                        "type": "budget"
-                        if "budget" in thread.applied_tags[0].name.lower()
-                        else "governance",
+                        "type": proposal_type,
                         "sections": {
                             "content": "\n\n".join(messages),
                             "messages": messages,
@@ -160,9 +159,7 @@ class ThreadParser:
             # Return the proposal data if no voting options were found
             return {
                 "title": thread.name,
-                "type": "budget"
-                if "budget" in thread.applied_tags[0].name.lower()
-                else "governance",
+                "type": proposal_type,
                 "sections": {"content": "\n\n".join(messages), "messages": messages},
             }, None
 
