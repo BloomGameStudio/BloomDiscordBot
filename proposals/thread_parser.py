@@ -78,6 +78,23 @@ class ThreadParser:
         return ""
 
     @staticmethod
+    async def convert_mentions_to_usernames(bot: commands.Bot, content: str) -> str:
+        """Convert Discord mention IDs to usernames"""
+        mention_pattern = r'<@!?(\d+)>'
+        mentions = re.finditer(mention_pattern, content)
+        
+        for mention in mentions:
+            user_id = int(mention.group(1))
+            try:
+                user = await bot.fetch_user(user_id)
+                content = content.replace(mention.group(0), user.name)
+            except:
+                # If we can't fetch the user, leave the mention as is
+                continue
+        
+        return content
+
+    @staticmethod
     async def parse_thread(bot: commands.Bot, thread_input: str) -> Dict[str, Any]:
         """Parse a Discord thread to extract messages"""
         try:
@@ -111,12 +128,16 @@ class ThreadParser:
             }
 
             initial_author = None
+            proposal_type = "budget" if thread.applied_tags and "budget" in thread.applied_tags[0].name.lower() else "governance"
 
             async for msg in thread.history(oldest_first=True):
                 content = msg.content.strip()
 
                 if not content:
                     continue
+
+                # Convert any Discord mentions to usernames
+                content = await ThreadParser.convert_mentions_to_usernames(bot, content)
 
                 # Set initial author from first message
                 if initial_author is None:
@@ -148,9 +169,7 @@ class ThreadParser:
                 if "voting options" in content_lower or "vote options" in content_lower:
                     return {
                         "title": thread.name,
-                        "type": "budget"
-                        if "budget" in thread.applied_tags[0].name.lower()
-                        else "governance",
+                        "type": proposal_type,
                         "sections": {
                             "content": "\n\n".join(messages),
                             "messages": messages,
@@ -160,9 +179,7 @@ class ThreadParser:
             # Return the proposal data if no voting options were found
             return {
                 "title": thread.name,
-                "type": "budget"
-                if "budget" in thread.applied_tags[0].name.lower()
-                else "governance",
+                "type": proposal_type,
                 "sections": {"content": "\n\n".join(messages), "messages": messages},
             }, None
 
