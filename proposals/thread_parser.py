@@ -78,6 +78,23 @@ class ThreadParser:
         return ""
 
     @staticmethod
+    async def convert_mentions_to_usernames(bot: commands.Bot, content: str) -> str:
+        """Convert Discord mention IDs to usernames"""
+        mention_pattern = r'<@!?(\d+)>'
+        mentions = re.finditer(mention_pattern, content)
+        
+        for mention in mentions:
+            user_id = int(mention.group(1))
+            try:
+                user = await bot.fetch_user(user_id)
+                content = content.replace(mention.group(0), f'@{user.name}')
+            except:
+                # If we can't fetch the user, leave the mention as is
+                continue
+        
+        return content
+
+    @staticmethod
     async def parse_thread(bot: commands.Bot, thread_input: str) -> Dict[str, Any]:
         """Parse a Discord thread to extract messages"""
         try:
@@ -118,6 +135,9 @@ class ThreadParser:
 
                 if not content:
                     continue
+
+                # Convert any Discord mentions to usernames
+                content = await ThreadParser.convert_mentions_to_usernames(bot, content)
 
                 # Set initial author from first message
                 if initial_author is None:
