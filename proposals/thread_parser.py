@@ -87,7 +87,7 @@ class ThreadParser:
             user_id = int(mention.group(1))
             try:
                 user = await bot.fetch_user(user_id)
-                content = content.replace(mention.group(0), f'@{user.name}')
+                content = content.replace(mention.group(0), user.name)
             except:
                 # If we can't fetch the user, leave the mention as is
                 continue
