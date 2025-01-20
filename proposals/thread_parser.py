@@ -102,22 +102,27 @@ class ThreadParser:
             thread = await ThreadParser.fetch_thread(bot, thread_id)
 
             # Check for multiple proposal type tags
+            if not thread.applied_tags:
+                return None, "No proposal type tag applied. Please apply either a 'governance' or 'budget' tag to your proposal."
+
             governance_tag = False
             budget_tag = False
 
-            if thread.applied_tags:
-                for tag in thread.applied_tags:
-                    tag_name = tag.name.lower()
-                    if "governance" in tag_name or "improvement" in tag_name:
-                        governance_tag = True
-                    if "budget" in tag_name:
-                        budget_tag = True
+            for tag in thread.applied_tags:
+                tag_name = tag.name.lower()
+                if "governance" in tag_name or "improvement" in tag_name:
+                    governance_tag = True
+                if "budget" in tag_name:
+                    budget_tag = True
 
             if governance_tag and budget_tag:
                 return (
                     None,
                     "A proposal cannot be both governance and budget type. Please apply only one tag.",
                 )
+
+            if not (governance_tag or budget_tag):
+                return None, "Invalid proposal type tag. Please apply either a 'governance' or 'budget' tag to your proposal."
 
             messages = []
             total_length = 0
@@ -128,7 +133,7 @@ class ThreadParser:
             }
 
             initial_author = None
-            proposal_type = "budget" if thread.applied_tags and "budget" in thread.applied_tags[0].name.lower() else "governance"
+            proposal_type = "budget" if budget_tag else "governance"
 
             async for msg in thread.history(oldest_first=True):
                 content = msg.content.strip()
