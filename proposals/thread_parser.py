@@ -80,9 +80,9 @@ class ThreadParser:
     @staticmethod
     async def convert_mentions_to_usernames(bot: commands.Bot, content: str) -> str:
         """Convert Discord mention IDs to usernames"""
-        mention_pattern = r'<@!?(\d+)>'
+        mention_pattern = r"<@!?(\d+)>"
         mentions = re.finditer(mention_pattern, content)
-        
+
         for mention in mentions:
             user_id = int(mention.group(1))
             try:
@@ -91,7 +91,7 @@ class ThreadParser:
             except:
                 # If we can't fetch the user, leave the mention as is
                 continue
-        
+
         return content
 
     @staticmethod
@@ -103,7 +103,10 @@ class ThreadParser:
 
             # Check for multiple proposal type tags
             if not thread.applied_tags:
-                return None, "No proposal type tag applied. Please apply either a 'governance' or 'budget' tag to your proposal."
+                return (
+                    None,
+                    "No proposal type tag applied. Please apply either a 'governance' or 'budget' tag to your proposal.",
+                )
 
             governance_tag = False
             budget_tag = False
@@ -122,7 +125,10 @@ class ThreadParser:
                 )
 
             if not (governance_tag or budget_tag):
-                return None, "Invalid proposal type tag. Please apply either a 'governance' or 'budget' tag to your proposal."
+                return (
+                    None,
+                    "Invalid proposal type tag. Please apply either a 'governance' or 'budget' tag to your proposal.",
+                )
 
             messages = []
             total_length = 0
