@@ -27,5 +27,5 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
 volumes:
-  configvolume: {}
+  config_data: {}
   postgres_data: {}
