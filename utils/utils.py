@@ -47,7 +47,7 @@ class Utils:
         command = ["node", "./snapshot/modify_space.js", str(quorum_value)]
         env["SNAPSHOT_HUB"] = cfg.SNAPSHOT_HUB
         env["SNAPSHOT_SPACE"] = cfg.SNAPSHOT_SPACE
-        env["NETWORK"] = cfg.NETWORK_ID
+        env["NETWORK_ID"] = cfg.NETWORK_ID
         env["SETTINGS_NAME"] = cfg.SETTINGS_NAME
         env["SETTINGS_ABOUT"] = cfg.SETTINGS_ABOUT
         env["SETTINGS_SYMBOL"] = cfg.SETTINGS_SYMBOL
@@ -63,100 +63,105 @@ class Utils:
             raise
 
     @staticmethod
-    def create_snapshot_proposal(proposal_data, title):
-        """
-        Create a Snapshot proposal.
-
-        Parameters:
-        proposal_data (Dict[str, Any]): The data of the proposal.
-        title (str): The title of the proposal.
-
-        Raises:
-        subprocess.CalledProcessError: If the subprocess call to create the proposal fails.
-        """
-        proposal_command = [
-            "node",
-            "./snapshot/wrapper.js",
-            title,
-            proposal_data["draft"]["abstract"],
-            proposal_data["draft"]["background"],
-            proposal_data["draft"]["additional"],
-            "Adopt",
-            "Reassess",
-            "Abstain",
-        ]
-
-        env["SNAPSHOT_HUB"] = cfg.SNAPSHOT_HUB
-        env["SNAPSHOT_SPACE"] = cfg.SNAPSHOT_SPACE
-        env["NETWORK"] = cfg.NETWORK_ID
-        env["PRIMARY_RPC_URL"] = cfg.PRIMARY_RPC_URL
-        env["SECONDARY_RPC_URL"] = cfg.SECONDARY_RPC_URL
-
+    def create_snapshot_proposal(proposal_data: Dict[str, Any], title: str) -> None:
+        """Create a Snapshot proposal with structured sections"""
         try:
+            draft = proposal_data.get("draft", {})
+            sections = draft.get("sections", {})
+
+            # Get the raw content and split into messages
+            content = sections.get("content", "")
+
+            # Format the content for Snapshot
+            formatted_sections = {
+                "messages": [content]  # Pass the entire content as a single message
+            }
+
+            proposal_command = [
+                "node",
+                "./snapshot/wrapper.js",
+                title,
+                json.dumps(formatted_sections),
+                "Adopt",
+                "Reassess",
+                "Abstain",
+            ]
+
+            env = os.environ.copy()
+            env.update(
+                {
+                    "SNAPSHOT_HUB": cfg.SNAPSHOT_HUB,
+                    "SNAPSHOT_SPACE": cfg.SNAPSHOT_SPACE,
+                    "NETWORK": cfg.NETWORK_ID,
+                    "PRIMARY_RPC_URL": cfg.PRIMARY_RPC_URL,
+                    "SECONDARY_RPC_URL": cfg.SECONDARY_RPC_URL,
+                }
+            )
+
             subprocess.run(proposal_command, check=True, env=env)
             logger.info("Snapshot proposal created successfully.")
         except subprocess.CalledProcessError as e:
             logger.error(f"Error creating snapshot proposal: {e}")
             raise
+        except Exception as e:
+            logger.error(f"Unexpected error creating snapshot proposal: {e}")
+            raise
 
     @staticmethod
-    def fetch_XP_total_supply() -> int:
-        """
-        Fetch the total supply of XP tokens.
-
-        Returns:
-        int: The total supply of XP tokens.
-
-        Raises:
-        Exception: If the total supply of XP tokens cannot be fetched.
-        """
-        primary_rpc = cfg.PRIMARY_RPC_URL
-        secondary_rpc = cfg.SECONDARY_RPC_URL
-
-        if not primary_rpc or not secondary_rpc:
-            logger.error("RPC URLs not set in environment variables.")
-            return None
-
-        web3 = Web3(Web3.HTTPProvider(primary_rpc))
-
-        if not web3.is_connected():
-            logger.error("Failed to connect to PRIMARY_RPC, trying SECONDARY_RPC")
-            web3 = Web3(Web3.HTTPProvider(secondary_rpc))
-            if not web3.is_connected():
-                logger.error("Failed to connect to SECONDARY_RPC, shutting down")
-                exit(1)
-
-        token_abi = [
-            {
-                "constant": True,
-                "inputs": [],
-                "name": "totalSupply",
-                "outputs": [{"name": "", "type": "uint256"}],
-                "type": "function",
-            }
-        ]
-
-        total_supply_sum = 0
-
-        for address in cfg.SETTINGS_TOKEN_ADDRESSES:
-            try:
-                checksum_address = Web3.to_checksum_address(address)
-                token_contract = web3.eth.contract(
-                    address=checksum_address, abi=token_abi
+    def fetch_XP_total_supply() -> float:
+        """Fetch total XP supply with fallback and better error handling"""
+        try:
+            logger.info(f"Attempting to connect to PRIMARY_RPC: {cfg.PRIMARY_RPC_URL}")
+            w3 = Web3(
+                Web3.HTTPProvider(cfg.PRIMARY_RPC_URL, request_kwargs={"timeout": 10})
+            )
+            if not w3.is_connected():
+                logger.error("Failed to connect to PRIMARY_RPC")
+                logger.info(
+                    f"Attempting to connect to SECONDARY_RPC: {cfg.SECONDARY_RPC_URL}"
                 )
-                total_supply = token_contract.functions.totalSupply().call()
-                if total_supply is not None:
-                    logger.info(
-                        f"The total supply of the token at address {address} is {total_supply}."
+                w3 = Web3(
+                    Web3.HTTPProvider(
+                        cfg.SECONDARY_RPC_URL, request_kwargs={"timeout": 10}
                     )
-                    total_supply_sum += total_supply
-            except Exception as e:
-                logger.error(
-                    f"Error fetching total supply for address {address}: {str(e)}"
                 )
+                if not w3.is_connected():
+                    logger.error("Failed to connect to SECONDARY_RPC")
+                    return 0
 
-        logger.info(f"The total supply of all tokens is {total_supply_sum}.")
-        return total_supply_sum
+            total_supply = 0
+            # Basic ERC20 totalSupply ABI
+            abi = [
+                {
+                    "constant": True,
+                    "inputs": [],
+                    "name": "totalSupply",
+                    "outputs": [{"name": "", "type": "uint256"}],
+                    "payable": False,
+                    "stateMutability": "view",
+                    "type": "function",
+                }
+            ]
+
+            for address in cfg.SETTINGS_TOKEN_ADDRESSES:
+                try:
+                    contract = w3.eth.contract(
+                        address=Web3.to_checksum_address(address.strip()), abi=abi
+                    )
+                    supply = contract.functions.totalSupply().call()
+                    total_supply += supply
+                    logger.info(
+                        f"Successfully fetched supply for token {address}: {supply}"
+                    )
+                except Exception as e:
+                    logger.error(f"Error fetching supply for token {address}: {e}")
+                    continue
+
+            return float(total_supply) / (10**18)
+
+        except Exception as e:
+            logger.error(f"Error fetching XP total supply: {e}")
+            return 0
 
     @staticmethod
     def fetch_XP_quorum(percentage: int = 25) -> int:
@@ -169,14 +174,12 @@ class Utils:
         Returns:
         int: The quorum value for Snapshot proposals.
         """
-        total_supply_sum = Utils.fetch_XP_total_supply()
-        if total_supply_sum is None:
+        total_supply = Utils.fetch_XP_total_supply()
+        if total_supply is None:
             logger.error("Failed to fetch total supply.")
             return None
 
-        web3 = Web3()
-        total_supply_in_ether = web3.from_wei(total_supply_sum, "ether")
-        quorum = (total_supply_in_ether * percentage) // 100
+        quorum = int((total_supply * percentage) // 100)
         logger.info(f"{percentage}% of the total supply is {quorum}.")
         return quorum
 

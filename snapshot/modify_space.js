@@ -19,7 +19,7 @@ const secondaryRpc = process.env.SECONDARY_RPC_URL;
 
 const hub = process.env.SNAPSHOT_HUB;
 const snapshotSpace = process.env.SNAPSHOT_SPACE;
-const network = process.env.NETWORK_ID || '11155111';
+const network = process.env.NETWORK_ID;
 const settingsName = process.env.SETTINGS_NAME;
 const settingsAbout = process.env.SETTINGS_ABOUT;
 const settingsSymbol = process.env.SETTINGS_SYMBOL;

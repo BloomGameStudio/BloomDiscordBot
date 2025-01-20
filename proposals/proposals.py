@@ -23,61 +23,11 @@ from discord.ext import commands
 from consts.types import GOVERNANCE_ID_TYPE, BUDGET_ID_TYPE
 from typing import Any, Dict, List, Tuple
 from utils.utils import Utils
+import re
 
 
 class ProposalManager:
     proposals: List[Dict[str, Any]] = []
-
-    @staticmethod
-    async def handle_publish_draft(
-        interaction: discord.Interaction,
-        draft_name: str,
-        proposals: List[Dict[str, str]],
-        bot: commands.Bot,
-    ) -> None:
-        """
-        Handle the publish draft command by publishing the draft if it exists in the proposals list.
-
-        Parameters:
-        interaction (discord.Interaction): The interaction of the command invocation.
-        draft_name (str): The name of the draft to publish.
-        proposals (List[Dict[str, str]]): The list of proposals.
-        bot (commands.Bot): The bot instance.
-        """
-        if not interaction.response.is_done():
-            await interaction.response.defer()
-
-        draft_to_publish = next(
-            (
-                item
-                for item in proposals
-                if item.get("title", "").strip() == draft_name.strip()
-            ),
-            None,
-        )
-
-        if draft_to_publish:
-            published_successfully = await ProposalManager.publish_draft(
-                draft_to_publish, bot, interaction.guild.id, interaction.guild
-            )
-            if published_successfully:
-                proposals.remove(draft_to_publish)
-                embed = discord.Embed(
-                    title=f"Published Draft: {draft_to_publish['title']}",
-                    description=f"The draft '{draft_to_publish['title']}' has been published.",
-                    color=discord.Color.green(),
-                )
-                embed.set_author(
-                    name="Draft Publishing",
-                    icon_url=interaction.user.display_avatar.url,
-                )
-                await interaction.followup.send(embed=embed)
-            else:
-                await interaction.followup.send(
-                    f"Failed to publish draft: {draft_name}"
-                )
-        else:
-            await interaction.followup.send(f"Draft not found: {draft_name}")
 
     @staticmethod
     async def prepare_draft(
@@ -110,52 +60,91 @@ class ProposalManager:
         return id_type, channel_name, title
 
     @staticmethod
+    async def get_forum_channel(
+        draft_type: str, bot: commands.Bot, guild_id: int
+    ) -> discord.ForumChannel:
+        """Get the appropriate forum channel based on draft type"""
+        guild = bot.get_guild(guild_id)
+        if not guild:
+            logger.error(f"Guild not found: {guild_id}")
+            return None
+
+        channel_name = (
+            constants.GOVERNANCE_BUDGET_CHANNEL
+            if draft_type.lower() == "budget"
+            else constants.GOVERNANCE_CHANNEL
+        )
+
+        channel = discord.utils.get(guild.channels, name=channel_name)
+        if not isinstance(channel, discord.ForumChannel):
+            logger.error(f"Channel not found or not a forum channel: {channel_name}")
+            return None
+
+        return channel
+
+    @staticmethod
     async def publish_draft(
         draft: Dict[str, Any], bot: commands.Bot, guild_id: int, guild: discord.Guild
     ) -> bool:
-        """
-        Publish the draft by creating a thread with the prepared content and starting a vote timer.
-        Returns a boolean indicating whether the publication was successful.
-
-        Parameters:
-        draft (Dict[str, Any]): The draft to publish.
-        bot (commands.Bot): The bot instance.
-        guild_id (int): The ID of the guild.
-        guild (discord.Guild): The guild instance.
-
-        Returns:
-        bool: A boolean indicating whether the publication was successful.
-        """
+        """Publish the draft by creating a thread with the prepared content and starting a vote timer."""
+        created_thread = None
         try:
-            id_type, channel_name, title = await ProposalManager.prepare_draft(
-                guild, draft
-            )
-            forum_channel = discord.utils.get(
-                bot.get_guild(guild_id).channels, name=channel_name
+            forum_channel = await ProposalManager.get_forum_channel(
+                draft["type"], bot, guild_id
             )
             if not forum_channel:
-                logger.error(f"Error: Forum Channel {channel_name} not found.")
                 return False
 
-            thread = await forum_channel.create_thread(
-                name=title, content=f"{draft['abstract']}"
-            )
-            await thread.message.reply(f"\n{draft['background']}")
-            if "additional" in draft and draft["additional"].strip():
-                await thread.message.reply(f"\n{draft['additional']}")
+            proposal_type = "General" if draft["type"] == "governance" else "Budget"
+            thread_title = draft["title"]
+            formatted_title = f"Bloom {proposal_type} Proposal: {thread_title}"
 
-            vote_message = await thread.message.reply(
+            content = draft.get("sections", {}).get("content", "No content")
+
+            # Split content into sentences
+            sentences = re.split(r"([.!?]\s+)", content)
+            # Recombine sentences with their punctuation
+            sentences = [
+                "".join(i) for i in zip(sentences[0::2], sentences[1::2] + [""])
+            ]
+
+            current_message = ""
+            messages = []
+
+            for sentence in sentences:
+                # If adding this sentence would exceed Discord's limit
+                if len(current_message) + len(sentence) > 1900:
+                    messages.append(current_message.strip())
+                    current_message = sentence
+                else:
+                    current_message += sentence
+
+            if current_message:
+                messages.append(current_message.strip())
+
+            # Create thread with first message
+            created_thread = await forum_channel.create_thread(
+                name=formatted_title, content=messages[0]
+            )
+
+            # Post remaining messages as replies
+            for message in messages[1:]:
+                await created_thread.message.reply(message)
+
+            # Add voting options
+            vote_message = await created_thread.message.reply(
                 f"**{constants.YES_VOTE} Adopt**\n\n**{constants.NO_VOTE} Reassess**\n\n**{constants.ABSTAIN_VOTE} Abstain**\n\nVote will conclude in 48h from now."
             )
 
-            proposal_id = str(thread.message.id)
+            # Rest of the function (proposal data storage, etc)
+            proposal_id = str(created_thread.message.id)
             proposal_data = {
                 "draft": draft,
                 "end_time": time.time() + cfg.DISCORD_VOTE_ENDTIME,
                 "yes_count": 0,
-                "title": title,
+                "title": formatted_title,
                 "channel_id": str(forum_channel.id),
-                "thread_id": str(thread.thread.id),
+                "thread_id": str(created_thread.thread.id),
                 "message_id": str(vote_message.id),
             }
 
@@ -168,12 +157,21 @@ class ProposalManager:
             )
 
             await ProposalManager.react_to_vote(
-                vote_message.id, bot, guild_id, channel_name, thread.thread.id
+                vote_message.id,
+                bot,
+                guild_id,
+                forum_channel.name,
+                created_thread.thread.id,
             )
             return True
 
         except Exception as e:
-            logger.error(f"Error publishing draft: {str(e)}")
+            logger.error(f"Error publishing draft: {e}")
+            if created_thread:
+                try:
+                    await created_thread.delete()
+                except Exception as delete_error:
+                    logger.error(f"Error cleaning up failed thread: {delete_error}")
             return False
 
     @staticmethod

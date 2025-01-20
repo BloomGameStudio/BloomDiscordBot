@@ -52,7 +52,7 @@ async function createProposal(title, abstract, background, additional, choices) 
         space: snapshotSpace,
         type: 'weighted',
         title: title,
-        body: `\n ${abstract}\n\n \n ${background}\n\n \n ${additional}`,
+        body: background,
         choices: choices,
         start: currentTime,
         end: currentTime + seventyTwoHoursInSeconds,

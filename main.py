@@ -17,8 +17,8 @@ from cogs.gov import GovCommandsCog
 
 class Bot:
     async def setup_background_tasks(self):
-        TaskManager.check_events.start(self.bot)
-        TaskManager.check_concluded_proposals_task.start(self.bot)
+        """Setup background tasks"""
+        TaskManager.start_tasks(self.bot)
 
     async def main(self):
         intents = discord.Intents.default()
