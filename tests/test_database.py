@@ -8,6 +8,7 @@ from database.service import DatabaseService
 
 TEST_DB_URL = "sqlite:///:memory:"
 
+
 @pytest.fixture(autouse=True)
 def setup_test_env():
     """Setup test environment for DatabaseService"""
@@ -16,6 +17,7 @@ def setup_test_env():
     Base.metadata.create_all(engine)
 
     import database.service
+
     database.service.SessionLocal = TestingSessionLocal
     database.service.get_db = lambda: TestingSessionLocal()
 
@@ -113,7 +115,7 @@ class TestEvents:
         event = Event(
             event_id=123456789,
             guild_id=987654321,
-            posted_at=1234567890  # Use integer timestamp
+            posted_at=1234567890,  # Use integer timestamp
         )
         test_db.add(event)
         test_db.commit()

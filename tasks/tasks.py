@@ -179,10 +179,10 @@ class TaskManager:
         except Exception as e:
             logger.error(f"An error occurred while checking ongoing proposals: {e}")
 
-    @tasks.loop(minutes=2)
+    @tasks.loop(minutes=50)
     async def check_events(bot: commands.Bot) -> None:
         """
-        Task to check for upcoming events every 2 minutes and post them to the relevant Discord channel.
+        Task to check for upcoming events every 50 minutes and post them to the relevant Discord channel.
         """
         try:
             if not bot.is_ready():
