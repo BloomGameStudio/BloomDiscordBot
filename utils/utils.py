@@ -28,7 +28,7 @@ from typing import Dict, Any, List, Tuple, Optional
 from logger.logger import logger
 from web3 import Web3
 from urllib.parse import urljoin
-from database.models import SessionLocal, Contributor, Event, OngoingVote, ConcludedVote
+from database.models import SessionLocal, Contributor, Event, OngoingVote, ConcludedVote, Config
 import time
 
 env = os.environ.copy()
@@ -445,43 +445,10 @@ class Utils:
             session.commit()
 
     @staticmethod
-    def remove_contributor_from_db(guild_id: int, uid: str) -> None:
-        """Remove a contributor from the database"""
-        try:
-            with SessionLocal() as session:
-                logger.info(
-                    f"Attempting to remove contributor with uid={uid} from guild_id={guild_id}"
-                )
-                # First verify the contributor exists
-                contributor = (
-                    session.query(Contributor)
-                    .filter_by(server_name=str(guild_id), uid=uid)
-                    .first()
-                )
-
-                if not contributor:
-                    logger.warning(
-                        f"No contributor found with uid={uid} in guild_id={guild_id}"
-                    )
-                    return
-
-                # Remove the contributor
-                session.delete(contributor)
-                session.commit()
-                logger.info(
-                    f"Successfully removed contributor with uid={uid} from guild_id={guild_id}"
-                )
-        except Exception as e:
-            logger.error(f"Error removing contributor: {e}")
-            raise
-
-    @staticmethod
     def get_contributors_from_db(guild_id: int) -> List[Contributor]:
         """Get list of contributors for a specific server"""
         with SessionLocal() as session:
-            contributors = (
-                session.query(Contributor).filter_by(server_name=str(guild_id)).all()
-            )
+            contributors = session.query(Contributor).filter_by(server_name=str(guild_id)).all()
             return contributors
 
     @staticmethod
@@ -621,3 +588,24 @@ class Utils:
                 }
                 for vote in votes
             }
+
+    @staticmethod
+    def remove_contributor_from_db(guild_id: int, uid: str) -> None:
+        """Remove a contributor from the database"""
+        try:
+            with SessionLocal() as session:
+                contributor = session.query(Contributor).filter_by(
+                    server_name=str(guild_id),
+                    uid=uid
+                ).first()
+                
+                if not contributor:
+                    logger.warning(f"No contributor found with uid={uid} in server={guild_id}")
+                    return
+
+                session.delete(contributor)
+                session.commit()
+                logger.info(f"Successfully removed contributor with uid={uid} from server={guild_id}")
+        except Exception as e:
+            logger.error(f"Error removing contributor: {e}")
+            raise
