@@ -299,3 +299,21 @@ The bot will run the scheduled task check_concluded_proposals_task in 5 minutes 
 - The concluded message in the bot logs
 - The conclusion message under the Discord proposal thread
 - The proposal created in Snapshot
+
+## Database Environment Setup
+
+Required environment variables:
+- `DB_PASSWORD`: Database password for PostgreSQL
+- `ENV`: Set to "DEV" for testing/development
+
+Example `.env`:
+```bash
+DB_PASSWORD=your_password_here
+ENV=DEV
+```
+
+The bot will:
+1. Use in-memory SQLite if `ENV=DEV`
+2. Otherwise connect to PostgreSQL using:
+   - `DATABASE_URL` if provided
+   - Default URL `postgresql://bloom:{DB_PASSWORD}@localhost:5432/bloombot` if only `DB_PASSWORD` is set

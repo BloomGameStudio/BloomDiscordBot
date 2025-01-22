@@ -10,7 +10,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Migration script from JSON file storage to PostgreSQL database
 - Added database models for Contributors, Events, OngoingVotes, and ConcludedVotes
-- Added Alembic migrations for managing database schema changes
 - Updated configuration to use environment variables for database credentials
 - Added database query script for viewing stored data
 
