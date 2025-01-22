@@ -3,9 +3,6 @@ import os
 import sys
 import json
 from datetime import datetime
-
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 from database.models import SessionLocal, Contributor, Event, OngoingVote
 
 
@@ -25,22 +22,20 @@ def migrate_contributors(session, data):
     """Migrate contributors from JSON to database"""
     try:
         print("\n=== Migrating Contributors ===")
-        if not data:
+        if not data or "servers" not in data:
             print("No contributors data to migrate.")
             return 0
 
-        # Clear existing contributors
         session.query(Contributor).delete()
         session.commit()
 
         total_migrated = 0
         for server_name, server_data in data["servers"].items():
-            contributors = server_data["contributors"]
-            emoji_dict = server_data["emoji_dictionary"]
+            contributors = server_data.get("contributors", [])
+            emoji_dict = server_data.get("emoji_dictionary", {})
 
             print(f"\nMigrating contributors for {server_name}...")
             for contributor in contributors:
-                # Find the emoji ID for this contributor
                 emoji_id = None
                 for emoji, uid in emoji_dict.items():
                     if uid == contributor["uid"]:
@@ -49,7 +44,7 @@ def migrate_contributors(session, data):
 
                 new_contributor = Contributor(
                     uid=contributor["uid"],
-                    note=contributor["note"],
+                    note=contributor.get("note", ""),
                     server_name=server_name,
                     emoji_id=emoji_id,
                 )
@@ -65,39 +60,27 @@ def migrate_contributors(session, data):
         return 0
 
 
-def migrate_events(session, posted_events, notified_events):
+def migrate_events(session, data):
     """Migrate events from JSON to database"""
     try:
         print("\n=== Migrating Events ===")
-        # Clear existing events
+        if not data:
+            print("No events data to migrate.")
+            return 0
+
         session.query(Event).delete()
         session.commit()
 
         total_migrated = 0
-
-        # Handle posted events
-        if posted_events:
-            print("\nMigrating posted events...")
-            for event_id in posted_events:
-                new_event = Event(
-                    event_id=int(event_id),
-                    posted_at=datetime.now().timestamp(),  # Use current time as we don't have original timestamp
-                )
-                session.add(new_event)
-                total_migrated += 1
-
-        # Handle notified events
-        if notified_events:
-            print("\nMigrating notified events...")
-            for event_id, notified_at in notified_events.items():
-                # Update existing event or create new one
-                event = session.query(Event).filter_by(event_id=int(event_id)).first()
-                if event:
-                    event.notified_at = notified_at
-                else:
-                    new_event = Event(event_id=int(event_id), notified_at=notified_at)
-                    session.add(new_event)
-                    total_migrated += 1
+        for event_id, event_data in data.items():
+            new_event = Event(
+                event_id=int(event_id),
+                guild_id=event_data.get("guild_id", 0),
+                posted_at=event_data.get("posted_at", 0),
+                notified_at=event_data.get("notified_at", 0),
+            )
+            session.add(new_event)
+            total_migrated += 1
 
         session.commit()
         print(f"Successfully migrated {total_migrated} events")
@@ -116,7 +99,6 @@ def migrate_ongoing_votes(session, data):
             print("No ongoing votes to migrate.")
             return 0
 
-        # Clear existing votes
         session.query(OngoingVote).delete()
         session.commit()
 
@@ -126,7 +108,6 @@ def migrate_ongoing_votes(session, data):
                 proposal_id=proposal_id,
                 draft=vote_data.get("draft", {}),
                 end_time=vote_data.get("end_time", 0),
-                yes_count=vote_data.get("yes_count", 0),
                 title=vote_data.get("title", ""),
                 channel_id=vote_data.get("channel_id", ""),
                 thread_id=vote_data.get("thread_id", ""),
@@ -158,43 +139,44 @@ def verify_migration(session):
     events = session.query(Event).all()
     print(f"\nEvents in database: {len(events)}")
     for e in events:
-        print(
-            f"Event ID: {e.event_id}, Posted at: {e.posted_at}, Notified at: {e.notified_at}"
-        )
+        print(f"Event ID: {e.event_id}, Guild ID: {e.guild_id}")
 
     votes = session.query(OngoingVote).all()
     print(f"\nOngoing votes in database: {len(votes)}")
     for v in votes:
-        print(
-            f"Proposal ID: {v.proposal_id}, Title: {v.title}, Yes Count: {v.yes_count}"
+        print(f"Proposal ID: {v.proposal_id}, Title: {v.title}")
+
+
+def migrate_data():
+    """Main migration function"""
+    try:
+        session = SessionLocal()
+
+        data_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
+
+        contributors_data = load_json_file(os.path.join(data_dir, "contributors.json"))
+        events_data = load_json_file(os.path.join(data_dir, "events.json"))
+        ongoing_votes_data = load_json_file(
+            os.path.join(data_dir, "ongoing_votes.json")
         )
 
+        migrate_contributors(session, contributors_data)
+        migrate_events(session, events_data)
+        migrate_ongoing_votes(session, ongoing_votes_data)
 
-def main():
-    try:
-        # Load all JSON files
-        contributors_data = load_json_file("data/contributors.json")
-        posted_events_data = load_json_file("data/posted_events.json")
-        notified_events_data = load_json_file("data/notified_events.json")
-        ongoing_votes_data = load_json_file("data/ongoing_votes.json")
+        verify_migration(session)
 
-        with SessionLocal() as session:
-            # Perform migrations
-            migrate_contributors(session, contributors_data)
-            migrate_events(session, posted_events_data, notified_events_data)
-            migrate_ongoing_votes(session, ongoing_votes_data)
-
-            # Verify the migration
-            verify_migration(session)
-
-            print("\nMigration completed successfully!")
-            return True
+        session.close()
+        return True
 
     except Exception as e:
-        print(f"An error occurred during migration: {e}")
+        print(f"Error during migration: {e}")
         return False
 
 
 if __name__ == "__main__":
-    success = main()
+    if not os.getenv("DB_PASSWORD"):
+        print("Warning: DB_PASSWORD not set. Using default configuration.")
+
+    success = migrate_data()
     sys.exit(0 if success else 1)

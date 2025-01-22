@@ -1,51 +1,45 @@
+import os
 from sqlalchemy import (
-    create_engine,
     Column,
     Integer,
     String,
     Float,
-    JSON,
-    BigInteger,
     Boolean,
+    BigInteger,
+    JSON,
+    create_engine,
 )
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-import os
-from logger.logger import logger
+from sqlalchemy.orm import declarative_base, sessionmaker
 
-# Get database URL from environment variable
-DATABASE_URL = os.getenv("DATABASE_URL")
 
-# Only check for individual connection parameters if not in testing mode and no DATABASE_URL
-if not DATABASE_URL and os.getenv("TESTING") != "true":
-    # Check for individual database connection parameters
-    required_vars = ["DB_USER", "DB_PASSWORD", "DB_HOST", "DB_PORT", "DB_NAME"]
-    missing_vars = [var for var in required_vars if not os.getenv(var)]
+def get_database_url():
+    if os.getenv("DATABASE_URL"):
+        url = os.getenv("DATABASE_URL")
+        return (
+            url.replace("postgres://", "postgresql://", 1)
+            if url.startswith("postgres://")
+            else url
+        )
 
-    if missing_vars:
-        error_msg = f"Missing required environment variables: {', '.join(missing_vars)}"
-        logger.error(error_msg)
-        raise ValueError(error_msg)
+    DB_USER = os.getenv("DB_USER", "bloom")
+    DB_PASSWORD = os.getenv("DB_PASSWORD")
+    DB_NAME = os.getenv("DB_NAME", "bloombot")
+    DB_HOST = os.getenv("DB_HOST", "localhost")
 
-    # Construct URL from environment variables
-    DATABASE_URL = f"postgresql://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}"
+    if not DB_PASSWORD:
+        raise ValueError("DB_PASSWORD environment variable is required")
 
-# For testing, use SQLite if no DATABASE_URL is provided
-if not DATABASE_URL and os.getenv("TESTING") == "true":
-    DATABASE_URL = "sqlite:///:memory:"
+    return f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:5432/{DB_NAME}"
 
-# Heroku specific: convert postgres:// to postgresql://
-if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
+
+DATABASE_URL = os.getenv("DATABASE_URL") or get_database_url()
+
+if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
-# Create engine with appropriate settings based on database type
-if DATABASE_URL.startswith("sqlite"):
-    engine = create_engine(DATABASE_URL)
-else:
-    # PostgreSQL settings
-    engine = create_engine(
-        DATABASE_URL, pool_size=5, max_overflow=10, pool_timeout=30, pool_recycle=1800
-    )
+engine = create_engine(
+    DATABASE_URL, pool_size=5, max_overflow=10, pool_timeout=30, pool_recycle=1800
+)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
@@ -75,8 +69,8 @@ class Event(Base):
     id = Column(Integer, primary_key=True)
     event_id = Column(BigInteger, unique=True)
     guild_id = Column(BigInteger)
-    posted_at = Column(Float)
-    notified_at = Column(Float)
+    posted_at = Column(BigInteger)
+    notified_at = Column(BigInteger)
 
 
 class OngoingVote(Base):
@@ -85,7 +79,7 @@ class OngoingVote(Base):
     id = Column(Integer, primary_key=True)
     proposal_id = Column(String, unique=True)
     draft = Column(JSON)
-    end_time = Column(Float)
+    end_time = Column(BigInteger)
     title = Column(String)
     channel_id = Column(String)
     thread_id = Column(String)
@@ -106,5 +100,5 @@ class ConcludedVote(Base):
     no_count = Column(Integer)
     abstain_count = Column(Integer)
     passed = Column(Boolean)
-    concluded_at = Column(Float)
+    concluded_at = Column(BigInteger)
     snapshot_url = Column(String, nullable=True)

@@ -1,18 +1,8 @@
 #!/usr/bin/env python3
 import os
-import sys
 import argparse
+import sys
 from datetime import datetime
-
-# Set up database connection environment variables BEFORE importing models
-os.environ["DB_USER"] = "bloom"
-os.environ["DB_PASSWORD"] = "bloom"
-os.environ["DB_HOST"] = "localhost"
-os.environ["DB_PORT"] = "5432"
-os.environ["DB_NAME"] = "bloombot"
-
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 from database.models import SessionLocal, Contributor, Event, OngoingVote, ConcludedVote
 from logger.logger import logger
 
@@ -26,7 +16,9 @@ def format_timestamp(ts):
 
 def query_contributors(session, server_id=None):
     """Query and display contributors"""
-    logger.info("Querying contributors%s", f" for server {server_id}" if server_id else "")
+    logger.info(
+        "Querying contributors%s", f" for server {server_id}" if server_id else ""
+    )
     print("\n=== Contributors ===")
     query = session.query(Contributor)
     if server_id:

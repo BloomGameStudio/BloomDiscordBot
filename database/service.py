@@ -9,7 +9,7 @@ from .models import (
     OngoingVote,
     ConcludedVote,
     Base,
-    engine
+    engine,
 )
 from logger.logger import logger
 
@@ -28,7 +28,10 @@ class DatabaseService:
     def __init__(self, session=None):
         """Initialize with optional session for testing"""
         self._session = session
-        logger.info("DatabaseService initialized with %s", "test session" if session else "default session")
+        logger.info(
+            "DatabaseService initialized with %s",
+            "test session" if session else "default session",
+        )
 
     def _get_session(self):
         """Get database session - uses provided test session or creates new one"""
@@ -88,10 +91,16 @@ class DatabaseService:
 
     def save_ongoing_vote(self, vote_data: Dict[str, Any]) -> None:
         """Save or update an ongoing vote"""
-        logger.info("Saving ongoing vote with proposal_id: %s", vote_data.get("proposal_id"))
+        logger.info(
+            "Saving ongoing vote with proposal_id: %s", vote_data.get("proposal_id")
+        )
         session = self._get_session()
         try:
-            vote = session.query(OngoingVote).filter_by(proposal_id=vote_data["proposal_id"]).first()
+            vote = (
+                session.query(OngoingVote)
+                .filter_by(proposal_id=vote_data["proposal_id"])
+                .first()
+            )
             if vote:
                 logger.info("Updating existing ongoing vote")
                 for key, value in vote_data.items():
@@ -174,10 +183,20 @@ class DatabaseService:
 
         return result, emoji_dicts
 
-    def save_concluded_vote(self, proposal_data: Dict[str, Any], yes_count: int, no_count: int, 
-                          abstain_count: int, passed: bool, snapshot_url: Optional[str] = None) -> None:
+    def save_concluded_vote(
+        self,
+        proposal_data: Dict[str, Any],
+        yes_count: int,
+        no_count: int,
+        abstain_count: int,
+        passed: bool,
+        snapshot_url: Optional[str] = None,
+    ) -> None:
         """Save a concluded vote to the database"""
-        logger.info("Saving concluded vote with proposal_id: %s", proposal_data.get("proposal_id"))
+        logger.info(
+            "Saving concluded vote with proposal_id: %s",
+            proposal_data.get("proposal_id"),
+        )
         session = self._get_session()
         try:
             vote = ConcludedVote(
@@ -192,7 +211,7 @@ class DatabaseService:
                 abstain_count=abstain_count,
                 passed=passed,
                 concluded_at=datetime.now().timestamp(),
-                snapshot_url=snapshot_url
+                snapshot_url=snapshot_url,
             )
             session.add(vote)
             session.commit()
@@ -207,14 +226,16 @@ class DatabaseService:
 
     def get_concluded_votes(self, passed_only: bool = False) -> Dict[str, Any]:
         """Get all concluded votes with optional filter for passed votes only"""
-        logger.info("Retrieving concluded votes%s", " (passed only)" if passed_only else "")
+        logger.info(
+            "Retrieving concluded votes%s", " (passed only)" if passed_only else ""
+        )
         session = self._get_session()
         try:
             query = session.query(ConcludedVote)
             if passed_only:
                 query = query.filter(ConcludedVote.passed == True)
             votes = query.order_by(ConcludedVote.concluded_at.desc()).all()
-            
+
             result = {
                 vote.proposal_id: {
                     "draft": vote.draft,
