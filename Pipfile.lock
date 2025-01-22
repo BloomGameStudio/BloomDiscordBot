@@ -600,14 +600,6 @@
             "markers": "implementation_name == 'cpython'",
             "version": "==1.0.1"
         },
-        "pytest-mock": {
-            "hashes": [
-                "sha256:b8af6711c70f7e62160bfbecb55be699b5cb69d007426759ab8ab06b1bd77d1d",
-                "sha256:d07cb2a223a185873a1d0ee78b9faa9597e45b3f6186df21a95cec1e9bcdc9a5"
-            ],
-            "markers": "python_version >= '3.8'",
-            "version": "==2.4.0"
-        },
         "eth-abi": {
             "hashes": [
                 "sha256:33ddd756206e90f7ddff1330cc8cac4aa411a824fe779314a0a52abea2c8fc14",
@@ -1133,6 +1125,14 @@
             "markers": "python_version >= '3.8'",
             "version": "==2.27.2"
         },
+        "pytest-mock": {
+            "hashes": [
+                "sha256:b8af6711c70f7e62160bfbecb55be699b5cb69d007426759ab8ab06b1bd77d1d",
+                "sha256:d07cb2a223a185873a1d0ee78b9faa9597e45b3f6186df21a95cec1e9bcdc9a5"
+            ],
+            "markers": "python_version >= '3.8'",
+            "version": "==2.4.0"
+        },
         "pytz": {
             "hashes": [
                 "sha256:2aa355083c50a0f93fa581709deac0c9ad65cca8a9e9beac660adcbd493c798a",
@@ -1487,5 +1487,6 @@
             "markers": "python_version >= '3.9'",
             "version": "==1.18.3"
         }
-    }
+    },
+    "develop": {}
 }

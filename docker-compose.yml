@@ -11,7 +11,7 @@ services:
     depends_on:
       - db
     volumes:
-      - configvolume:/app/config
+      - config_data:/app/config
     env_file:
       - .env
 

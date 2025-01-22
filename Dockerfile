@@ -21,5 +21,23 @@ RUN cd /app/snapshot && npm install
 # Copy the entire application
 COPY . /app
 
-# Command to run the application
-CMD ["pipenv", "run", "python", "main.py"]
+# Create an entrypoint script with proper wait for database
+RUN echo '#!/bin/bash\n\
+set -e\n\
+echo "Waiting for database..."\n\
+while ! nc -z db 5432; do\n\
+  sleep 1\n\
+done\n\
+echo "Database is ready!"\n\
+sleep 5\n\
+echo "Initializing database..."\n\
+cd /app && pipenv run python -m scripts.init_db && \\\n\
+echo "Starting application..." && \\\n\
+pipenv run python main.py' > /app/entrypoint.sh
+
+RUN chmod +x /app/entrypoint.sh
+
+# Install netcat for database connection check
+RUN apt-get install -y netcat-openbsd
+
+CMD ["/app/entrypoint.sh"]
