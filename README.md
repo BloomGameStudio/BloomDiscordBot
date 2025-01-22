@@ -312,8 +312,8 @@ DB_PASSWORD=your_password_here
 ENV=DEV
 ```
 
-The bot will:
-1. Use in-memory SQLite if `ENV=DEV`
-2. Otherwise connect to PostgreSQL using:
-   - `DATABASE_URL` if provided
-   - Default URL `postgresql://bloom:{DB_PASSWORD}@localhost:5432/bloombot` if only `DB_PASSWORD` is set
+The bot connects to PostgreSQL using:
+- `DATABASE_URL` if provided (e.g., Heroku's database URL)
+- Default URL `postgresql://bloom:{DB_PASSWORD}@localhost:5432/bloombot` if only `DB_PASSWORD` is set
+
+Note: PostgreSQL is required for both development and production environments. Only test suites use SQLite in-memory databases.
