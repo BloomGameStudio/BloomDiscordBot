@@ -6,12 +6,27 @@ from sqlalchemy.orm import sessionmaker
 from database.models import Base, Contributor, Event, OngoingVote, ConcludedVote
 from database.service import DatabaseService
 
+TEST_DB_URL = "sqlite:///:memory:"
+
+@pytest.fixture(autouse=True)
+def setup_test_env():
+    """Setup test environment for DatabaseService"""
+    engine = create_engine(TEST_DB_URL)
+    TestingSessionLocal = sessionmaker(bind=engine)
+    Base.metadata.create_all(engine)
+
+    import database.service
+    database.service.SessionLocal = TestingSessionLocal
+    database.service.get_db = lambda: TestingSessionLocal()
+
+    yield
+    Base.metadata.drop_all(engine)
+
 
 @pytest.fixture(scope="function")
 def test_db():
     """Create a test database and tables"""
-    # Use SQLite for testing
-    engine = create_engine("sqlite:///:memory:")
+    engine = create_engine(TEST_DB_URL)
     Base.metadata.create_all(engine)
     TestingSessionLocal = sessionmaker(bind=engine)
     db = TestingSessionLocal()
@@ -77,11 +92,12 @@ class TestContributors:
 class TestEvents:
     def test_create_event(self, test_db):
         """Test creating a new event"""
+        current_time = int(datetime.now().timestamp())
         event = Event(
             event_id=123456789,
             guild_id=987654321,
-            posted_at=datetime.now().timestamp(),
-            notified_at=datetime.now().timestamp(),
+            posted_at=current_time,
+            notified_at=current_time,
         )
         test_db.add(event)
         test_db.commit()
@@ -89,30 +105,36 @@ class TestEvents:
         saved = test_db.query(Event).first()
         assert saved.event_id == 123456789
         assert saved.guild_id == 987654321
-        assert saved.posted_at is not None
-        assert saved.notified_at is not None
+        assert isinstance(saved.posted_at, int)
+        assert isinstance(saved.notified_at, int)
 
     def test_update_event(self, test_db):
         """Test updating an existing event"""
-        event = Event(event_id=123456789, guild_id=987654321, posted_at=100.0)
+        event = Event(
+            event_id=123456789,
+            guild_id=987654321,
+            posted_at=1234567890  # Use integer timestamp
+        )
         test_db.add(event)
         test_db.commit()
 
-        new_time = 200.0
+        new_time = 1234567891  # Use integer timestamp
         event.posted_at = new_time
         test_db.commit()
 
         updated = test_db.query(Event).first()
         assert updated.posted_at == new_time
+        assert isinstance(updated.posted_at, int)
 
 
 class TestOngoingVotes:
     def test_create_vote(self, test_db):
         """Test creating a new ongoing vote"""
+        current_time = int(datetime.now().timestamp())  # Convert to integer timestamp
         vote = OngoingVote(
             proposal_id="test123",
             draft={"title": "Test Proposal", "content": "Test Content"},
-            end_time=datetime.now().timestamp(),
+            end_time=current_time,
             title="Test Vote",
             channel_id="123",
             thread_id="456",
@@ -125,13 +147,15 @@ class TestOngoingVotes:
         assert saved.proposal_id == "test123"
         assert saved.draft["title"] == "Test Proposal"
         assert saved.title == "Test Vote"
+        assert isinstance(saved.end_time, int)
 
     def test_update_vote(self, test_db):
         """Test updating an ongoing vote"""
+        current_time = int(datetime.now().timestamp())  # Convert to integer timestamp
         vote = OngoingVote(
             proposal_id="test123",
             draft={"title": "Test Proposal", "content": "Test Content"},
-            end_time=datetime.now().timestamp(),
+            end_time=current_time,
             title="Test Vote",
             channel_id="123",
             thread_id="456",
@@ -145,6 +169,7 @@ class TestOngoingVotes:
 
         updated = test_db.query(OngoingVote).first()
         assert updated.title == "Updated Vote"
+        assert isinstance(updated.end_time, int)
 
 
 class TestConcludedVotes:

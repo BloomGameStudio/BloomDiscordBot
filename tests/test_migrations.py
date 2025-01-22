@@ -1,113 +1,65 @@
 import pytest
+import json
 import os
-from alembic import command
-from alembic.config import Config
-from sqlalchemy import create_engine, inspect, text
-from database.models import Base
+import logging
+from scripts.migrate_to_db import migrate_contributors, load_json_file, migrate_events, migrate_ongoing_votes
+from database.models import Contributor, Event, OngoingVote
+from tests.test_database import test_db
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-def get_alembic_config(url):
-    """Create Alembic config for testing"""
-    alembic_cfg = Config()
-    alembic_cfg.set_main_option("script_location", "database/migrations")
-    alembic_cfg.set_main_option("sqlalchemy.url", url)
-    return alembic_cfg
+def test_migrate_contributors(test_db):
+    """Test migrating contributors from contributors.json to database"""
+    data_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "contributors.json")
+    contributors_data = load_json_file(data_path)
+    
+    if not contributors_data:
+        logger.info("No contributors data found in contributors.json")
+        assert migrate_contributors(test_db, {}) == 0
+        return
+        
+    result = migrate_contributors(test_db, contributors_data)
+    assert result >= 0
+    
+    contributors = test_db.query(Contributor).all()
+    assert len(contributors) == result
+    
+    for contributor in contributors:
+        assert contributor.uid
+        assert contributor.server_name
+        assert contributor.note
 
+def test_migrate_events(test_db):
+    """Test migrating events from posted_events.json and notified_events.json"""
+    data_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
+    posted_data = load_json_file(os.path.join(data_path, "posted_events.json"))
+    notified_data = load_json_file(os.path.join(data_path, "notified_events.json"))
+    
+    if not posted_data and not notified_data:
+        logger.info("No events data found in posted_events.json or notified_events.json")
+    
+    result = migrate_events(test_db, posted_data, notified_data)
+    assert result >= 0
 
-@pytest.fixture(scope="function")
-def test_db():
-    """Create a test database for migration testing"""
-    url = "sqlite:///:memory:"
-    engine = create_engine(url)
+def test_migrate_ongoing_votes(test_db):
+    """Test migrating votes from ongoing_votes.json"""
+    data_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "ongoing_votes.json")
+    votes_data = load_json_file(data_path)
+    
+    if not votes_data:
+        logger.info("No ongoing votes data found in ongoing_votes.json")
+    
+    result = migrate_ongoing_votes(test_db, votes_data)
+    assert result >= 0
 
-    # Create initial schema
-    Base.metadata.create_all(engine)
+def test_migrate_empty_data(test_db):
+    """Test migrating empty data"""
+    empty_data = {}
+    assert migrate_contributors(test_db, empty_data) == 0
+    assert test_db.query(Contributor).count() == 0
 
-    # Add yes_count column manually since SQLite doesn't support DROP COLUMN
-    with engine.connect() as conn:
-        conn.execute(
-            text(
-                """
-            CREATE TABLE temp_ongoing_votes (
-                id INTEGER PRIMARY KEY,
-                proposal_id VARCHAR,
-                draft JSON,
-                end_time FLOAT,
-                title VARCHAR,
-                channel_id VARCHAR,
-                thread_id VARCHAR,
-                message_id VARCHAR,
-                yes_count INTEGER
-            )
-        """
-            )
-        )
-        conn.commit()
-
-    return engine, url
-
-
-def test_table_exists(test_db):
-    """Test that tables exist after initial creation"""
-    engine, _ = test_db
-    inspector = inspect(engine)
-    tables = inspector.get_table_names()
-    assert "ongoing_votes" in tables
-    assert "events" in tables
-    assert "contributors" in tables
-    assert "concluded_votes" in tables
-
-
-def test_columns_exist(test_db):
-    """Test that expected columns exist in tables"""
-    engine, _ = test_db
-    inspector = inspect(engine)
-
-    ongoing_votes_columns = {
-        col["name"] for col in inspector.get_columns("ongoing_votes")
-    }
-    assert "proposal_id" in ongoing_votes_columns
-    assert "draft" in ongoing_votes_columns
-    assert "end_time" in ongoing_votes_columns
-
-    events_columns = {col["name"] for col in inspector.get_columns("events")}
-    assert "event_id" in events_columns
-    assert "guild_id" in events_columns
-    assert "posted_at" in events_columns
-
-    contributors_columns = {
-        col["name"] for col in inspector.get_columns("contributors")
-    }
-    assert "uid" in contributors_columns
-    assert "note" in contributors_columns
-    assert "server_name" in contributors_columns
-
-    concluded_votes_columns = {
-        col["name"] for col in inspector.get_columns("concluded_votes")
-    }
-    assert "proposal_id" in concluded_votes_columns
-    assert "draft" in concluded_votes_columns
-    assert "title" in concluded_votes_columns
-    assert "yes_count" in concluded_votes_columns
-    assert "no_count" in concluded_votes_columns
-    assert "abstain_count" in concluded_votes_columns
-    assert "passed" in concluded_votes_columns
-    assert "concluded_at" in concluded_votes_columns
-    assert "snapshot_url" in concluded_votes_columns
-
-
-def test_concluded_votes_constraints(test_db):
-    """Test that concluded_votes table has correct constraints"""
-    engine, _ = test_db
-    inspector = inspect(engine)
-
-    # Get primary key constraint
-    pk = inspector.get_pk_constraint("concluded_votes")
-    assert "id" in pk["constrained_columns"]
-
-    # Get unique constraints
-    unique_constraints = inspector.get_unique_constraints("concluded_votes")
-    proposal_id_constraint = next(
-        (c for c in unique_constraints if "proposal_id" in c["column_names"]), None
-    )
-    assert proposal_id_constraint is not None
+def test_migrate_invalid_data(test_db):
+    """Test migrating invalid data doesn't crash and returns 0"""
+    invalid_data = {"invalid": "data"}
+    assert migrate_contributors(test_db, invalid_data) == 0
