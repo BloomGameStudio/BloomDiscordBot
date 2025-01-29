@@ -141,7 +141,7 @@ class ProposalManager:
             proposal_id = str(created_thread.message.id)
             proposal_data = {
                 "draft": draft,
-                "end_time": time.time() + cfg.DISCORD_VOTE_ENDTIME,
+                "end_time": int(time.time() + cfg.DISCORD_VOTE_ENDTIME),
                 "title": formatted_title,
                 "channel_id": str(forum_channel.id),
                 "thread_id": str(created_thread.thread.id),

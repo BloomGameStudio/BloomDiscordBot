@@ -455,8 +455,8 @@ class Utils:
     def save_event(
         event_id: int,
         guild_id: int,
-        posted_at: Optional[float] = None,
-        notified_at: Optional[float] = None,
+        posted_at: Optional[int] = None,
+        notified_at: Optional[int] = None,
     ) -> None:
         """Save or update an event in the database"""
         with SessionLocal() as session:
@@ -470,8 +470,8 @@ class Utils:
                 event = Event(
                     event_id=event_id,
                     guild_id=guild_id,
-                    posted_at=posted_at,
-                    notified_at=notified_at,
+                    posted_at=int(posted_at) if posted_at is not None else None,
+                    notified_at=int(notified_at) if notified_at is not None else None,
                 )
                 session.add(event)
             session.commit()
@@ -481,14 +481,14 @@ class Utils:
         """Get list of posted event IDs from database"""
         with SessionLocal() as session:
             events = session.query(Event).filter(Event.posted_at.isnot(None)).all()
-            return [event.event_id for event in events]
+            return [int(event.event_id) for event in events]
 
     @staticmethod
-    def get_notified_events() -> Dict[int, float]:
+    def get_notified_events() -> Dict[int, int]:
         """Get dictionary of notified events with their notification timestamps"""
         with SessionLocal() as session:
             events = session.query(Event).filter(Event.notified_at.isnot(None)).all()
-            return {event.event_id: event.notified_at for event in events}
+            return {int(event.event_id): int(event.notified_at) for event in events}
 
     @staticmethod
     def save_ongoing_vote(proposal_id: str, vote_data: dict):

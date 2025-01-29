@@ -3,7 +3,6 @@ from sqlalchemy import (
     Column,
     Integer,
     String,
-    Float,
     Boolean,
     BigInteger,
     JSON,
@@ -70,7 +69,7 @@ class Event(Base):
     event_id = Column(BigInteger, unique=True)
     guild_id = Column(BigInteger)
     posted_at = Column(BigInteger)
-    notified_at = Column(BigInteger)
+    notified_at = Column(BigInteger, nullable=True)
 
 
 class OngoingVote(Base):

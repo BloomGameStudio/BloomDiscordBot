@@ -46,6 +46,8 @@ def test_migrate_events(test_db):
 
     if not events_data:
         logger.info("No events data found in events.json")
+        assert migrate_events(test_db, {}) == 0
+        return
 
     result = migrate_events(test_db, events_data)
     assert result >= 0
@@ -60,6 +62,8 @@ def test_migrate_ongoing_votes(test_db):
 
     if not votes_data:
         logger.info("No ongoing votes data found in ongoing_votes.json")
+        assert migrate_ongoing_votes(test_db, {}) == 0
+        return
 
     result = migrate_ongoing_votes(test_db, votes_data)
     assert result >= 0

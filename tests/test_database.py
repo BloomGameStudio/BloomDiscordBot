@@ -188,7 +188,7 @@ class TestConcludedVotes:
             no_count=2,
             abstain_count=1,
             passed=True,
-            concluded_at=datetime.now().timestamp(),
+            concluded_at=int(datetime.now().timestamp()),
             snapshot_url="https://snapshot.org/test",
         )
         test_db.add(vote)
@@ -215,7 +215,7 @@ class TestConcludedVotes:
             no_count=2,
             abstain_count=1,
             passed=True,
-            concluded_at=datetime.now().timestamp(),
+            concluded_at=int(datetime.now().timestamp()),
         )
         test_db.add(vote)
         test_db.commit()
@@ -315,7 +315,7 @@ class TestDatabaseService:
             no_count=2,
             abstain_count=1,
             passed=True,
-            concluded_at=datetime.now().timestamp(),
+            concluded_at=int(datetime.now().timestamp()),
         )
         test_db.add(vote)
         test_db.commit()
@@ -340,7 +340,7 @@ class TestDatabaseService:
             no_count=2,
             abstain_count=1,
             passed=True,
-            concluded_at=datetime.now().timestamp(),
+            concluded_at=int(datetime.now().timestamp()),
         )
         # Add a failed vote
         failed_vote = ConcludedVote(
@@ -354,7 +354,7 @@ class TestDatabaseService:
             no_count=5,
             abstain_count=1,
             passed=False,
-            concluded_at=datetime.now().timestamp(),
+            concluded_at=int(datetime.now().timestamp()),
         )
         test_db.add(passed_vote)
         test_db.add(failed_vote)

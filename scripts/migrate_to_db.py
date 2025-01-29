@@ -76,8 +76,8 @@ def migrate_events(session, data):
             new_event = Event(
                 event_id=int(event_id),
                 guild_id=event_data.get("guild_id", 0),
-                posted_at=event_data.get("posted_at", 0),
-                notified_at=event_data.get("notified_at", 0),
+                posted_at=int(event_data.get("posted_at", 0)),
+                notified_at=int(event_data.get("notified_at", 0)),
             )
             session.add(new_event)
             total_migrated += 1

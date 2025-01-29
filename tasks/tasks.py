@@ -251,14 +251,10 @@ class TaskManager:
                         )
                         bot.posted_events.append(event.id)
 
+                        message = f"🌺 **__Upcoming Event__** 🌺\n{formatted_event}"
                         if user_list_string:
-                            await channel.send(
-                                f"🌺 **__Upcoming Event__** 🌺\n{formatted_event}\n\nInterested users: {user_list_string}"
-                            )
-                        else:
-                            await channel.send(
-                                f"🌺 **__Upcoming Event__** 🌺\n{formatted_event}"
-                            )
+                            message += f"\n\nInterested users: {user_list_string}"
+                        await channel.send(message)
 
                         # Update notified timestamp
                         Utils.save_event(
@@ -301,10 +297,7 @@ class TaskManager:
             f"\nAdopt: {yes_count}\nReassess: {no_count}\nAbstain: {abstain_count}"
         )
 
-        logger.info(
-            f"Vote results for {proposal_data['title']}: "
-            f"Yes vote count: {yes_count} No vote count: {no_count} Abstain vote count: {abstain_count}"
-        )
+        logger.info(result_message)
 
         # Vote passes if yes > no and meets threshold
         passed = yes_count > no_count and yes_count >= cfg.YES_COUNT_THRESHOLD

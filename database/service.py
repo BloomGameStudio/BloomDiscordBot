@@ -152,14 +152,14 @@ class DatabaseService:
         logger.info("Found %d notified events", len(event_dict))
         return event_dict
 
-    def save_notified_event(self, event_id: int, guild_id: int, notified_at: float):
+    def save_notified_event(self, event_id: int, guild_id: int, notified_at: int):
         """Save a notified event"""
         session = self._get_session()
         event = session.query(Event).filter_by(event_id=event_id).first()
         if event:
-            event.notified_at = notified_at
+            event.notified_at = int(notified_at)
         else:
-            event = Event(event_id=event_id, guild_id=guild_id, notified_at=notified_at)
+            event = Event(event_id=event_id, guild_id=guild_id, notified_at=int(notified_at))
             session.add(event)
         session.commit()
         if self._session is None:
@@ -210,7 +210,7 @@ class DatabaseService:
                 no_count=no_count,
                 abstain_count=abstain_count,
                 passed=passed,
-                concluded_at=datetime.now().timestamp(),
+                concluded_at=int(datetime.now().timestamp()),
                 snapshot_url=snapshot_url,
             )
             session.add(vote)
