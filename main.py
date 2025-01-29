@@ -13,35 +13,55 @@ from cogs.contributors import ContributorCommandsCog
 from cogs.events import EventsCog
 from cogs.help import HelpCommandCog
 from cogs.gov import GovCommandsCog
+from database.service import DatabaseService
+from logger.logger import logger
 
 
 class Bot:
-    async def setup_background_tasks(self):
-        """Setup background tasks"""
-        TaskManager.start_tasks(self.bot)
+    def __init__(self):
+        self.bot = commands.Bot(command_prefix="/", intents=discord.Intents.all())
+        # Initialize ongoing votes from database
+        self.bot.ongoing_votes = Utils.get_ongoing_votes()
+        
+        # Register the on_ready event
+        @self.bot.event
+        async def on_ready():
+            logger.info(f"Logged in as {self.bot.user.name} ({self.bot.user.id})")
+            # Sync commands after bot is ready
+            logger.info("Syncing commands with Discord...")
+            await self.bot.tree.sync()
+            logger.info("Commands synced successfully!")
+
+    async def setup_hook(self):
+        """Setup hook that runs when the bot starts"""
+        logger.info("Setting up bot...")
+        try:
+            # Add cogs
+            await self.bot.add_cog(ContributorCommandsCog(self.bot))
+            await self.bot.add_cog(EventsCog(self.bot))
+            await self.bot.add_cog(GovCommandsCog(self.bot))
+
+        except Exception as e:
+            logger.error(f"Error in setup_hook: {e}")
+            raise
 
     async def main(self):
-        intents = discord.Intents.default()
-        intents.message_content = True
-        intents.reactions = True
-        intents.members = True
-        self.bot = commands.Bot(command_prefix="", intents=intents)
+        try:
+            # Run setup hook
+            await self.setup_hook()
 
-        self.bot.ongoing_votes = Utils.load_ongoing_votes()
-        self.bot.posted_events = Utils.load_posted_events()
-        self.bot.notified_events = Utils.load_notified_events()
-        self.contributors, self.emoji_dicts = Utils.load_contributors_and_emoji_dicts()
+            # Start background tasks
+            TaskManager.start_tasks(self.bot)
 
-        await self.bot.add_cog(HelpCommandCog(self.bot))
-        await self.bot.add_cog(
-            ContributorCommandsCog(self.bot, self.contributors, self.emoji_dicts)
-        )
-        await self.bot.add_cog(GovCommandsCog(self.bot))
-        await self.bot.add_cog(EventsCog(self.bot, self.contributors, self.emoji_dicts))
+            # Run the bot
+            discord_token = os.getenv("DISCORD_BOT_TOKEN")
+            if not discord_token:
+                raise ValueError("DISCORD_BOT_TOKEN environment variable is not set")
+            await self.bot.start(discord_token)
 
-        await self.setup_background_tasks()
-
-        await self.bot.start(os.getenv("DISCORD_BOT_TOKEN"))
+        except Exception as e:
+            logger.error(f"An error occurred in main: {e}")
+            raise
 
 
 if __name__ == "__main__":

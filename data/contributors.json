@@ -1,6 +1,7 @@
 {
     "servers": {
-        "Bloom Studio": {
+        "1152979839737925705": {
+            "name": "Bloom Studio",
             "contributors": [
                 {
                     "uid": "353572599957291010",
@@ -80,7 +81,8 @@
                 "<:ploxx:1224589147373703278>": "406073034160472066"
             }
         },
-        "Bloom Collective": {
+        "1010707985242271754": {
+            "name": "Bloom Collective",
             "contributors": [
                 {
                     "uid": "353572599957291010",

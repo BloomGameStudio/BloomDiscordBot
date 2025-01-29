@@ -24,6 +24,7 @@ from consts.types import GOVERNANCE_ID_TYPE, BUDGET_ID_TYPE
 from typing import Any, Dict, List, Tuple
 from utils.utils import Utils
 import re
+from database.service import DatabaseService
 
 
 class ProposalManager:
@@ -140,8 +141,7 @@ class ProposalManager:
             proposal_id = str(created_thread.message.id)
             proposal_data = {
                 "draft": draft,
-                "end_time": time.time() + cfg.DISCORD_VOTE_ENDTIME,
-                "yes_count": 0,
+                "end_time": int(time.time() + cfg.DISCORD_VOTE_ENDTIME),
                 "title": formatted_title,
                 "channel_id": str(forum_channel.id),
                 "thread_id": str(created_thread.thread.id),
@@ -152,9 +152,10 @@ class ProposalManager:
                 bot.ongoing_votes = {}
             bot.ongoing_votes[proposal_id] = proposal_data
 
-            Utils.update_ongoing_votes_file(
-                bot.ongoing_votes, cfg.ONGOING_VOTES_FILE_PATH
-            )
+            # Save to database
+            db_service = DatabaseService()
+            proposal_data["proposal_id"] = proposal_id
+            db_service.save_ongoing_vote(proposal_data)
 
             await ProposalManager.react_to_vote(
                 vote_message.id,
@@ -169,7 +170,7 @@ class ProposalManager:
             logger.error(f"Error publishing draft: {e}")
             if created_thread:
                 try:
-                    await created_thread.delete()
+                    await created_thread.thread.delete()
                 except Exception as delete_error:
                     logger.error(f"Error cleaning up failed thread: {delete_error}")
             return False
@@ -205,3 +206,16 @@ class ProposalManager:
         await message.add_reaction(constants.YES_VOTE)
         await message.add_reaction(constants.NO_VOTE)
         await message.add_reaction(constants.ABSTAIN_VOTE)
+
+    def create_ongoing_vote_data(
+        self, message_id: str, channel_id: str, thread_id: str
+    ) -> dict:
+        """Create ongoing vote data for storage"""
+        return {
+            "draft": self.draft,
+            "end_time": self.end_time,
+            "title": self.title,
+            "channel_id": channel_id,
+            "thread_id": thread_id,
+            "message_id": message_id,
+        }

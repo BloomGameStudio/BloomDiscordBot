@@ -24,10 +24,12 @@ import config.config as cfg
 import requests
 import subprocess
 import os
-from typing import Dict, Any, List, Tuple
+from typing import Dict, Any, List, Tuple, Optional
 from logger.logger import logger
 from web3 import Web3
 from urllib.parse import urljoin
+from database.models import SessionLocal, Contributor, Event, OngoingVote, ConcludedVote, Config
+import time
 
 env = os.environ.copy()
 
@@ -418,3 +420,192 @@ class Utils:
         logger.info(f"Saving notified events to {cfg.NOTIFIED_EVENTS_FILE_PATH}")
         with open(cfg.NOTIFIED_EVENTS_FILE_PATH, "w") as file:
             json.dump(notified_events, file, indent=4)
+
+    @staticmethod
+    def update_contributor_in_db(
+        guild_id: int, uid: str, note: str, emoji_id: str
+    ) -> None:
+        """Update or create a contributor in the database"""
+        with SessionLocal() as session:
+            contributor = (
+                session.query(Contributor)
+                .filter_by(server_name=str(guild_id), uid=uid)
+                .first()
+            )
+
+            if contributor:
+                contributor.note = note
+                contributor.emoji_id = emoji_id
+            else:
+                contributor = Contributor(
+                    uid=uid, note=note, server_name=str(guild_id), emoji_id=emoji_id
+                )
+                session.add(contributor)
+
+            session.commit()
+
+    @staticmethod
+    def get_contributors_from_db(guild_id: int) -> List[Contributor]:
+        """Get list of contributors for a specific server"""
+        with SessionLocal() as session:
+            contributors = session.query(Contributor).filter_by(server_name=str(guild_id)).all()
+            return contributors
+
+    @staticmethod
+    def save_event(
+        event_id: int,
+        guild_id: int,
+        posted_at: Optional[int] = None,
+        notified_at: Optional[int] = None,
+    ) -> None:
+        """Save or update an event in the database"""
+        with SessionLocal() as session:
+            event = session.query(Event).filter_by(event_id=event_id).first()
+            if event:
+                if posted_at is not None:
+                    event.posted_at = posted_at
+                if notified_at is not None:
+                    event.notified_at = notified_at
+            else:
+                event = Event(
+                    event_id=event_id,
+                    guild_id=guild_id,
+                    posted_at=int(posted_at) if posted_at is not None else None,
+                    notified_at=int(notified_at) if notified_at is not None else None,
+                )
+                session.add(event)
+            session.commit()
+
+    @staticmethod
+    def get_posted_events() -> List[int]:
+        """Get list of posted event IDs from database"""
+        with SessionLocal() as session:
+            events = session.query(Event).filter(Event.posted_at.isnot(None)).all()
+            return [int(event.event_id) for event in events]
+
+    @staticmethod
+    def get_notified_events() -> Dict[int, int]:
+        """Get dictionary of notified events with their notification timestamps"""
+        with SessionLocal() as session:
+            events = session.query(Event).filter(Event.notified_at.isnot(None)).all()
+            return {int(event.event_id): int(event.notified_at) for event in events}
+
+    @staticmethod
+    def save_ongoing_vote(proposal_id: str, vote_data: dict):
+        """Save an ongoing vote to the database"""
+        with SessionLocal() as session:
+            vote = (
+                session.query(OngoingVote)
+                .filter(OngoingVote.proposal_id == proposal_id)
+                .first()
+            )
+            if not vote:
+                vote = OngoingVote(proposal_id=proposal_id)
+
+            vote.draft = vote_data.get("draft", {})
+            vote.end_time = vote_data.get("end_time", 0)
+            vote.title = vote_data.get("title", "")
+            vote.channel_id = vote_data.get("channel_id", "")
+            vote.thread_id = vote_data.get("thread_id", "")
+            vote.message_id = vote_data.get("message_id", "")
+
+            session.add(vote)
+            session.commit()
+
+    @staticmethod
+    def get_ongoing_votes():
+        """Get all ongoing votes from the database"""
+        with SessionLocal() as session:
+            votes = session.query(OngoingVote).all()
+            return {
+                vote.proposal_id: {
+                    "draft": vote.draft,
+                    "end_time": vote.end_time,
+                    "title": vote.title,
+                    "channel_id": vote.channel_id,
+                    "thread_id": vote.thread_id,
+                    "message_id": vote.message_id,
+                }
+                for vote in votes
+            }
+
+    @staticmethod
+    def remove_ongoing_vote(proposal_id: str) -> None:
+        """Remove an ongoing vote from the database"""
+        with SessionLocal() as session:
+            session.query(OngoingVote).filter_by(proposal_id=proposal_id).delete()
+            session.commit()
+
+    @staticmethod
+    def save_concluded_vote(
+        proposal_data: dict, passed: bool, snapshot_url: Optional[str] = None
+    ) -> None:
+        """Save a concluded vote to the database"""
+        with SessionLocal() as session:
+            vote = ConcludedVote(
+                proposal_id=proposal_data["proposal_id"],
+                draft=proposal_data["draft"],
+                title=proposal_data["title"],
+                channel_id=proposal_data["channel_id"],
+                thread_id=proposal_data["thread_id"],
+                message_id=proposal_data["message_id"],
+                yes_count=proposal_data.get("yes_count", 0),
+                no_count=proposal_data.get("no_count", 0),
+                abstain_count=proposal_data.get("abstain_count", 0),
+                passed=passed,
+                concluded_at=time.time(),
+                snapshot_url=snapshot_url,
+            )
+            session.add(vote)
+            session.commit()
+
+    @staticmethod
+    def get_concluded_votes(passed_only: bool = False) -> Dict[str, Any]:
+        """Get all concluded votes from the database
+
+        Args:
+            passed_only (bool): If True, only return proposals that passed
+
+        Returns:
+            Dict[str, Any]: Dictionary of concluded votes with their details
+        """
+        with SessionLocal() as session:
+            query = session.query(ConcludedVote)
+            if passed_only:
+                query = query.filter(ConcludedVote.passed == True)
+
+            votes = query.order_by(ConcludedVote.concluded_at.desc()).all()
+            return {
+                vote.proposal_id: {
+                    "draft": vote.draft,
+                    "title": vote.title,
+                    "yes_count": vote.yes_count,
+                    "no_count": vote.no_count,
+                    "abstain_count": vote.abstain_count,
+                    "passed": vote.passed,
+                    "concluded_at": vote.concluded_at,
+                    "snapshot_url": vote.snapshot_url,
+                }
+                for vote in votes
+            }
+
+    @staticmethod
+    def remove_contributor_from_db(guild_id: int, uid: str) -> None:
+        """Remove a contributor from the database"""
+        try:
+            with SessionLocal() as session:
+                contributor = session.query(Contributor).filter_by(
+                    server_name=str(guild_id),
+                    uid=uid
+                ).first()
+                
+                if not contributor:
+                    logger.warning(f"No contributor found with uid={uid} in server={guild_id}")
+                    return
+
+                session.delete(contributor)
+                session.commit()
+                logger.info(f"Successfully removed contributor with uid={uid} from server={guild_id}")
+        except Exception as e:
+            logger.error(f"Error removing contributor: {e}")
+            raise
