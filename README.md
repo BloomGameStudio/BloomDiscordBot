@@ -289,9 +289,9 @@ Example proposal data structure:
 ```
 
 5. If needed, you can modify the proposal data using the database CLI:
-   - Modify end_time to any time in the past (48+ hours from when the proposal concluded)
+   - Modify `end_time` to any time in the past (48+ hours from when the proposal concluded)
    - Update channel_id to match the correct channel (improvement-props: 1191283932096905307 or budgetary-props: 1191283982768287795)
-   - Update thread_id and message_id to match the Discord thread
+   - Update `thread_id` and `message_id` to match the Discord thread
 
 6. Build & run the bot
 

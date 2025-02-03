@@ -20,45 +20,34 @@ from logger.logger import logger
 class Bot:
     def __init__(self):
         self.bot = commands.Bot(command_prefix="/", intents=discord.Intents.all())
-        # Initialize ongoing votes from database
-        self.bot.ongoing_votes = Utils.get_ongoing_votes()
-        
-        # Register the on_ready event
+
+        db_service = DatabaseService()
+        self.bot.ongoing_votes = db_service.get_ongoing_votes()
+
         @self.bot.event
         async def on_ready():
             logger.info(f"Logged in as {self.bot.user.name} ({self.bot.user.id})")
-            # Sync commands after bot is ready
-            logger.info("Syncing commands with Discord...")
+            await self.setup_cogs()
             await self.bot.tree.sync()
-            logger.info("Commands synced successfully!")
+            await TaskManager.start_tasks(self.bot)
 
-    async def setup_hook(self):
-        """Setup hook that runs when the bot starts"""
-        logger.info("Setting up bot...")
+    async def setup_cogs(self):
+        """Setup cogs after bot is ready"""
         try:
-            # Add cogs
             await self.bot.add_cog(ContributorCommandsCog(self.bot))
             await self.bot.add_cog(EventsCog(self.bot))
             await self.bot.add_cog(GovCommandsCog(self.bot))
-
+            logger.info("Cogs loaded successfully")
         except Exception as e:
-            logger.error(f"Error in setup_hook: {e}")
+            logger.error(f"Error loading cogs: {e}")
             raise
 
     async def main(self):
         try:
-            # Run setup hook
-            await self.setup_hook()
-
-            # Start background tasks
-            TaskManager.start_tasks(self.bot)
-
-            # Run the bot
             discord_token = os.getenv("DISCORD_BOT_TOKEN")
             if not discord_token:
                 raise ValueError("DISCORD_BOT_TOKEN environment variable is not set")
             await self.bot.start(discord_token)
-
         except Exception as e:
             logger.error(f"An error occurred in main: {e}")
             raise
