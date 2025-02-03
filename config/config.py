@@ -5,11 +5,6 @@ from logger.logger import logger
 CONFIG_ID_MAP: dict[str, str] = {"governance": "governance_id", "budget": "budget_id"}
 CONFIG_ABSOLUTE_PATH = "config/config.ini"
 
-CONTRIBUTORS_FILE_PATH = "./data/contributors.json"
-POSTED_EVENTS_FILE_PATH = "./data/posted_events.json"
-ONGOING_VOTES_FILE_PATH = "./data/ongoing_votes.json"
-NOTIFIED_EVENTS_FILE_PATH = "./data/notified_events.json"
-
 config: configparser.ConfigParser = configparser.ConfigParser()
 config.read(CONFIG_ABSOLUTE_PATH)
 
