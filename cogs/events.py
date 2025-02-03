@@ -17,6 +17,7 @@ from utils.utils import Utils
 from logger.logger import logger
 from events.event_operations import EventOperations
 from consts.constants import RULES_MESSAGE_ID
+from database.service import DatabaseService
 
 
 class EventsCog(commands.Cog):
@@ -36,13 +37,15 @@ class EventsCog(commands.Cog):
         """
         Handles the on_scheduled_event_create event. This event is triggered when a new scheduled event is created.
         notify_new_event is then invoked to notify the guild about the new event after a delay.
-
-        Parameters:
-        event (ScheduledEvent): The event that was created.
         """
         logger.info(f"New scheduled event created: {event.name}")
-        Utils.save_event(event.id, event.guild_id, None, time.time())
-        await self.event_operations.notify_new_event(event, event.guild_id)
+        try:
+            db_service = DatabaseService()
+            db_service.save_event(event.id, event.guild_id, None, time.time())
+            await self.event_operations.notify_new_event(event, event.guild_id)
+            logger.info(f"Successfully processed new event: {event.name}")
+        except Exception as e:
+            logger.error(f"Error in on_scheduled_event_create: {e}")
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
@@ -70,7 +73,6 @@ class EventsCog(commands.Cog):
 
         Returns:
         """
-        # Handle contributor reactions
         await self.event_operations.handle_reaction(reaction, user)
 
     @commands.Cog.listener()
