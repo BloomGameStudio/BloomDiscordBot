@@ -148,11 +148,6 @@ class ProposalManager:
                 "message_id": str(vote_message.id),
             }
 
-            if not hasattr(bot, "ongoing_votes"):
-                bot.ongoing_votes = {}
-            bot.ongoing_votes[proposal_id] = proposal_data
-
-            # Save to database
             db_service = DatabaseService()
             proposal_data["proposal_id"] = proposal_id
             db_service.save_ongoing_vote(proposal_data)

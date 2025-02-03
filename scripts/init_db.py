@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
-from database.service import DatabaseService
+from database.models import Base, engine
+from logger.logger import logger
+
+
+def init_db():
+    """Initialize database tables"""
+    logger.info("Initializing database tables")
+    Base.metadata.create_all(bind=engine)
+    logger.info("Database tables initialized successfully")
+
 
 if __name__ == "__main__":
-    try:
-        DatabaseService.init_db()
-        exit(0)
-    except Exception as e:
-        print(f"Error initializing database: {e}")
-        exit(1)
+    init_db()

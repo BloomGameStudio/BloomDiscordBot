@@ -1,12 +1,29 @@
 import pytest
 import os
 from datetime import datetime
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, JSON, Text
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.types import TypeDecorator
 from database.models import Base, Contributor, Event, OngoingVote, ConcludedVote
 from database.service import DatabaseService
+import time
+import json
 
 TEST_DB_URL = "sqlite:///:memory:"
+
+
+class JSONType(TypeDecorator):
+    impl = Text
+
+    def process_bind_param(self, value, dialect):
+        if value is not None:
+            return json.dumps(value)
+        return None
+
+    def process_result_value(self, value, dialect):
+        if value is not None:
+            return json.loads(value)
+        return None
 
 
 @pytest.fixture(autouse=True)
@@ -25,18 +42,15 @@ def setup_test_env():
     Base.metadata.drop_all(engine)
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def test_db():
-    """Create a test database and tables"""
-    engine = create_engine(TEST_DB_URL)
+    """Create an in-memory database for testing"""
+    engine = create_engine("sqlite:///:memory:")
     Base.metadata.create_all(engine)
-    TestingSessionLocal = sessionmaker(bind=engine)
-    db = TestingSessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-        Base.metadata.drop_all(engine)
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    yield session
+    session.close()
 
 
 class TestContributors:
@@ -364,3 +378,28 @@ class TestDatabaseService:
         votes = db_service.get_concluded_votes(passed_only=True)
         assert "passed123" in votes
         assert "failed123" not in votes
+
+    def test_save_event(self, test_db):
+        """Test saving an event"""
+        current_time = int(time.time())
+        db_service = DatabaseService(session=test_db)
+
+        # Test creating new event
+        db_service.save_event(
+            event_id=123456789, guild_id=987654321, posted_at=current_time
+        )
+
+        saved = test_db.query(Event).first()
+        assert saved.event_id == 123456789
+        assert saved.posted_at == current_time
+
+        # Test updating existing event
+        new_time = current_time + 3600
+        db_service.save_event(
+            event_id=123456789, guild_id=987654321, notified_at=new_time
+        )
+
+        updated = test_db.query(Event).first()
+        assert updated.event_id == 123456789
+        assert updated.posted_at == current_time
+        assert updated.notified_at == new_time
