@@ -14,7 +14,7 @@ from consts.constants import (
     COLLAB_LAND_CHANNEL,
     START_HERE_CHANNEL,
 )
-from utils.utils import Utils
+from utils.utils import Utils, DiscordUtils
 from datetime import datetime, timezone
 from typing import List, Optional, Any
 from discord import ScheduledEvent, Reaction, User
@@ -86,32 +86,36 @@ class EventOperations:
             logger.error(f"Error: {response.status_code} - {response.text}")
             return None
 
-    async def notify_new_event(
-        self, event: discord.ScheduledEvent, guild_id: int
-    ) -> None:
+    async def notify_new_event(self, event: ScheduledEvent, guild_id: int) -> None:
         """
         Notify the General channel about the newly created event after a short delay.
-
-        Parameters:
-        event (ScheduledEvent): The event to be notified.
-        guild_id (int): The ID of the guild in which the event was created.
         """
+        logger.info(
+            f"Starting notify_new_event for event {event.name} in guild {guild_id}"
+        )
         guild = self.bot.get_guild(guild_id)
 
         if guild:
+            logger.info(f"Found guild {guild.name}, waiting 60 seconds...")
             await asyncio.sleep(30 * 60)
             event = await guild.fetch_scheduled_event(event.id)
             formatted_event = self.format_event(event, guild_id)
+            logger.info(f"Formatted event message: {formatted_event}")
 
             try:
-                channel = Utils.get_channel_by_name(guild, GENERAL_CHANNEL)
-                await channel.send(
-                    f"🌺 **__Newly Created Event__** 🌺 \n{formatted_event}"
-                )
-            except ValueError as e:
+                channel = await DiscordUtils.get_channel_by_name(guild, GENERAL_CHANNEL)
+                if channel:
+                    logger.info(f"Found channel {channel.name}, sending message...")
+                    await channel.send(
+                        f"🌺 **__Newly Created Event__** 🌺 \n{formatted_event}"
+                    )
+                    logger.info("Event notification sent successfully")
+                else:
+                    logger.error(f"Channel not found in guild {guild.name}")
+            except Exception as e:
                 logger.error(f"Cannot post newly created event to Discord, Error: {e}")
         else:
-            logger.info(f"Guild not found")
+            logger.error(f"Guild not found: {guild_id}")
 
     async def fetch_upcoming_events(self, guild):
         """
@@ -135,16 +139,15 @@ class EventOperations:
     async def process_new_member(self, member: discord.Member) -> None:
         """
         Sends a welcome message to a new member in the welcome channel.
-
-        Parameters:
-        member (discord.Member): The new member who joined the server.
         """
         try:
-            welcome_channel = Utils.get_channel_by_name(member.guild, GENERAL_CHANNEL)
-            collab_land_join_channel = Utils.get_channel_by_name(
+            welcome_channel = await DiscordUtils.get_channel_by_name(
+                member.guild, GENERAL_CHANNEL
+            )
+            collab_land_join_channel = await DiscordUtils.get_channel_by_name(
                 member.guild, COLLAB_LAND_CHANNEL
             )
-            start_here_channel = Utils.get_channel_by_name(
+            start_here_channel = await DiscordUtils.get_channel_by_name(
                 member.guild, START_HERE_CHANNEL
             )
 
@@ -157,7 +160,7 @@ class EventOperations:
                 "\n"
                 f"Refer to <#{start_here_channel.id}> for more details about the studio!"
             )
-        except ValueError as e:
+        except Exception as e:
             logger.error(f"Error sending welcome message: {str(e)}")
 
     async def handle_message(self, message: discord.Message) -> None:
