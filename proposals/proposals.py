@@ -102,9 +102,7 @@ class ProposalManager:
 
             content = draft.get("sections", {}).get("content", "No content")
 
-            # Split content into sentences
             sentences = re.split(r"([.!?]\s+)", content)
-            # Recombine sentences with their punctuation
             sentences = [
                 "".join(i) for i in zip(sentences[0::2], sentences[1::2] + [""])
             ]
@@ -113,7 +111,6 @@ class ProposalManager:
             messages = []
 
             for sentence in sentences:
-                # If adding this sentence would exceed Discord's limit
                 if len(current_message) + len(sentence) > 1900:
                     messages.append(current_message.strip())
                     current_message = sentence
@@ -123,21 +120,17 @@ class ProposalManager:
             if current_message:
                 messages.append(current_message.strip())
 
-            # Create thread with first message
             created_thread = await forum_channel.create_thread(
                 name=formatted_title, content=messages[0]
             )
 
-            # Post remaining messages as replies
             for message in messages[1:]:
                 await created_thread.message.reply(message)
 
-            # Add voting options
             vote_message = await created_thread.message.reply(
                 f"**{constants.YES_VOTE} Adopt**\n\n**{constants.NO_VOTE} Reassess**\n\n**{constants.ABSTAIN_VOTE} Abstain**\n\nVote will conclude in 48h from now."
             )
 
-            # Rest of the function (proposal data storage, etc)
             proposal_id = str(created_thread.message.id)
             proposal_data = {
                 "draft": draft,
