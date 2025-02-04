@@ -14,32 +14,36 @@ from sqlalchemy.orm import sessionmaker
 
 def get_database_url():
     if os.getenv("DATABASE_URL"):
-        url = os.getenv("DATABASE_URL")
-        return (
-            url.replace("postgres://", "postgresql://", 1)
-            if url.startswith("postgres://")
-            else url
-        )
+        return os.getenv("DATABSE_URL")
 
+    DB_DRIVER = os.getenv("DB_DRIVER", "postgresql")
     DB_USER = os.getenv("DB_USER", "bloom")
-    DB_PASSWORD = os.getenv("DB_PASSWORD")
     DB_NAME = os.getenv("DB_NAME", "bloombot")
     DB_HOST = os.getenv("DB_HOST", "localhost")
+    DB_PASSWORD = os.getenv("DB_PASSWORD")
 
     if not DB_PASSWORD:
         raise ValueError("DB_PASSWORD environment variable is required")
 
-    return f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:5432/{DB_NAME}"
+    return f"${DB_DRIVER}://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:5432/{DB_NAME}"
 
 
-DATABASE_URL = os.getenv("DATABASE_URL") or get_database_url()
+engine = None
+if os.getenv("ENV") != "TEST":
+    engine = create_engine(
+        get_database_url(),
+        pool_size=5,
+        max_overflow=10,
+        pool_timeout=30,
+        pool_recycle=1800,
+    )
 
-if DATABASE_URL.startswith("postgres://"):
-    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+    try:
+        with engine.connect() as connection:
+            print("Successfully connected to the database!")
+    except Exception as e:
+        print(f"Failed to connect to database: {e}")
 
-engine = create_engine(
-    DATABASE_URL, pool_size=5, max_overflow=10, pool_timeout=30, pool_recycle=1800
-)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
