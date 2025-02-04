@@ -43,8 +43,9 @@ if os.getenv("ENV") != "TEST":
     except Exception as e:
         print(f"Failed to connect to database: {e}")
 
+    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
 Base = declarative_base()
 
 
