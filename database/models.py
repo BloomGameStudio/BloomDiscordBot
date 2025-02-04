@@ -30,8 +30,12 @@ def get_database_url():
 
 engine = None
 if os.getenv("ENV") != "TEST":
+    url = get_database_url()
+
+    print(f"Connecting to ${url}")
+
     engine = create_engine(
-        get_database_url(),
+        url,
         pool_size=5,
         max_overflow=10,
         pool_timeout=30,
