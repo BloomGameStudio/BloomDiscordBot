@@ -14,7 +14,7 @@ from sqlalchemy.orm import sessionmaker
 
 def get_database_url():
     if os.getenv("DATABASE_URL"):
-        return os.getenv("DATABSE_URL")
+        return os.getenv("DATABASE_URL")
 
     DB_DRIVER = os.getenv("DB_DRIVER", "postgresql")
     DB_USER = os.getenv("DB_USER", "bloom")
@@ -32,7 +32,7 @@ engine = None
 if os.getenv("ENV") != "TEST":
     url = get_database_url()
 
-    print(f"Connecting to ${url}")
+    print(f"Connecting to {url}")
 
     engine = create_engine(
         url,
