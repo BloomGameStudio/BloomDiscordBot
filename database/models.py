@@ -16,7 +16,6 @@ def get_database_url():
     if os.getenv("DATABASE_URL"):
         return os.getenv("DATABASE_URL")
 
-    DB_DRIVER = os.getenv("DB_DRIVER", "postgresql")
     DB_USER = os.getenv("DB_USER", "bloom")
     DB_NAME = os.getenv("DB_NAME", "bloombot")
     DB_HOST = os.getenv("DB_HOST", "localhost")
@@ -25,12 +24,12 @@ def get_database_url():
     if not DB_PASSWORD:
         raise ValueError("DB_PASSWORD environment variable is required")
 
-    return f"${DB_DRIVER}://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:5432/{DB_NAME}"
+    return f"$postgres://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:5432/{DB_NAME}"
 
 
 engine = None
 if os.getenv("ENV") != "TEST":
-    url = get_database_url()
+    url = get_database_url().replace("postgres://", "postgresql+psycopg2://", 1)
 
     print(f"Connecting to {url}")
 
