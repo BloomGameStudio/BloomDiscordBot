@@ -28,15 +28,20 @@ def get_database_url():
     return f"${DB_DRIVER}://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:5432/{DB_NAME}"
 
 
-engine = create_engine(
-    get_database_url(), pool_size=5, max_overflow=10, pool_timeout=30, pool_recycle=1800
-)
+if os.getenv("ENV") != "TEST":
+    engine = create_engine(
+        get_database_url(),
+        pool_size=5,
+        max_overflow=10,
+        pool_timeout=30,
+        pool_recycle=1800,
+    )
 
-try:
-    with engine.connect() as connection:
-        print("Successfully connected to the database!")
-except Exception as e:
-    print(f"Failed to connect to database: {e}")
+    try:
+        with engine.connect() as connection:
+            print("Successfully connected to the database!")
+    except Exception as e:
+        print(f"Failed to connect to database: {e}")
 
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
