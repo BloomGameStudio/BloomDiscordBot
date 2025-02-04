@@ -28,6 +28,7 @@ def get_database_url():
     return f"${DB_DRIVER}://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:5432/{DB_NAME}"
 
 
+engine = None
 if os.getenv("ENV") != "TEST":
     engine = create_engine(
         get_database_url(),
@@ -43,9 +44,8 @@ if os.getenv("ENV") != "TEST":
     except Exception as e:
         print(f"Failed to connect to database: {e}")
 
-    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 
