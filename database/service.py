@@ -296,20 +296,17 @@ class DatabaseService:
             if self._session is None:
                 session.close()
 
-    def get_contributors_from_db(self, server_id: int = None) -> List[Contributor]:
+    @staticmethod
+    def get_contributors_from_db(server_id: int = None) -> List[Contributor]:
         """Get contributors from database, optionally filtered by server"""
         logger.info(
             "Getting contributors for server: %s", server_id if server_id else "all"
         )
-        session = self._get_session()
-        try:
+        with get_db() as session:
             query = session.query(Contributor)
             if server_id:
                 query = query.filter_by(server_name=str(server_id))
             return query.all()
-        finally:
-            if self._session is None:
-                session.close()
 
     def remove_contributor_from_db(self, guild_id: int, uid: str) -> None:
         """Remove a contributor from the database"""
