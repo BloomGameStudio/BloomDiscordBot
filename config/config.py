@@ -2,27 +2,17 @@ import os
 import configparser
 from logger.logger import logger
 
-# Map of proposal types to their respective ID keys in the config file
 CONFIG_ID_MAP: dict[str, str] = {"governance": "governance_id", "budget": "budget_id"}
 CONFIG_ABSOLUTE_PATH = "config/config.ini"
 
-# File paths for JSON files containing information about contributors and posted events IDs
-CONTRIBUTORS_FILE_PATH = "./data/contributors.json"
-POSTED_EVENTS_FILE_PATH = "./data/posted_events.json"
-ONGOING_VOTES_FILE_PATH = "./data/ongoing_votes.json"
-
-# Load configuration
 config: configparser.ConfigParser = configparser.ConfigParser()
 config.read(CONFIG_ABSOLUTE_PATH)
 
-# Determine the environment
 ENV = os.getenv("ENV", "DEV")
 
-# Load ID values
 current_governance_id: int = config.getint("ID_START_VALUES", "governance_id")
 current_budget_id: int = config.getint("ID_START_VALUES", "budget_id")
 
-# Load environment-specific settings
 SNAPSHOT_SPACE = config.get(ENV, "SNAPSHOT_SPACE")
 DISCORD_VOTE_ENDTIME = config.getint(ENV, "DISCORD_VOTE_ENDTIME")
 YES_COUNT_THRESHOLD = config.getint(ENV, "DISCORD_YES_COUNT_THRESHOLD")
@@ -37,7 +27,6 @@ SETTINGS_ADMINS = config.get(ENV, "SETTINGS_ADMINS").split(",")
 SETTINGS_STRATEGIES = config.get(ENV, "SETTINGS_STRATEGIES")
 SETTINGS_TOKEN_ADDRESSES = config.get(ENV, "SETTINGS_TOKEN_ADDRESSES").split(",")
 
-# Load RPC URLs from env vars
 PRIMARY_RPC_URL = os.getenv("PRIMARY_RPC_URL")
 SECONDARY_RPC_URL = os.getenv("SECONDARY_RPC_URL")
 

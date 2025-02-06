@@ -6,12 +6,32 @@ services:
       dockerfile: Dockerfile
     image: ghcr.io/bloomgamestudio/bloomdiscordbot:main
     restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+    depends_on:
+      db:
+        condition: service_healthy
     volumes:
-      - bloomdiscordbotvolume:/app/data
-      - configvolume:/app/config
+      - config_data:/app/config
     env_file:
       - .env
 
+  db:
+    image: postgres:14
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
 volumes:
-  bloomdiscordbotvolume: {}
-  configvolume: {}
+  config_data: {}
+  postgres_data: {}

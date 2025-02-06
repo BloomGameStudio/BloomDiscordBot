@@ -7,51 +7,50 @@ import discord
 import os
 import asyncio
 from discord.ext import commands
-from tasks.tasks import check_events, check_concluded_proposals_task
-from helpers.helpers import (
-    load_posted_events,
-    load_contributors_and_emoji_dicts,
-    load_ongoing_votes,
-)
-from cogs.help import HelpCommandCog
+from tasks.tasks import TaskManager
+from utils.utils import Utils
 from cogs.contributors import ContributorCommandsCog
 from cogs.events import EventsCog
 from cogs.help import HelpCommandCog
 from cogs.gov import GovCommandsCog
+from database.service import DatabaseService
+from logger.logger import logger
 
 
 class Bot:
-    async def setup_background_tasks(self):
-        # Start the background tasks
-        check_events.start(self.bot)
-        check_concluded_proposals_task.start(self.bot)
+    def __init__(self):
+        self.bot = commands.Bot(command_prefix="/", intents=discord.Intents.all())
+
+        db_service = DatabaseService()
+        self.bot.ongoing_votes = db_service.get_ongoing_votes()
+
+        @self.bot.event
+        async def on_ready():
+            logger.info(f"Logged in as {self.bot.user.name} ({self.bot.user.id})")
+            await self.setup_cogs()
+            await self.bot.tree.sync()
+            await TaskManager.start_tasks(self.bot)
+
+    async def setup_cogs(self):
+        """Setup cogs after bot is ready"""
+        try:
+            await self.bot.add_cog(ContributorCommandsCog(self.bot))
+            await self.bot.add_cog(EventsCog(self.bot))
+            await self.bot.add_cog(GovCommandsCog(self.bot))
+            logger.info("Cogs loaded successfully")
+        except Exception as e:
+            logger.error(f"Error loading cogs: {e}")
+            raise
 
     async def main(self):
-        # Setup the bot with intents
-        intents = discord.Intents.default()
-        intents.message_content = True
-        intents.reactions = True
-        intents.members = True
-        self.bot = commands.Bot(command_prefix="", intents=intents)
-
-        # Load the contributors, emoji dicts, and posted events
-        self.bot.ongoing_votes = load_ongoing_votes()
-        self.bot.posted_events = load_posted_events()
-        self.contributors, self.emoji_dicts = load_contributors_and_emoji_dicts()
-
-        # Load the cogs
-        await self.bot.add_cog(HelpCommandCog(self.bot))
-        await self.bot.add_cog(
-            ContributorCommandsCog(self.bot, self.contributors, self.emoji_dicts)
-        )
-        await self.bot.add_cog(GovCommandsCog(self.bot))
-        await self.bot.add_cog(EventsCog(self.bot, self.contributors, self.emoji_dicts))
-
-        # Setup and start background tasks
-        await self.setup_background_tasks()
-
-        # Run the bot
-        await self.bot.start(os.getenv("DISCORD_BOT_TOKEN"))
+        try:
+            discord_token = os.getenv("DISCORD_BOT_TOKEN")
+            if not discord_token:
+                raise ValueError("DISCORD_BOT_TOKEN environment variable is not set")
+            await self.bot.start(discord_token)
+        except Exception as e:
+            logger.error(f"An error occurred in main: {e}")
+            raise
 
 
 if __name__ == "__main__":
