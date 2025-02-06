@@ -21,6 +21,7 @@ from discord import ScheduledEvent, Reaction, User
 from discord.utils import get
 from discord.ext import commands
 from logger.logger import logger
+from database.service import DatabaseService
 
 
 class EventOperations:
@@ -182,7 +183,7 @@ class EventOperations:
         if message.author == self.bot.user:
             return
 
-        contributors = Utils.get_contributors_from_db(message.guild.id)
+        contributors = DatabaseService.get_contributors_from_db(message.guild.id)
         for contributor in contributors:
             if contributor.emoji_id in message.content and str(contributor.uid) != str(
                 message.author.id
@@ -205,7 +206,9 @@ class EventOperations:
         reaction (Reaction): The new reaction.
         user (User): The user who added the reaction.
         """
-        contributors = Utils.get_contributors_from_db(reaction.message.guild.id)
+        contributors = DatabaseService.get_contributors_from_db(
+            reaction.message.guild.id
+        )
 
         contributor = next(
             (c for c in contributors if str(reaction.emoji) == c.emoji_id), None
