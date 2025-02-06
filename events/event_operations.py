@@ -14,7 +14,7 @@ from consts.constants import (
     COLLAB_LAND_CHANNEL,
     START_HERE_CHANNEL,
 )
-from utils.utils import Utils, DiscordUtils
+from utils.utils import DiscordUtils
 from datetime import datetime, timezone
 from typing import List, Optional, Any
 from discord import ScheduledEvent, Reaction, User
@@ -184,44 +184,27 @@ class EventOperations:
             return
 
         contributors = DatabaseService.get_contributors_from_db(message.guild.id)
-        logger.info(
-            f"Checking message content: '{message.content}' for contributor emojis"
-        )
+        logger.info("Checking message content for contributor emojis")
 
         for contributor in contributors:
-            if contributor.emoji_id:
-                if contributor.emoji_id.startswith("<"):
-                    if contributor.emoji_id in message.content and str(
-                        contributor.uid
-                    ) != str(message.author.id):
-                        try:
-                            logger.info(
-                                f"Found match! Messaging user {contributor.uid}"
-                            )
-                            message_link = message.jump_url
-                            user = await self.bot.fetch_user(int(contributor.uid))
-                            if user:
-                                await DiscordUtils.send_dm_once(
-                                    self.bot, user, message_link
-                                )
-                        except discord.errors.NotFound:
-                            logger.warning(f"User not found: {contributor.uid}")
-                else:
-                    if contributor.emoji_id in message.content and str(
-                        contributor.uid
-                    ) != str(message.author.id):
-                        try:
-                            logger.info(
-                                f"Found match! Messaging user {contributor.uid}"
-                            )
-                            message_link = message.jump_url
-                            user = await self.bot.fetch_user(int(contributor.uid))
-                            if user:
-                                await DiscordUtils.send_dm_once(
-                                    self.bot, user, message_link
-                                )
-                        except discord.errors.NotFound:
-                            logger.warning(f"User not found: {contributor.uid}")
+            if not contributor.emoji_id:
+                continue
+
+            emoji_matches = contributor.emoji_id in message.content and str(
+                contributor.uid
+            ) != str(message.author.id)
+
+            if not emoji_matches:
+                continue
+
+            try:
+                logger.info(f"Found match! Messaging user {contributor.uid}")
+                message_link = message.jump_url
+                user = await self.bot.fetch_user(int(contributor.uid))
+                if user:
+                    await DiscordUtils.send_dm_once(self.bot, user, message_link)
+            except discord.errors.NotFound:
+                logger.warning(f"User not found: {contributor.uid}")
 
     async def handle_reaction(self, reaction: Reaction, user: User) -> None:
         """
@@ -235,24 +218,24 @@ class EventOperations:
         contributors = DatabaseService.get_contributors_from_db(
             reaction.message.guild.id
         )
-        logger.info(
-            f"Checking reaction emoji: '{str(reaction.emoji)}' from user: {user.id}"
-        )
 
         for contributor in contributors:
-            if str(reaction.emoji) == contributor.emoji_id and str(
+            if str(reaction.emoji) != contributor.emoji_id or str(
                 contributor.uid
-            ) != str(user.id):
-                try:
-                    logger.info(f"Found match! Messaging user {contributor.uid}")
-                    message_link = reaction.message.jump_url
-                    contributor_user = await self.bot.fetch_user(int(contributor.uid))
-                    if contributor_user:
-                        await DiscordUtils.send_dm_once(
-                            self.bot, contributor_user, message_link
-                        )
-                except discord.errors.NotFound:
-                    logger.warning(f"User not found: {contributor.uid}")
+            ) == str(user.id):
+                continue
+
+            try:
+                logger.info(f"Found match! Messaging user {contributor.uid}")
+                message_link = reaction.message.jump_url
+                contributor_user = await self.bot.fetch_user(int(contributor.uid))
+
+                if contributor_user:
+                    await DiscordUtils.send_dm_once(
+                        self.bot, contributor_user, message_link
+                    )
+            except discord.errors.NotFound:
+                logger.warning(f"User not found: {contributor.uid}")
 
     async def process_reaction_add(self, payload) -> None:
         """
