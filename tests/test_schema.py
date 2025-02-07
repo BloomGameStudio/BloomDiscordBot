@@ -1,4 +1,5 @@
 from sqlalchemy import inspect
+from tests.test_database import test_db
 
 
 def test_table_exists(test_db):
