@@ -1,7 +1,4 @@
-import pytest
 from sqlalchemy import inspect
-from database.models import Base
-from tests.test_database import TEST_DB_URL, test_db
 
 
 def test_table_exists(test_db):
