@@ -1,7 +1,6 @@
 import pytest
-import os
 from datetime import datetime
-from sqlalchemy import create_engine, JSON, Text
+from sqlalchemy import create_engine, Text
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.types import TypeDecorator
 from database.models import Base, Contributor, Event, OngoingVote, ConcludedVote
