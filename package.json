@@ -3,5 +3,10 @@
     "version": "1.0.0",
     "engines": {
         "node": "18.x"
+    },
+    "dependencies": {
+        "@snapshot-labs/snapshot.js": "^0.12.49",
+        "dotenv": "^16.4.7",
+        "ethers": "^6.13.5"
     }
 }
