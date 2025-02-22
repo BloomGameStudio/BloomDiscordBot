@@ -19,7 +19,7 @@ const secondaryRpc = process.env.SECONDARY_RPC_URL;
 
 const hub = process.env.SNAPSHOT_HUB;
 const snapshotSpace = process.env.SNAPSHOT_SPACE;
-const network = process.env.NETWORK_ID;
+const networkId = process.env.NETWORK_ID;
 const settingsName = process.env.SETTINGS_NAME;
 const settingsAbout = process.env.SETTINGS_ABOUT;
 const settingsSymbol = process.env.SETTINGS_SYMBOL;
@@ -44,7 +44,7 @@ async function submitSpaceSettings(providerRpc, quorumValue) {
     const settings = {
       name: settingsName,
       about: settingsAbout,
-      network: network,
+      network: networkId,
       symbol: settingsSymbol,
       private: false,
       members: settingsMembers,

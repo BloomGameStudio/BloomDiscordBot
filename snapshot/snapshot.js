@@ -29,7 +29,7 @@ async function createProposal(title, abstract, background, additional, choices) 
   const secondaryRpc = process.env.SECONDARY_RPC_URL;
   const hub = process.env.SNAPSHOT_HUB;
   const snapshotSpace = process.env.SNAPSHOT_SPACE;
-  const network = process.env.NETWORK;
+  const networkId = process.env.NETWORK_ID;
 
   const maxRetries = 3;
   const initialRetryDelay = 5000;
@@ -57,7 +57,7 @@ async function createProposal(title, abstract, background, additional, choices) 
         start: currentTime,
         end: currentTime + seventyTwoHoursInSeconds,
         snapshot: await provider.getBlockNumber(),
-        network: network,
+        network: networkId,
         plugins: JSON.stringify({}),
         app: 'Gov'
       };
