@@ -158,7 +158,7 @@ class SnapshotUtils:
                 {
                     "SNAPSHOT_HUB": cfg.SNAPSHOT_HUB,
                     "SNAPSHOT_SPACE": cfg.SNAPSHOT_SPACE,
-                    "NETWORK": cfg.NETWORK_ID,
+                    "NETWORK_ID": cfg.NETWORK_ID,
                     "PRIMARY_RPC_URL": cfg.PRIMARY_RPC_URL,
                     "SECONDARY_RPC_URL": cfg.SECONDARY_RPC_URL,
                 }
