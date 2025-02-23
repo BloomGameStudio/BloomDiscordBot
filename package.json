@@ -2,11 +2,11 @@
     "name": "bloom-discord-bot",
     "version": "1.0.0",
     "engines": {
-        "node": "18.x"
+        "node": ">=18"
     },
     "dependencies": {
-        "@snapshot-labs/snapshot.js": "^0.12.49",
-        "dotenv": "^16.4.7",
-        "ethers": "^6.13.5"
+        "@snapshot-labs/snapshot.js": "^0.9.9",
+        "dotenv": "^16.3.1",
+        "ethers": "5.4"
     }
 }

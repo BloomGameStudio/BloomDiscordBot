@@ -40,7 +40,7 @@ async function createProposal(title, abstract, background, additional, choices) 
 
   async function submitProposal(providerRpc) {
     try {
-      const provider = new ethers.JsonRpcProvider(providerRpc);
+      const provider = new ethers.providers.JsonRpcProvider(providerRpc);
       const wallet = new ethers.Wallet(ethPrivateKey, provider);
 
       const client = new snapshot.Client712(hub);
