@@ -60,32 +60,36 @@ class TaskManager:
         try:
             db_service = DatabaseService()
             ongoing_votes = db_service.get_ongoing_votes()
-            
+
             for proposal_id, proposal_data in ongoing_votes.items():
                 if time.time() < proposal_data["end_time"]:
                     continue
 
                 channel = bot.get_channel(int(proposal_data["channel_id"]))
                 if not channel:
-                    logger.error(f"Unable to find the channel with id: {proposal_data['channel_id']}")
+                    logger.error(
+                        f"Unable to find the channel with id: {proposal_data['channel_id']}"
+                    )
                     continue
 
                 thread = channel.get_thread(int(proposal_data["thread_id"]))
                 if not thread:
-                    logger.error(f"Unable to find the thread with id: {proposal_data['thread_id']} in the channel: {channel.name}")
+                    logger.error(
+                        f"Unable to find the thread with id: {proposal_data['thread_id']} in the channel: {channel.name}"
+                    )
                     continue
 
                 message = await thread.fetch_message(int(proposal_data["message_id"]))
                 if not message:
-                    logger.error(f"Unable to find the message with id: {proposal_data['message_id']} in the thread: {thread.id}")
+                    logger.error(
+                        f"Unable to find the message with id: {proposal_data['message_id']} in the thread: {thread.id}"
+                    )
                     continue
 
                 # Initialize vote counts
-                proposal_data.update({
-                    "yes_count": 0,
-                    "no_count": 0,
-                    "abstain_count": 0
-                })
+                proposal_data.update(
+                    {"yes_count": 0, "no_count": 0, "abstain_count": 0}
+                )
 
                 counts = {
                     YES_VOTE: "yes_count",
@@ -96,10 +100,14 @@ class TaskManager:
                 for reaction in message.reactions:
                     emoji = str(reaction.emoji)
                     if emoji in counts:
-                        proposal_data[counts[emoji]] = reaction.count - 1  # Subtract bot's reaction
+                        proposal_data[counts[emoji]] = (
+                            reaction.count - 1
+                        )  # Subtract bot's reaction
 
-                logger.info(f"Vote counts for {proposal_data['title']}: Yes={proposal_data['yes_count']}, No={proposal_data['no_count']}, Abstain={proposal_data['abstain_count']}")
-                
+                logger.info(
+                    f"Vote counts for {proposal_data['title']}: Yes={proposal_data['yes_count']}, No={proposal_data['no_count']}, Abstain={proposal_data['abstain_count']}"
+                )
+
                 # Save updated vote counts
                 db_service.save_ongoing_vote(proposal_data)
 
@@ -122,11 +130,12 @@ class TaskManager:
                         current_budget_id = (
                             cfg.config.getint("ID_START_VALUES", "budget_id") + 1
                         )
-                        title = f"Bloom Budget Proposal #{current_budget_id}: {draft_title}"
+                        title = (
+                            f"Bloom Budget Proposal #{current_budget_id}: {draft_title}"
+                        )
                     elif proposal_type == "governance":
                         current_governance_id = (
-                            cfg.config.getint("ID_START_VALUES", "governance_id")
-                            + 1
+                            cfg.config.getint("ID_START_VALUES", "governance_id") + 1
                         )
                         title = f"Bloom General Proposal #{current_governance_id}: {draft_title}"
                     else:
@@ -140,9 +149,7 @@ class TaskManager:
                         logger.error(f"Error creating snapshot proposal: {e}")
                         continue
 
-                    proposal_url = SnapshotUtils.fetch_first_open_proposal_url(
-                        title
-                    )
+                    proposal_url = SnapshotUtils.get_snapshot_space_url()
                     if proposal_url:
                         result_message += f"The vote passes! {random.choice(PROPOSAL_CONCLUSION_EMOJIS)}\n\nSnapshot proposal has been created: **{proposal_url}**"
                         if proposal_type == "budget":

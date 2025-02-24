@@ -6,7 +6,7 @@ The module contains the following functions:
 - create_snapshot_proposal: Create a Snapshot proposal.
 - fetch_XP_total_supply: Fetch the total supply of XP tokens.
 - fetch_XP_quorum: Fetch the quorum value for Snapshot proposals.
-- fetch_first_open_proposal_url: Fetch the URL of the first open proposal on Snapshot.
+- get_snapshot_space_url: Fetch the URL of the Snapshot space.
 - get_channel_by_name: Soft match a channel name from consts/constants.py to a channel in the guild.
 - get_forum_channel_by_name: Retrieve a ForumChannel in a guild based on its name, with support for a fallback channel name.
 - get_guild_member_check_role: Check if the guild member who invoked the command has the 'core' role.
@@ -14,7 +14,6 @@ The module contains the following functions:
 - send_dm_once: Sends a direct message to a contributor if they are mentioned in a message.
 - load_posted_events: Load the event IDs that have already been posted to Discord from the JSON file.
 - load_contributors_and_emoji_dicts: Load the contributors and emoji dictionaries from the JSON file.
-- fetch_first_open_proposal_url: Fetch the URL of the first open proposal on Snapshot.
 """
 
 import discord
@@ -174,25 +173,19 @@ class SnapshotUtils:
             raise
 
     @staticmethod
-    def fetch_first_open_proposal_url(title: str) -> Optional[str]:
+    def get_snapshot_space_url() -> Optional[str]:
         """
-        Fetch the URL of the first open proposal on Snapshot with the given title.
-
-        Parameters:
-        title (str): The title of the proposal to search for
+        Get the URL for the Snapshot space.
 
         Returns:
-        Optional[str]: The URL of the proposal if found, None otherwise
+        Optional[str]: The URL of the Snapshot space
         """
         try:
-            base_url = urljoin(cfg.SNAPSHOT_URL_PREFIX, cfg.SNAPSHOT_SPACE)
-            if not base_url.endswith("/"):
-                base_url += "/"
-            url = urljoin(base_url, "proposal/")
-            logger.info(f"Looking for proposal with title: {title} at {url}")
+            url = f"{cfg.SNAPSHOT_URL_PREFIX}#/s:{cfg.SNAPSHOT_SPACE}/"
+            logger.info(f"Generated Snapshot space URL: {url}")
             return url
         except Exception as e:
-            logger.error(f"Error fetching proposal URL: {e}")
+            logger.error(f"Error generating Snapshot space URL: {e}")
             return None
 
     @staticmethod
