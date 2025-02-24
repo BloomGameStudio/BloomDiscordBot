@@ -1,12 +1,11 @@
 """
 The GovCommandsCog class is a cog that contains the commands for the governance commands.
-It contains the following command:
-- create_proposal: Create a proposal from an existing thread
 """
 
 import discord
 from discord.ext import commands
 from discord import app_commands
+
 from proposals.proposals import ProposalManager
 from proposals.thread_parser import ThreadParser
 from logger.logger import logger
@@ -49,7 +48,7 @@ class GovCommandsCog(commands.Cog):
             }
 
             success = await ProposalManager.publish_draft(
-                draft, self.bot, interaction.guild_id, interaction.guild
+                draft, self.bot, interaction.guild_id
             )
 
             if success:

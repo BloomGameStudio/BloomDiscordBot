@@ -1,16 +1,15 @@
 """
 tasks contains the TaskManager class, which contains the check_events and check_concluded_proposals_task functions.
-The "check_events" function checks for upcoming events every 50 minutes and posts them to the relevant Discord channel.
-The "check_concluded_proposals_task" function checks for concluded proposals every 5 minutes and processes them accordingly.
 """
 
 import time
 import discord
-import random
-from logger.logger import logger
 from discord.ext import tasks, commands
+import random
+
+from logger.logger import logger
 from events.event_operations import EventOperations
-from utils.utils import Utils, DiscordUtils
+from utils.utils import DiscordUtils
 from consts.constants import (
     GENERAL_CHANNEL,
     YES_VOTE,
