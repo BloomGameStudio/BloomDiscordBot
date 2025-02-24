@@ -1,64 +1,22 @@
 """
 The ProposalManager class handles the logic associated with proposals. These functions are invoked when the commands
 in cogs/gov.py are invoked and the relevant buttons or selects are clicked.
-
-The module contains the following functions:
-- "handle_votedraft": Handles the vote draft command.
-- "handle_publish_draft": Handles the publish draft command.
-- "prepare_draft": Prepare the draft by setting the type, channel ID, and title based on the draft type.
-- "publish_draft": Publish the draft by creating a thread with the prepared content and starting a vote timer.
-- "react_to_vote": React to the published draft with the vote emojis.
-
-The module also contains the following variables:
-- proposals: A list of proposals.
-- ongoing_votes: A dictionary of ongoing votes.
 """
 
+import re
 import time
 import discord
+from discord.ext import commands
+from typing import Any, Dict, List
+
 import consts.constants as constants
 import config.config as cfg
-from logger.logger import logger
-from discord.ext import commands
-from consts.types import GOVERNANCE_ID_TYPE, BUDGET_ID_TYPE
-from typing import Any, Dict, List, Tuple
-from utils.utils import Utils
-import re
 from database.service import DatabaseService
+from logger.logger import logger
 
 
 class ProposalManager:
     proposals: List[Dict[str, Any]] = []
-
-    @staticmethod
-    async def prepare_draft(
-        guild: discord.Guild, draft: Dict[str, Any]
-    ) -> Tuple[str, str, str]:
-        """
-        Prepare the draft by setting the type, channel ID, and title based on the draft type.
-        This version uses a temporarily incremented ID for the title generation but does not update the config file.
-
-        Parameters:
-        guild (discord.Guild): The guild instance.
-        draft (Dict[str, Any]): The draft to prepare.
-
-        Returns:
-        Tuple[str, str, str]: A tuple containing the ID type, channel name, and title.
-        """
-        draft_type = draft["type"].lower()
-        if draft_type not in [BUDGET_ID_TYPE, GOVERNANCE_ID_TYPE]:
-            raise ValueError(f"Invalid draft type: {draft_type}")
-
-        if draft_type == BUDGET_ID_TYPE:
-            id_type = BUDGET_ID_TYPE
-            channel_name = constants.GOVERNANCE_BUDGET_CHANNEL
-            title = f"Bloom Budget Proposal: {draft['title']}"
-        else:
-            id_type = GOVERNANCE_ID_TYPE
-            channel_name = constants.GOVERNANCE_CHANNEL
-            title = f"Bloom General Proposal: {draft['title']}"
-
-        return id_type, channel_name, title
 
     @staticmethod
     async def get_forum_channel(
@@ -85,7 +43,7 @@ class ProposalManager:
 
     @staticmethod
     async def publish_draft(
-        draft: Dict[str, Any], bot: commands.Bot, guild_id: int, guild: discord.Guild
+        draft: Dict[str, Any], bot: commands.Bot, guild_id: int
     ) -> bool:
         """Publish the draft by creating a thread with the prepared content and starting a vote timer."""
         created_thread = None
