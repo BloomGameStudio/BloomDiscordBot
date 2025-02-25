@@ -1,8 +1,6 @@
 """
 consts/constants.py contains constants used throughout the bot.
 
-CONFIG_ID_MAP: A dictionary containing the valid ids and keys that can be selected to be incremented or in rare cases decremented in the config.ini file.
-
 CONFIG_ABSOLUTE_PATH: The absolute path to the config.ini file.
 
 GENERAL_CHANNEL, GOVERNANCE_CHANNEL, GOVERNANCE_BUDGET_CHANNEL, GOVERNANCE_TALK_CHANNEL
