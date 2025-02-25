@@ -1,7 +1,7 @@
 from contextlib import contextmanager
 from typing import Generator, List, Dict, Any, Optional
 from datetime import datetime
-from .models import SessionLocal, Contributor, Event, OngoingVote, ConcludedVote
+from .models import SessionLocal, Config, Contributor, Event, OngoingVote, ConcludedVote
 from logger.logger import logger
 import time
 
@@ -32,6 +32,43 @@ class DatabaseService:
             return self._session
         logger.debug("Creating new database session")
         return SessionLocal()
+    
+    def get_config(self) -> Dict[str, str]:
+        """Get all config key-value pairs"""
+        logger.info("Retrieving all config entries")
+        session = self._get_session()
+        try:
+            configs = session.query(Config).all()
+            result = {config.key: config.value for config in configs}
+            logger.info(f"Found {len(result)} config entries")
+            return result
+        except Exception as e:
+            logger.error(f"Error retrieving configs: {e}")
+            return {}
+        finally:
+            if self._session is None:
+                session.close()
+
+    def set_config(self, key: str, value: str) -> None:
+        """Set or update a config key-value pair"""
+        logger.info(f"Setting config {key}={value}")
+        session = self._get_session()
+        try:
+            config = session.query(Config).filter_by(key=key).first()
+            if config:
+                config.value = value
+                logger.info(f"Updated existing config entry for key: {key}")
+            else:
+                config = Config(key=key, value=value)
+                session.add(config)
+                logger.info(f"Created new config entry for key: {key}")
+            session.commit()
+        except Exception as e:
+            logger.error(f"Error setting config {key}: {e}")
+            session.rollback()
+        finally:
+            if self._session is None:
+                session.close()
 
     def get_ongoing_votes(self) -> Dict[str, Any]:
         """Get all ongoing votes"""

@@ -125,18 +125,26 @@ class TaskManager:
                     draft_title = proposal_data["draft"]["title"]
                     proposal_type = proposal_data["draft"]["type"]
 
+                    config = db_service.get_config()
+
                     if proposal_type == "budget":
-                        current_budget_id = (
-                            cfg.config.getint("ID_START_VALUES", "budget_id") + 1
-                        )
-                        title = (
-                            f"Bloom Budget Proposal #{current_budget_id}: {draft_title}"
-                        )
+                        budget_id = config.get("next_budget_id", "")
+
+                        if not budget_id:
+                            logger.error("Budget ID is not set")
+                            continue
+
+                        title = f"Bloom Budget Proposal #{budget_id}: {draft_title}"
                     elif proposal_type == "governance":
-                        current_governance_id = (
-                            cfg.config.getint("ID_START_VALUES", "governance_id") + 1
+                        governance_id = config.get("next_governance_id", "")
+
+                        if not governance_id:
+                            logger.error("Governance ID is not set")
+                            continue
+
+                        title = (
+                            f"Bloom General Proposal #{governance_id}: {draft_title}"
                         )
-                        title = f"Bloom General Proposal #{current_governance_id}: {draft_title}"
                     else:
                         logger.error(f"Unknown proposal type: {proposal_type}")
                         continue
@@ -152,9 +160,13 @@ class TaskManager:
                     if proposal_url:
                         result_message += f"The vote passes! {random.choice(PROPOSAL_CONCLUSION_EMOJIS)}\n\nSnapshot proposal has been created: **{proposal_url}**"
                         if proposal_type == "budget":
-                            cfg.increment_config_id("budget", 1)
+                            db_service.set_config(
+                                "next_budget_id", str(int(budget_id) + 1)
+                            )
                         elif proposal_type == "governance":
-                            cfg.increment_config_id("governance", 1)
+                            db_service.set_config(
+                                "next_governance_id", str(int(governance_id) + 1)
+                            )
                     else:
                         result_message += f"The vote passes! {random.choice(PROPOSAL_CONCLUSION_EMOJIS)}"
                 else:
