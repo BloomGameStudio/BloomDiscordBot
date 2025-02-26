@@ -28,13 +28,11 @@ try {
   
   // Use messages array if available, otherwise use content
   const messages = sections.messages || [sections.content];
-  const formattedBody = messages.join('\n\n');
+  const body = messages.join('\n\n');
 
   createProposal(
     title,
-    '',
-    formattedBody,
-    '',
+    body,
     choices
   ).catch(error => {
     console.error('Error in createProposal:', error);

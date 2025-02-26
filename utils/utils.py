@@ -6,7 +6,7 @@ The module contains the following functions:
 - create_snapshot_proposal: Create a Snapshot proposal.
 - fetch_XP_total_supply: Fetch the total supply of XP tokens.
 - fetch_XP_quorum: Fetch the quorum value for Snapshot proposals.
-- get_snapshot_space_url: Fetch the URL of the Snapshot space.
+- get_proposal_url: Fetch the URL of the Snapshot proposal or space.
 - get_channel_by_name: Soft match a channel name from consts/constants.py to a channel in the guild.
 - get_forum_channel_by_name: Retrieve a ForumChannel in a guild based on its name, with support for a fallback channel name.
 - get_guild_member_check_role: Check if the guild member who invoked the command has the 'core' role.
@@ -130,7 +130,7 @@ class SnapshotUtils:
             raise
 
     @staticmethod
-    def create_snapshot_proposal(proposal_data: Dict[str, Any], title: str) -> None:
+    def create_snapshot_proposal(proposal_data: Dict[str, Any], title: str) -> object:
         """Create a Snapshot proposal with structured sections"""
         try:
             draft = proposal_data.get("draft", {})
@@ -138,9 +138,7 @@ class SnapshotUtils:
 
             content = sections.get("content", "")
 
-            formatted_sections = {
-                "messages": [content]
-            }
+            formatted_sections = {"messages": [content]}
 
             proposal_command = [
                 "node",
@@ -163,8 +161,16 @@ class SnapshotUtils:
                 }
             )
 
-            subprocess.run(proposal_command, check=True, env=env)
+            result = subprocess.run(
+                proposal_command, check=True, env=env, capture_output=True, text=True
+            )
             logger.info("Snapshot proposal created successfully.")
+
+            receipt = json.loads(result.stdout) if result.stdout else None
+            if receipt == None:
+                logger.info("No receipt was returned")
+
+            return receipt
         except subprocess.CalledProcessError as e:
             logger.error(f"Error creating snapshot proposal: {e}")
             raise
@@ -173,15 +179,25 @@ class SnapshotUtils:
             raise
 
     @staticmethod
-    def get_snapshot_space_url() -> Optional[str]:
+    def get_proposal_url(receipt: Optional[Dict[str, Any]] = None) -> Optional[str]:
         """
-        Get the URL for the Snapshot space.
+        Get the URL for the Snapshot proposal or space.
+
+        Parameters:
+        receipt (Optional[Dict[str, Any]]): Receipt returned from the proposal creation subprocess
 
         Returns:
-        Optional[str]: The URL of the Snapshot space
+        Optional[str]: The URL of the Snapshot proposal or space
         """
+
+        id = None
+        if receipt:
+            id = receipt.get("id", None)
+
         try:
-            url = f"{cfg.SNAPSHOT_URL_PREFIX}#/s:{cfg.SNAPSHOT_SPACE}/"
+            url = f"{cfg.SNAPSHOT_URL_PREFIX}#/s:{cfg.SNAPSHOT_SPACE}/" + (
+                f"proposal/{id}" if id is not None else ""
+            )
             logger.info(f"Generated Snapshot space URL: {url}")
             return url
         except Exception as e:
