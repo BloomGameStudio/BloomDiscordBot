@@ -66,7 +66,6 @@ async function createProposal(title, body, choices) {
 
       const receipt = await client.proposal(wallet, ethAddress, proposalParams);
       console.log('Proposal submitted. Receipt:', receipt);
-      // Bug fix: Return object instead of using comma operator which only returns last value
       return { receipt, error: null };
     } catch (error) {
       console.error(`Error creating proposal with RPC ${providerRpc}:`, error);
@@ -86,14 +85,12 @@ async function createProposal(title, body, choices) {
   let error = null;
   let receipt = null;
   let retryDelay = initialRetryDelay;
-  // Bug fix: Define success variable
   let success = false;
 
   while (attempt < maxRetries && !success) {
     attempt++;
     console.log(`Attempt ${attempt} to submit proposal...`);
 
-    // Bug fix: Properly destructure return object
     const primaryResult = await submitProposal(primaryRpc);
     receipt = primaryResult.receipt;
     error = primaryResult.error;
@@ -105,7 +102,6 @@ async function createProposal(title, body, choices) {
       error = secondaryResult.error;
     }
 
-    // Set success if we got a receipt
     success = receipt !== null;
 
     if (error) {
