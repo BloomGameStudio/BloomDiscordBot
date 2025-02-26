@@ -130,7 +130,7 @@ class SnapshotUtils:
             raise
 
     @staticmethod
-    def create_snapshot_proposal(proposal_data: Dict[str, Any], title: str) -> object | None:
+    def create_snapshot_proposal(proposal_data: Dict[str, Any], title: str) -> Optional[object]:
         """Create a Snapshot proposal with structured sections"""
         try:
             draft = proposal_data.get("draft", {})
