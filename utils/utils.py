@@ -18,17 +18,14 @@ The module contains the following functions:
 
 import discord
 import json
-import config.config as cfg
-import requests
 import subprocess
 import os
-from typing import Dict, Any, List, Tuple, Optional
-from logger.logger import logger
+from typing import Dict, Any, Optional
 from web3 import Web3
-from urllib.parse import urljoin
+
+import config.config as cfg
+from logger.logger import logger
 from discord.ext import commands
-from consts import constants
-from consts.constants import GENERAL_CHANNEL
 
 env = os.environ.copy()
 
@@ -130,20 +127,22 @@ class SnapshotUtils:
             raise
 
     @staticmethod
-    def create_snapshot_proposal(proposal_data: Dict[str, Any], title: str) -> Optional[object]:
+    def create_snapshot_proposal(
+        proposal_data: Dict[str, Any], title: str
+    ) -> Optional[object]:
         """Create a Snapshot proposal with structured sections"""
         try:
             draft = proposal_data.get("draft", {})
             sections = draft.get("sections", {})
-
             content = sections.get("content", "")
-
             formatted_sections = {"messages": [content]}
+            resultPrefix = "RESULT: "
 
             proposal_command = [
                 "node",
                 "./snapshot/wrapper.js",
                 title,
+                resultPrefix,
                 json.dumps(formatted_sections),
                 "Adopt",
                 "Reassess",
@@ -161,12 +160,20 @@ class SnapshotUtils:
                 }
             )
 
+            receipt = None
             result = subprocess.run(
                 proposal_command, check=True, env=env, capture_output=True, text=True
             )
-            logger.info("Snapshot proposal created successfully.")
 
-            receipt = json.loads(result.stdout) if result.stdout else None
+            for line in result.stdout.splitlines():
+                if line.startswith(resultPrefix):  # Identify result line
+                    try:
+                        receipt = json.loads(line[len(resultPrefix) :])
+                        print("Parsed receipt:", receipt)
+                    except json.JSONDecodeError:
+                        print("Failed to parse JSON:", line)
+                        logger.info("Snapshot proposal created successfully.")
+
             if receipt == None:
                 logger.info("No receipt was returned")
 

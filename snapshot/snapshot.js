@@ -65,7 +65,7 @@ async function createProposal(title, body, choices) {
       };
 
       const receipt = await client.proposal(wallet, ethAddress, proposalParams);
-      console.log('Proposal submitted. Receipt:', receipt);
+
       return { receipt, error: null };
     } catch (error) {
       console.error(`Error creating proposal with RPC ${providerRpc}:`, error);
