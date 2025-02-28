@@ -159,7 +159,12 @@ class TaskManager:
                         logger.error(f"Error creating snapshot proposal: {e}")
                         continue
 
-                    proposal_url = SnapshotUtils.get_proposal_url(receipt)
+                    id = None
+                    if receipt:
+                        id = receipt.get("id")
+
+                    proposal_url = SnapshotUtils.get_proposal_url(id, cfg.IS_DEV)
+
                     if proposal_url:
                         result_message += f"The vote passes! {random.choice(PROPOSAL_CONCLUSION_EMOJIS)}\n\nSnapshot proposal has been created: **{proposal_url}**"
                         if proposal_type == "budget":

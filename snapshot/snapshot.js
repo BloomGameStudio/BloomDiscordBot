@@ -9,7 +9,7 @@
  * The SECONDARY_RPC is the secondary RPC URL you wish to use for submitting proposals.
  * wrapper.js is responsible for calling this function with the correct arguments.
  */
-const { ethers } = require('ethers');
+const { ethers, logger } = require('ethers');
 const snapshot = require('@snapshot-labs/snapshot.js');
 const dotenv = require('dotenv');
 
@@ -63,6 +63,8 @@ async function createProposal(title, body, choices) {
         plugins: JSON.stringify({}),
         app: 'Gov'
       };
+
+      logger.info(proposalParams)
 
       const receipt = await client.proposal(wallet, ethAddress, proposalParams);
 

@@ -20,7 +20,7 @@ import discord
 import json
 import subprocess
 import os
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 from web3 import Web3
 
 import config.config as cfg
@@ -142,8 +142,8 @@ class SnapshotUtils:
                 "node",
                 "./snapshot/wrapper.js",
                 title,
-                resultPrefix,
                 json.dumps(formatted_sections),
+                resultPrefix,
                 "Adopt",
                 "Reassess",
                 "Abstain",
@@ -186,30 +186,30 @@ class SnapshotUtils:
             raise
 
     @staticmethod
-    def get_proposal_url(receipt: Optional[Dict[str, Any]] = None) -> Optional[str]:
+    def get_proposal_url(id: Optional[str], use_testnet: bool) -> str:
         """
         Get the URL for the Snapshot proposal or space.
 
         Parameters:
-        receipt (Optional[Dict[str, Any]]): Receipt returned from the proposal creation subprocess
+        id (Optional[str]): ID of the proposal
 
         Returns:
-        Optional[str]: The URL of the Snapshot proposal or space
+        str: The URL of the Snapshot proposal or space
         """
 
-        id = None
-        if receipt:
-            id = receipt.get("id", None)
-
         try:
-            url = f"{cfg.SNAPSHOT_URL_PREFIX}#/s:{cfg.SNAPSHOT_SPACE}/" + (
-                f"proposal/{id}" if id is not None else ""
-            )
+            base_url = cfg.SNAPSHOT_URL_PREFIX.rstrip("/")
+            space = f"s{'-tn' if use_testnet else ''}:{cfg.SNAPSHOT_SPACE}"
+            url = f"{base_url}/#/{space}"
+
+            if id:
+                url += f"/proposal/{id}"
+
             logger.info(f"Generated Snapshot space URL: {url}")
             return url
         except Exception as e:
             logger.error(f"Error generating Snapshot space URL: {e}")
-            return None
+            return ""
 
     @staticmethod
     async def fetch_XP_quorum(
