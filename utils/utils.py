@@ -114,6 +114,7 @@ class SnapshotUtils:
         env["NETWORK_ID"] = cfg.NETWORK_ID
         env["SETTINGS_NAME"] = cfg.SETTINGS_NAME
         env["SETTINGS_ABOUT"] = cfg.SETTINGS_ABOUT
+        env["SETTINGS_AVATAR"] = cfg.SETTINGS_AVATAR
         env["SETTINGS_SYMBOL"] = cfg.SETTINGS_SYMBOL
         env["SETTINGS_MEMBERS"] = ",".join(cfg.SETTINGS_MEMBERS)
         env["SETTINGS_ADMINS"] = ",".join(cfg.SETTINGS_ADMINS)
