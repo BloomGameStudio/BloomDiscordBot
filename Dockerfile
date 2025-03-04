@@ -11,9 +11,7 @@ WORKDIR /app
 COPY Pipfile .
 RUN pipenv install --deploy
 
-COPY snapshot/package*.json /app/snapshot/
-RUN cd /app/snapshot && npm install
-
 COPY . /app
+RUN npm install
 
 CMD ["pipenv", "run", "python", "main.py"]
