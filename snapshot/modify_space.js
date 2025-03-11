@@ -22,6 +22,7 @@ const snapshotSpace = process.env.SNAPSHOT_SPACE;
 const networkId = process.env.NETWORK_ID;
 const settingsName = process.env.SETTINGS_NAME;
 const settingsAbout = process.env.SETTINGS_ABOUT;
+const settingsAvatar = process.env.SETTINGS_AVATAR;
 const settingsSymbol = process.env.SETTINGS_SYMBOL;
 const settingsMembers = process.env.SETTINGS_MEMBERS ? process.env.SETTINGS_MEMBERS.split(',') : [];
 const settingsAdmins = process.env.SETTINGS_ADMINS.split(',');
@@ -42,18 +43,19 @@ async function submitSpaceSettings(providerRpc, quorumValue) {
     console.log('Using account:', account);
 
     const settings = {
+      private: false,
+      network: networkId,
       name: settingsName,
       about: settingsAbout,
-      network: networkId,
+      avatar: settingsAvatar,
       symbol: settingsSymbol,
-      private: false,
       members: settingsMembers,
       admins: settingsAdmins,
+      strategies: settingsStrategies,
       voting: {
         quorum: quorumValue,
         hideAbstain: false
       },
-      strategies: settingsStrategies,
       validation: {
         name: "any",
         params: {}
