@@ -114,6 +114,7 @@ class SnapshotUtils:
         env["NETWORK_ID"] = cfg.NETWORK_ID
         env["SETTINGS_NAME"] = cfg.SETTINGS_NAME
         env["SETTINGS_ABOUT"] = cfg.SETTINGS_ABOUT
+        env["SETTINGS_AVATAR"] = cfg.SETTINGS_AVATAR
         env["SETTINGS_SYMBOL"] = cfg.SETTINGS_SYMBOL
         env["SETTINGS_MEMBERS"] = ",".join(cfg.SETTINGS_MEMBERS)
         env["SETTINGS_ADMINS"] = ",".join(cfg.SETTINGS_ADMINS)
@@ -135,14 +136,13 @@ class SnapshotUtils:
             draft = proposal_data.get("draft", {})
             sections = draft.get("sections", {})
             content = sections.get("content", "")
-            formatted_sections = {"messages": [content]}
             resultPrefix = "RESULT: "
 
             proposal_command = [
                 "node",
                 "./snapshot/wrapper.js",
                 title,
-                json.dumps(formatted_sections),
+                json.dumps({"messages": [content]}),
                 resultPrefix,
                 "Adopt",
                 "Reassess",
