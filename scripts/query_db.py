@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
-import os
 import argparse
-import sys
 from datetime import datetime
-from database.models import SessionLocal, Contributor, Event, OngoingVote, ConcludedVote
+from database.models import SessionLocal
 from logger.logger import logger
 from database.service import DatabaseService
 

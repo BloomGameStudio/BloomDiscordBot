@@ -9,7 +9,7 @@
  * The SECONDARY_RPC is the secondary RPC URL you wish to use for submitting proposals.
  * wrapper.js is responsible for calling this function with the correct arguments.
  */
-const { ethers } = require('ethers');
+const { ethers, logger } = require('ethers');
 const snapshot = require('@snapshot-labs/snapshot.js');
 const dotenv = require('dotenv');
 
@@ -18,11 +18,10 @@ dotenv.config();
 /**
  *
  * @param {string} title - The title of the proposal
- * @param {*} abstract  - The abstract of the proposal
- * @param {*} background - The background of the proposal
+ * @param {*} body - The body of the proposal
  * @param {*} choices - The choices for the proposal
  */
-async function createProposal(title, abstract, background, additional, choices) {
+async function createProposal(title, body, choices) {
   const ethAddress = process.env.ETH_ADDRESS;
   const ethPrivateKey = process.env.ETH_PRIVATE_KEY;
   const primaryRpc = process.env.PRIMARY_RPC_URL;
@@ -38,60 +37,76 @@ async function createProposal(title, abstract, background, additional, choices) 
     throw new Error('Ethereum address or private key not provided in environment variables');
   }
 
+  /**
+   * Submits a proposal to Snapshot using the provided RPC endpoint
+   * @param {string} providerRpc - RPC endpoint URL
+   * @returns {Object} Object containing receipt and error
+   */
   async function submitProposal(providerRpc) {
+    const provider = new ethers.providers.JsonRpcProvider(providerRpc);
+    const wallet = new ethers.Wallet(ethPrivateKey, provider);
+    const client = new snapshot.Client712(hub);
+    const currentTime = Math.floor(new Date().getTime() / 1000);
+    const seventyTwoHours = 72 * 3600;
+
     try {
-      const provider = new ethers.providers.JsonRpcProvider(providerRpc);
-      const wallet = new ethers.Wallet(ethPrivateKey, provider);
-
-      const client = new snapshot.Client712(hub);
-
-      const currentTime = Math.floor(new Date().getTime() / 1000);
-      const seventyTwoHoursInSeconds = 72 * 3600;
-
       const proposalParams = {
         space: snapshotSpace,
         type: 'weighted',
         title: title,
-        body: background,
+        body: body,
         choices: choices,
         start: currentTime,
-        end: currentTime + seventyTwoHoursInSeconds,
+        end: currentTime + seventyTwoHours,
         snapshot: await provider.getBlockNumber(),
         network: networkId,
         plugins: JSON.stringify({}),
         app: 'Gov'
       };
 
+      logger.info(proposalParams)
+
       const receipt = await client.proposal(wallet, ethAddress, proposalParams);
 
-      console.log('Proposal submitted. Receipt:', receipt);
-      return true;
+      return { receipt, error: null };
     } catch (error) {
       console.error(`Error creating proposal with RPC ${providerRpc}:`, error);
-      return false;
+      return { receipt: null, error };
     }
   }
 
+  /**
+   * Helper function to create a delay
+   * @param {number} ms - Milliseconds to delay
+   */
   function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   let attempt = 0;
-  let success = false;
+  let error = null;
+  let receipt = null;
   let retryDelay = initialRetryDelay;
+  let success = false;
 
   while (attempt < maxRetries && !success) {
     attempt++;
     console.log(`Attempt ${attempt} to submit proposal...`);
 
-    success = await submitProposal(primaryRpc);
+    const primaryResult = await submitProposal(primaryRpc);
+    receipt = primaryResult.receipt;
+    error = primaryResult.error;
 
-    if (!success) {
+    if (error) {
       console.log('Retrying with secondary RPC...');
-      success = await submitProposal(secondaryRpc);
+      const secondaryResult = await submitProposal(secondaryRpc);
+      receipt = secondaryResult.receipt;
+      error = secondaryResult.error;
     }
 
-    if (!success) {
+    success = receipt !== null;
+
+    if (error) {
       console.log(`Attempt ${attempt} failed.`);
       if (attempt < maxRetries) {
         console.log(`Waiting for ${retryDelay / 1000} seconds before retrying...`);
@@ -101,8 +116,11 @@ async function createProposal(title, abstract, background, additional, choices) 
     }
   }
 
-  if (!success) {
+  if (error) {
     console.error('Failed to submit proposal after multiple attempts with both RPC endpoints');
+    return null
+  } else {
+    return receipt
   }
 }
 
