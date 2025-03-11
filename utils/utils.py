@@ -6,7 +6,7 @@ The module contains the following functions:
 - create_snapshot_proposal: Create a Snapshot proposal.
 - fetch_XP_total_supply: Fetch the total supply of XP tokens.
 - fetch_XP_quorum: Fetch the quorum value for Snapshot proposals.
-- get_snapshot_space_url: Fetch the URL of the Snapshot space.
+- get_proposal_url: Fetch the URL of the Snapshot proposal or space.
 - get_channel_by_name: Soft match a channel name from consts/constants.py to a channel in the guild.
 - get_forum_channel_by_name: Retrieve a ForumChannel in a guild based on its name, with support for a fallback channel name.
 - get_guild_member_check_role: Check if the guild member who invoked the command has the 'core' role.
@@ -18,17 +18,14 @@ The module contains the following functions:
 
 import discord
 import json
-import config.config as cfg
-import requests
 import subprocess
 import os
-from typing import Dict, Any, List, Tuple, Optional
-from logger.logger import logger
+from typing import Any, Dict, Optional
 from web3 import Web3
-from urllib.parse import urljoin
+
+import config.config as cfg
+from logger.logger import logger
 from discord.ext import commands
-from consts import constants
-from consts.constants import GENERAL_CHANNEL
 
 env = os.environ.copy()
 
@@ -131,21 +128,22 @@ class SnapshotUtils:
             raise
 
     @staticmethod
-    def create_snapshot_proposal(proposal_data: Dict[str, Any], title: str) -> None:
+    def create_snapshot_proposal(
+        proposal_data: Dict[str, Any], title: str
+    ) -> Optional[object]:
         """Create a Snapshot proposal with structured sections"""
         try:
             draft = proposal_data.get("draft", {})
             sections = draft.get("sections", {})
-
             content = sections.get("content", "")
-
-            formatted_sections = {"messages": [content]}
+            resultPrefix = "RESULT: "
 
             proposal_command = [
                 "node",
                 "./snapshot/wrapper.js",
                 title,
-                json.dumps(formatted_sections),
+                json.dumps({"messages": [content]}),
+                resultPrefix,
                 "Adopt",
                 "Reassess",
                 "Abstain",
@@ -162,8 +160,24 @@ class SnapshotUtils:
                 }
             )
 
-            subprocess.run(proposal_command, check=True, env=env)
-            logger.info("Snapshot proposal created successfully.")
+            receipt = None
+            result = subprocess.run(
+                proposal_command, check=True, env=env, capture_output=True, text=True
+            )
+
+            for line in result.stdout.splitlines():
+                if line.startswith(resultPrefix):  # Identify result line
+                    try:
+                        receipt = json.loads(line[len(resultPrefix) :])
+                        print("Parsed receipt:", receipt)
+                    except json.JSONDecodeError:
+                        print("Failed to parse JSON:", line)
+                        logger.info("Snapshot proposal created successfully.")
+
+            if receipt == None:
+                logger.info("No receipt was returned")
+
+            return receipt
         except subprocess.CalledProcessError as e:
             logger.error(f"Error creating snapshot proposal: {e}")
             raise
@@ -172,20 +186,30 @@ class SnapshotUtils:
             raise
 
     @staticmethod
-    def get_snapshot_space_url() -> Optional[str]:
+    def get_proposal_url(id: Optional[str], use_testnet: bool) -> str:
         """
-        Get the URL for the Snapshot space.
+        Get the URL for the Snapshot proposal or space.
+
+        Parameters:
+        id (Optional[str]): ID of the proposal
 
         Returns:
-        Optional[str]: The URL of the Snapshot space
+        str: The URL of the Snapshot proposal or space
         """
+
         try:
-            url = f"{cfg.SNAPSHOT_URL_PREFIX}#/s:{cfg.SNAPSHOT_SPACE}/"
+            base_url = cfg.SNAPSHOT_URL_PREFIX.rstrip("/")
+            space = f"s{'-tn' if use_testnet else ''}:{cfg.SNAPSHOT_SPACE}"
+            url = f"{base_url}/#/{space}"
+
+            if id:
+                url += f"/proposal/{id}"
+
             logger.info(f"Generated Snapshot space URL: {url}")
             return url
         except Exception as e:
             logger.error(f"Error generating Snapshot space URL: {e}")
-            return None
+            return ""
 
     @staticmethod
     async def fetch_XP_quorum(

@@ -119,13 +119,11 @@ class TaskManager:
                 )
 
                 if passed:
-                    quorum_value = await SnapshotUtils.fetch_XP_quorum()
-                    logger.info(f"Quorum value to be set: {quorum_value}")
-
                     draft_title = proposal_data["draft"]["title"]
                     proposal_type = proposal_data["draft"]["type"]
 
                     config = db_service.get_config()
+                    receipt = None
 
                     if proposal_type == "budget":
                         budget_id = config.get("next_budget_id", "")
@@ -150,13 +148,23 @@ class TaskManager:
                         continue
 
                     try:
+                        quorum_value = await SnapshotUtils.fetch_XP_quorum()
                         SnapshotUtils.modify_space_settings(str(quorum_value))
-                        SnapshotUtils.create_snapshot_proposal(proposal_data, title)
+                        logger.info(f"Quorum value set to {quorum_value}")
+
+                        receipt = SnapshotUtils.create_snapshot_proposal(
+                            proposal_data, title
+                        )
                     except Exception as e:
                         logger.error(f"Error creating snapshot proposal: {e}")
                         continue
 
-                    proposal_url = SnapshotUtils.get_snapshot_space_url()
+                    id = None
+                    if receipt:
+                        id = receipt.get("id")
+
+                    proposal_url = SnapshotUtils.get_proposal_url(id, cfg.IS_DEV)
+
                     if proposal_url:
                         result_message += f"The vote passes! {random.choice(PROPOSAL_CONCLUSION_EMOJIS)}\n\nSnapshot proposal has been created: **{proposal_url}**"
                         if proposal_type == "budget":

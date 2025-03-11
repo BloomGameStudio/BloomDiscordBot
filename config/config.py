@@ -8,6 +8,8 @@ config: configparser.ConfigParser = configparser.ConfigParser()
 config.read(CONFIG_ABSOLUTE_PATH)
 
 ENV = os.getenv("ENV", "DEV")
+PRIMARY_RPC_URL = os.getenv("PRIMARY_RPC_URL")
+SECONDARY_RPC_URL = os.getenv("SECONDARY_RPC_URL")
 
 SNAPSHOT_SPACE = config.get(ENV, "SNAPSHOT_SPACE")
 DISCORD_VOTE_ENDTIME = config.getint(ENV, "DISCORD_VOTE_ENDTIME")
@@ -24,5 +26,4 @@ SETTINGS_ADMINS = config.get(ENV, "SETTINGS_ADMINS").split(",")
 SETTINGS_STRATEGIES = config.get(ENV, "SETTINGS_STRATEGIES")
 SETTINGS_TOKEN_ADDRESSES = config.get(ENV, "SETTINGS_TOKEN_ADDRESSES").split(",")
 
-PRIMARY_RPC_URL = os.getenv("PRIMARY_RPC_URL")
-SECONDARY_RPC_URL = os.getenv("SECONDARY_RPC_URL")
+IS_DEV = True if ENV == "DEV" else False
