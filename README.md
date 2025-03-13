@@ -22,7 +22,7 @@ Add a new member (and associated emoji) to the list of core contributors.
 Remove an existing member from the list of core contributors.
 
 #### `/create_proposal {thread_id}`
-Create a new proposal from a draft thread. See [🏛️ Proposals](#-proposals) section for more details.
+Create a new proposal from a draft thread. See [🏛️ Proposals](#%EF%B8%8F-proposals) section for more details.
 
 #### `/list_events`
 Return a list of upcoming events.
