@@ -48,7 +48,6 @@ Definitions for terms that may not be known.
 
 **Details**
 Detailed description of the proposal. The goal is to minimize ambiguity.
-
 ```
 
 #### "budget" (budgetary proposals)
@@ -75,6 +74,7 @@ Amount & type of token requested.
 Bounty Hunter:
 RUC POC:
 ```
+
 There is a 4000 character limit. You may need to break the proposal up into multiple messages.
 
 **⚠️ Once you have submitted a proposal it cannot be modified for transparency reasons.**
