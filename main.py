@@ -19,7 +19,11 @@ from logger.logger import logger
 
 class Bot:
     def __init__(self):
-        self.bot = commands.Bot(command_prefix="/", intents=discord.Intents.all())
+        intents = discord.Intents.default()
+        intents.message_content = True  # Needed if your bot reads message content
+        intents.guilds = True  # Needed for basic guild/server operations
+        self.bot = commands.Bot(command_prefix="/", intents=intents)
+        # Learn more about Discord gateways intents here: https://discord.com/developers/docs/events/gateway#gateway-intents
 
         db_service = DatabaseService()
         self.bot.ongoing_votes = db_service.get_ongoing_votes()
