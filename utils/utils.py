@@ -78,12 +78,12 @@ class DiscordUtils:
 
 class SnapshotUtils:
     @staticmethod
-    def fetch_XP_quorum(percentage: int = 25) -> int:
+    def fetch_XP_quorum(percentage: int = 20) -> int:
         """
         Fetch the quorum value for Snapshot proposals.
 
         Parameters:
-        percentage (int): The percentage of the total supply to set as the quorum value (default 25).
+        percentage (int): The percentage of the total supply to set as the quorum value (default 20).
 
         Returns:
         int: The quorum value for Snapshot proposals.
@@ -215,7 +215,7 @@ class SnapshotUtils:
     async def fetch_XP_quorum(
         bot: Optional[commands.Bot] = None,
         guild_id: Optional[int] = None,
-        percentage: int = 25,
+        percentage: int = 20,
     ) -> int:
         """
         Fetch the quorum value for Snapshot proposals.
@@ -223,7 +223,7 @@ class SnapshotUtils:
         Parameters:
         bot (Optional[commands.Bot]): The bot instance for Discord-specific quorum
         guild_id (Optional[int]): The ID of the guild for Discord-specific quorum
-        percentage (int): The percentage of total supply for Snapshot quorum (default 25)
+        percentage (int): The percentage of total supply for Snapshot quorum (default 20)
 
         Returns:
         int: The quorum value
