@@ -31,11 +31,14 @@ Return a list of upcoming events.
 When a contributor's emoji is used in the server (as a message or reaction), they will be notified of the mention via DM.
 
 ### 🏛️ Proposals
-To create a new proposal start by creating a new thread in the [#drafting-props](https://discord.com/channels/1152979839737925705/1234677429516111944) channel. Select the appropriate "budget" or "governance" tag. The bot will handle the proposal index based on the selected tag.
+To create a new proposal, follow these steps:
 
-Use the appropriate templates for your proposal type:
+#### Step 1: Draft Your Proposal
+Create a new thread in the [#drafting-props](https://discord.com/channels/1152979839737925705/1234677429516111944) channel. Select the appropriate **"budget"** or **"governance"** tag. The bot will handle the proposal index based on the selected tag.
 
-#### "governance" (general, non-budgetary proposals)
+Use the appropriate template for your proposal type:
+
+**"governance"** (general, non-budgetary proposals)
 ```
 **Authors**
 Contributors that assisted in drafting the proposal.
@@ -50,7 +53,7 @@ Definitions for terms that may not be known.
 Detailed description of the proposal. The goal is to minimize ambiguity.
 ```
 
-#### "budget" (budgetary proposals)
+**"budget"** (budgetary proposals)
 ```
 **Authors**
 Contributors that assisted in drafting the proposal.
@@ -75,12 +78,22 @@ Bounty Hunter:
 RUC POC:
 ```
 
-There is a 4000 character limit. You may need to break the proposal up into multiple messages.
+**Tips:**
+- Refer to existing proposals in the channel for guidance on structure and format
+- There is a 4000 character limit per message. You may need to break the proposal up into multiple messages.
+
+#### Step 2: Submit the Proposal
+Once your draft is complete, use the `/create_proposal` command to submit it for voting:
+```
+/create_proposal <thread_id>
+```
+
+Get the `{thread_id}` from the URL of your draft proposal thread:
+```
+https://discord.com/channels/{server_id}/{channel_id}/threads/{thread_id}
+```
 
 **⚠️ Once you have submitted a proposal it cannot be modified for transparency reasons.**
-
-Get the `{thread_id}` value used by the create proposal command from the URL of the draft proposal:
-`https://discord.com/channels/{server_id}/{channel_id}/threads/{thread_id}`
 
 ## Setup
 
