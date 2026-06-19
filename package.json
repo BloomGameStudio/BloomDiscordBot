@@ -5,8 +5,12 @@
         "node": ">=18"
     },
     "dependencies": {
-        "@snapshot-labs/snapshot.js": "^0.9.9",
+        "@snapshot-labs/snapshot.js": "^0.14.22",
         "dotenv": "^16.3.1",
-        "ethers": "5.4"
+        "ethers": "^5.8.0"
+    },
+    "overrides": {
+        "ws": "8.21.0",
+        "fast-uri": "3.1.2"
     }
 }
