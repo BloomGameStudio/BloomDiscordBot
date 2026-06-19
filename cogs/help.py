@@ -14,9 +14,12 @@ class HelpCommandCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @app_commands.command(name="help")
+    @app_commands.command(
+        name="help",
+        description="Display this help message with all available commands."
+    )
     async def help_commands(self, interaction: discord.Interaction):
         """
-        Lis1t all available commands that the bot can perform.
+        List all available commands that the bot can perform.
         """
         await interaction.response.send_message(MENU_COPY)

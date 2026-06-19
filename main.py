@@ -41,6 +41,7 @@ class Bot:
             await self.bot.add_cog(ContributorCommandsCog(self.bot))
             await self.bot.add_cog(EventsCog(self.bot))
             await self.bot.add_cog(GovCommandsCog(self.bot))
+            await self.bot.add_cog(HelpCommandCog(self.bot))
             logger.info("Cogs loaded successfully")
         except Exception as e:
             logger.error(f"Error loading cogs: {e}")
