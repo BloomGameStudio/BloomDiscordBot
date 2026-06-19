@@ -83,26 +83,32 @@ Commands can be prompted with **/**
 
 **/help**
 ```
-Procure this message. You knew that already, silly goose.
+Display this help message with all available commands.
 ```
-**/add_contributor**
+
+**/add_contributor {member} {emoji}**
 ```
-Add a contributor to the list of contributors
+Add a new member (and associated emoji) to the list of core contributors.
 ```
-**/remove_contributor**
+
+**/remove_contributor {member}**
 ```
-Remove a contributor from the list of contributors
+Remove an existing member from the list of core contributors.
 ```
+
 **/contributors**
 ```
-Display the list of contributors
+Return a list of core contributors.
 ```
+
 **/list_events**
 ```
-Display the list of events and their associated event ID
+Return a list of upcoming events.
 ```
-**/create_proposal <thread_link>**
+
+**/create_proposal {thread_id}**
 ```
-Submit a drafted proposal to begin the Discord voting phase.
+Create a new proposal from a draft thread and submit it for voting.
+Use the thread ID from your draft proposal URL.
 ```
 """
