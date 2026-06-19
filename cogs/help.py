@@ -22,4 +22,4 @@ class HelpCommandCog(commands.Cog):
         """
         List all available commands that the bot can perform.
         """
-        await interaction.response.send_message(MENU_COPY)
+        await interaction.response.send_message(MENU_COPY, ephemeral=True)
