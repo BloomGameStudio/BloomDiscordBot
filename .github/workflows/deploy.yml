@@ -126,6 +126,10 @@ jobs:
             -var="discord_public_key=${{ secrets.DISCORD_PUBLIC_KEY }}" \
             -var="environment=${DEPLOY_ENV}" \
             -var="location=${AZURE_LOCATION}" \
+            -var="resource_group_name=${RESOURCE_GROUP_BASE_NAME}" \
+            -var="function_app_name=${FUNCTION_APP_BASE_NAME}" \
+            -var="storage_account_name=${STORAGE_ACCOUNT_BASE_NAME}" \
+            -var="app_service_plan_name=${APP_SERVICE_PLAN_BASE_NAME}" \
             -out=tfplan
 
       - name: Terraform apply
