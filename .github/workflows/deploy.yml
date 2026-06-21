@@ -1,0 +1,166 @@
+name: Deploy Serverless Bot
+
+on:
+  pull_request:
+    branches:
+      - main
+      - dev
+      - stg
+    paths:
+      - 'terraform/**'
+      - 'serverless/**'
+      - '.github/workflows/deploy.yml'
+  push:
+    branches:
+      - main
+      - dev
+      - stg
+    paths:
+      - 'terraform/**'
+      - 'serverless/**'
+      - '.github/workflows/deploy.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}
+
+    env:
+      TERRAFORM_VERSION: 1.12.0
+      DEPLOY_ENV: ${{ github.ref == 'refs/heads/main' && 'prd' || 'dev' }}
+      AZURE_LOCATION: eastus
+
+      RESOURCE_GROUP_BASE_NAME: bloom-discord-bot
+      FUNCTION_APP_BASE_NAME: bloom-discord-bot
+      STORAGE_ACCOUNT_BASE_NAME: bloomdiscordbotst
+      APP_SERVICE_PLAN_BASE_NAME: bloom-discord-bot-plan
+
+      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ARM_USE_OIDC: true
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect infra changes
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            infra:
+              - 'terraform/**'
+
+      - name: Compute resource names
+        id: names
+        run: |
+          echo "resource_group_name=${RESOURCE_GROUP_BASE_NAME}-${DEPLOY_ENV}" >> "$GITHUB_ENV"
+          echo "function_app_name=${FUNCTION_APP_BASE_NAME}-${DEPLOY_ENV}" >> "$GITHUB_ENV"
+          echo "storage_account_name=${STORAGE_ACCOUNT_BASE_NAME}${DEPLOY_ENV}" >> "$GITHUB_ENV"
+          echo "app_service_plan_name=${APP_SERVICE_PLAN_BASE_NAME}-${DEPLOY_ENV}" >> "$GITHUB_ENV"
+
+          echo "resource_group_name=${RESOURCE_GROUP_BASE_NAME}-${DEPLOY_ENV}" >> "$GITHUB_OUTPUT"
+          echo "function_app_name=${FUNCTION_APP_BASE_NAME}-${DEPLOY_ENV}" >> "$GITHUB_OUTPUT"
+          echo "storage_account_name=${STORAGE_ACCOUNT_BASE_NAME}${DEPLOY_ENV}" >> "$GITHUB_OUTPUT"
+          echo "app_service_plan_name=${APP_SERVICE_PLAN_BASE_NAME}-${DEPLOY_ENV}" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Terraform init
+        working-directory: terraform
+        run: terraform init -input=false
+
+      - name: Import existing resources into Terraform state
+        working-directory: terraform
+        run: |
+          if [[ "$(az group exists --name "$resource_group_name")" == "true" ]]; then
+            rg_id=$(az group show --name "$resource_group_name" --query id -o tsv)
+            terraform import -input=false azurerm_resource_group.main "$rg_id" || true
+          fi
+
+          if az storage account show --name "$storage_account_name" --resource-group "$resource_group_name" >/dev/null 2>&1; then
+            st_id=$(az storage account show --name "$storage_account_name" --resource-group "$resource_group_name" --query id -o tsv)
+            terraform import -input=false azurerm_storage_account.main "$st_id" || true
+          fi
+
+          if az appservice plan show --name "$app_service_plan_name" --resource-group "$resource_group_name" >/dev/null 2>&1; then
+            plan_id=$(az appservice plan show --name "$app_service_plan_name" --resource-group "$resource_group_name" --query id -o tsv)
+            terraform import -input=false azurerm_service_plan.main "$plan_id" || true
+          fi
+
+          if az monitor app-insights component show --app "${FUNCTION_APP_BASE_NAME}-insights" --resource-group "$resource_group_name" >/dev/null 2>&1; then
+            ai_id=$(az monitor app-insights component show --app "${FUNCTION_APP_BASE_NAME}-insights" --resource-group "$resource_group_name" --query id -o tsv)
+            terraform import -input=false azurerm_application_insights.main "$ai_id" || true
+          fi
+
+          if az functionapp show --name "$function_app_name" --resource-group "$resource_group_name" >/dev/null 2>&1; then
+            fa_id=$(az functionapp show --name "$function_app_name" --resource-group "$resource_group_name" --query id -o tsv)
+            terraform import -input=false azurerm_linux_function_app.main "$fa_id" || true
+          fi
+
+      - name: Terraform validate
+        working-directory: terraform
+        run: terraform validate
+
+      - name: Terraform plan
+        working-directory: terraform
+        run: |
+          terraform plan -input=false \
+            -var="azure_subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
+            -var="discord_public_key=${{ secrets.DISCORD_PUBLIC_KEY }}" \
+            -var="environment=${DEPLOY_ENV}" \
+            -var="location=${AZURE_LOCATION}" \
+            -out=tfplan
+
+      - name: Terraform apply
+        if: github.event_name == 'push' && steps.changes.outputs.infra == 'true'
+        working-directory: terraform
+        run: terraform apply -auto-approve -input=false tfplan
+
+      - name: Deploy Function App code
+        if: github.event_name == 'push'
+        uses: Azure/functions-action@v1
+        with:
+          app-name: ${{ steps.names.outputs.function_app_name }}
+          package: serverless
+          scm-do-build-during-deployment: true
+          enable-oryx-build: true
+
+      - name: Verify deployment health endpoint
+        if: github.event_name == 'push'
+        run: |
+          health_url="https://${function_app_name}.azurewebsites.net/api/health"
+          echo "Testing ${health_url}"
+
+          status=$(curl -s -o /dev/null -w "%{http_code}" "$health_url")
+          if [[ "$status" != "200" ]]; then
+            echo "Health check failed with status ${status}"
+            exit 1
+          fi
+
+          echo "Health check passed"
+
+      - name: Deployment summary
+        if: github.event_name == 'push'
+        run: |
+          echo "## Deployment Summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Environment: ${DEPLOY_ENV}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Resource Group: ${resource_group_name}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Function App: ${function_app_name}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Interactions Endpoint: https://${function_app_name}.azurewebsites.net/api/interactions" >> "$GITHUB_STEP_SUMMARY"
