@@ -33,10 +33,10 @@ jobs:
       DEPLOY_ENV: ${{ github.ref == 'refs/heads/main' && 'prd' || 'dev' }}
       AZURE_LOCATION: eastus
 
-      RESOURCE_GROUP_BASE_NAME: bloom-discord-bot
-      FUNCTION_APP_BASE_NAME: bloom-discord-bot
-      STORAGE_ACCOUNT_BASE_NAME: bloomdiscordbotst
-      APP_SERVICE_PLAN_BASE_NAME: bloom-discord-bot-plan
+      RESOURCE_GROUP_BASE_NAME: rg-bloom-discord-bot-eus-01
+      FUNCTION_APP_BASE_NAME: fa-bloom-discord-bot-eus-01
+      STORAGE_ACCOUNT_BASE_NAME: stbloomdiscordboteus01
+      APP_SERVICE_PLAN_BASE_NAME: asp-bloom-discord-bot-eus-01
 
       ARM_CLIENT_ID: ${{ fromJson(secrets.AZURE_CREDENTIALS).clientId }}
       ARM_CLIENT_SECRET: ${{ fromJson(secrets.AZURE_CREDENTIALS).clientSecret }}
@@ -124,10 +124,6 @@ jobs:
             -var="discord_public_key=${{ secrets.DISCORD_PUBLIC_KEY }}" \
             -var="environment=${DEPLOY_ENV}" \
             -var="location=${AZURE_LOCATION}" \
-            -var="resource_group_name=${RESOURCE_GROUP_BASE_NAME}" \
-            -var="function_app_name=${FUNCTION_APP_BASE_NAME}" \
-            -var="storage_account_name=${STORAGE_ACCOUNT_BASE_NAME}" \
-            -var="app_service_plan_name=${APP_SERVICE_PLAN_BASE_NAME}" \
             -out=tfplan
 
       - name: Terraform apply
