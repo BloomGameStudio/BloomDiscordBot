@@ -38,10 +38,10 @@ jobs:
       STORAGE_ACCOUNT_BASE_NAME: bloomdiscordbotst
       APP_SERVICE_PLAN_BASE_NAME: bloom-discord-bot-plan
 
-      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      ARM_USE_OIDC: true
+      ARM_CLIENT_ID: ${{ fromJson(secrets.AZURE_CREDENTIALS).clientId }}
+      ARM_CLIENT_SECRET: ${{ fromJson(secrets.AZURE_CREDENTIALS).clientSecret }}
+      ARM_TENANT_ID: ${{ fromJson(secrets.AZURE_CREDENTIALS).tenantId }}
+      ARM_SUBSCRIPTION_ID: ${{ fromJson(secrets.AZURE_CREDENTIALS).subscriptionId }}
 
     steps:
       - name: Checkout repository
@@ -78,9 +78,7 @@ jobs:
       - name: Azure login
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Terraform init
         working-directory: terraform
@@ -122,10 +120,14 @@ jobs:
         working-directory: terraform
         run: |
           terraform plan -input=false \
-            -var="azure_subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
+            -var="azure_subscription_id=${ARM_SUBSCRIPTION_ID}" \
             -var="discord_public_key=${{ secrets.DISCORD_PUBLIC_KEY }}" \
             -var="environment=${DEPLOY_ENV}" \
             -var="location=${AZURE_LOCATION}" \
+            -var="resource_group_name=${RESOURCE_GROUP_BASE_NAME}" \
+            -var="function_app_name=${FUNCTION_APP_BASE_NAME}" \
+            -var="storage_account_name=${STORAGE_ACCOUNT_BASE_NAME}" \
+            -var="app_service_plan_name=${APP_SERVICE_PLAN_BASE_NAME}" \
             -out=tfplan
 
       - name: Terraform apply
