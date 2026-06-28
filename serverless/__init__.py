@@ -1,1 +1,0 @@
-"""Serverless Discord Bot Package"""

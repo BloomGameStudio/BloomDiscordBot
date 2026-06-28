@@ -1,5 +1,0 @@
-azure-functions
-azure-cosmos
-pydantic
-nacl
-python-dotenv
